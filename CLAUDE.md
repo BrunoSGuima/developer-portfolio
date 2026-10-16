@@ -11,8 +11,8 @@ but is powered by several independently developed applications. The site is in E
 
 ## Current phase
 
-**Phase 1 — React MVP.** Steps 0 (toolchain & docs), 1 (shell scaffold) and 2 (design tokens &
-layout) are done. The full approved plan and step list
+**Phase 1 — React MVP.** Steps 0 (toolchain & docs), 1 (shell scaffold), 2 (design tokens &
+layout) and 3 (section registry & routing) are done. The full approved plan and step list
 lives in `~/.claude/plans/pasted-content-id-6e96-interactive-wiggly-wind.md`.
 
 Phase 1 uses **static data only**. Do not add Rails, Python, PostgreSQL, Redis or Sidekiq until
@@ -24,8 +24,13 @@ their phase.
   navigation, router, Fun Fact banner, mascot layer, page transitions and global UI state. It
   stays mounted while sections change. See ADR-0001.
 - **Section registry** (`apps/shell/src/sections/registry.ts`): single source of truth for every
-  section (`id`, `path`, `label`, `framework`, `backend`, `status`, Fun Fact text, badges, mount
-  strategy). Nav, Fun Fact and Architecture page derive from it.
+  section (`id`, `path`, `label`, `title`, `framework`, `backend`, `status`, `mount`; Fun Fact
+  fields arrive in Step 4). Only `live` sections get routes and nav links.
+- **Routing** (ADR-0004): React Router 8 in data mode. `buildRoutes(sections)`
+  (`apps/shell/src/app/routes.tsx`) generates the tree: `RootLayout` (persistent shell) → a
+  pathless error route → one lazy route per section (`handle: { section, title }`) + `*` 404.
+  Import from `react-router`; `RouterProvider` from `react-router/dom`. Use `Link`/`NavLink`,
+  never plain `<a href>` for internal links.
 - **Microfrontends** (Phase 3+): non-React sections implement a framework-agnostic contract
   `mount(el, ctx) / unmount()`, are built independently, served same-origin (e.g.
   `/apps/career/entry.js`) and loaded by the shell's `<RemoteSection>` via dynamic `import()`.
@@ -38,7 +43,7 @@ their phase.
 ## Conventions
 
 - TypeScript `strict` mode (plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`).
-- Minimal dependencies. Phase 1 runtime deps: `react`, `react-dom`, `react-router`, and
+- Minimal dependencies. Phase 1 runtime deps: `react`, `react-dom`, `react-router` (v8), and
   `@fontsource-variable/inter` (self-hosted font). Adding a dependency requires a stated reason.
 - Styling (ADR-0003): CSS Modules next to each component; global styles only in
   `apps/shell/src/styles/` (`reset.css`, `tokens.css`, `global.css`, plus the `.container`
@@ -56,9 +61,19 @@ their phase.
 - Significant decisions get an ADR in `docs/adr/` (copy `0000-template.md`).
 - No secrets in the repo. `.env*` files are git-ignored (except `.env.example`).
 
+### Adding a section
+
+1. Create the page component: `apps/shell/src/sections/<id>/<Name>Page.tsx` (default export,
+   exactly one `<h1>`).
+2. Add an entry to `sections` in `registry.ts` with truthful `framework` / `backend` / `status`.
+3. That's it: the route, nav link, document title and the parameterised routing test pick it up.
+
 ## Testing
 
 - React: Vitest + React Testing Library (query by role/label, not implementation details).
+  Route-level tests use `renderRoute(path)` (`apps/shell/src/test/renderRoute.tsx`), which renders
+  the real route tree in a memory router; components using `Link`/`NavLink` need a
+  `MemoryRouter` wrapper. jsdom has no media queries, so the nav renders collapsed (mobile).
 - Vue (Phase 3): Vitest + Vue Test Utils.
 - Rails (Phase 2): RSpec + FactoryBot (model, request, job specs).
 - Python (Phase 4): Pytest + HTTPX.

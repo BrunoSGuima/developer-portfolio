@@ -7,8 +7,8 @@ architecture, testing, microfrontends, backend services — instead of just list
 A chibi mascot guides visitors through the site, and a persistent **Fun Fact** banner explains
 the real technology stack behind each section.
 
-> **Status:** Phase 1 (React MVP) — Step 2 complete: design tokens, typography, page layout and
-> responsive navigation. Routing and content come next.
+> **Status:** Phase 1 (React MVP) — Step 3 complete: section registry and client-side routing
+> (React Router), with a persistent shell, 404 and error pages. Fun Fact and content come next.
 
 ## Roadmap
 

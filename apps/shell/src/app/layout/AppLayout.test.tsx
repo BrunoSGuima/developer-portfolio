@@ -1,13 +1,16 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import AppLayout from './AppLayout.tsx';
 
 function renderLayout() {
   render(
-    <AppLayout currentPath="/">
-      <h1>Page title</h1>
-    </AppLayout>,
+    <MemoryRouter>
+      <AppLayout>
+        <h1>Page title</h1>
+      </AppLayout>
+    </MemoryRouter>,
   );
 }
 

@@ -1,16 +1,21 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import Nav, { type NavItem } from './Nav.tsx';
 
 const items: readonly NavItem[] = [
-  { label: 'Home', href: '/' },
-  { label: 'About', href: '/about' },
-  { label: 'Projects', href: '/projects' },
+  { label: 'Home', to: '/' },
+  { label: 'About', to: '/about' },
+  { label: 'Projects', to: '/projects' },
 ];
 
 function renderNav(currentPath = '/about') {
-  render(<Nav items={items} currentPath={currentPath} />);
+  render(
+    <MemoryRouter initialEntries={[currentPath]}>
+      <Nav items={items} />
+    </MemoryRouter>,
+  );
   return {
     user: userEvent.setup(),
     menuButton: screen.getByRole('button', { name: 'Menu' }),

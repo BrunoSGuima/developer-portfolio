@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
+import { NavLink } from 'react-router';
 import styles from './Nav.module.css';
 
 export interface NavItem {
   label: string;
-  href: string;
+  to: string;
 }
 
 interface NavProps {
   items: readonly NavItem[];
-  currentPath: string;
 }
 
 const LIST_ID = 'primary-nav-list';
@@ -20,8 +20,11 @@ const LIST_ID = 'primary-nav-list';
  * screens the open list is a panel below the header. It is not modal, so there is no focus trap:
  * Escape, clicking outside, or choosing a link closes it. On wide screens the button is hidden
  * by CSS and the list is always shown inline.
+ *
+ * Links are router NavLinks: navigation happens client-side and the active link gets
+ * aria-current="page" automatically ("/" only matches exactly, via `end`).
  */
-function Nav({ items, currentPath }: NavProps) {
+function Nav({ items }: NavProps) {
   const [isOpen, setIsOpen] = useState(false);
   const navRef = useRef<HTMLElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -62,15 +65,16 @@ function Nav({ items, currentPath }: NavProps) {
       </button>
       <ul id={LIST_ID} className={styles.list} data-open={isOpen}>
         {items.map((item) => (
-          <li key={item.href}>
-            <a
-              href={item.href}
-              className={styles.link}
-              aria-current={item.href === currentPath ? 'page' : undefined}
+          <li key={item.to}>
+            <NavLink
+              to={item.to}
+              end={item.to === '/'}
+              // CSS module keys are typed `string | undefined`; NavLink's className rejects undefined.
+              className={styles.link ?? ''}
               onClick={() => setIsOpen(false)}
             >
               {item.label}
-            </a>
+            </NavLink>
           </li>
         ))}
       </ul>
