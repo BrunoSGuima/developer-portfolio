@@ -12,8 +12,8 @@ but is powered by several independently developed applications. The site is in E
 ## Current phase
 
 **Phase 1 — React MVP.** Steps 0 (toolchain & docs), 1 (shell scaffold), 2 (design tokens &
-layout), 3 (section registry & routing), 4 (Fun Fact + TechBadge) and 5 (portfolio content) are
-done. The full approved plan and step list
+layout), 3 (section registry & routing), 4 (Fun Fact + TechBadge), 5 (portfolio content) and 6
+(microfrontend host) are done. The full approved plan and step list
 lives in `~/.claude/plans/pasted-content-id-6e96-interactive-wiggly-wind.md`.
 
 Phase 1 uses **static data only**. Do not add Rails, Python, PostgreSQL, Redis or Sidekiq until
@@ -36,10 +36,12 @@ their phase.
   pathless error route → one lazy route per section (`handle: { section, title }`) + `*` 404.
   Import from `react-router`; `RouterProvider` from `react-router/dom`. Use `Link`/`NavLink`,
   never plain `<a href>` for internal links.
-- **Microfrontends** (Phase 3+): non-React sections implement a framework-agnostic contract
-  `mount(el, ctx) / unmount()`, are built independently, served same-origin (e.g.
-  `/apps/career/entry.js`) and loaded by the shell's `<RemoteSection>` via dynamic `import()`.
-  The shell owns browser history; sub-apps use a base path. See ADR-0002.
+- **Microfrontends** (ADR-0002): non-React sections implement the contract in
+  `apps/shell/src/microfrontends/contract.ts` (`mount(el, ctx) / unmount()`), are built
+  independently, served same-origin (e.g. `/apps/career/entry.js`) and hosted by
+  `<RemoteSection>` (route `<path>/*`). The host is implemented and tested (Step 6) with a
+  plain-DOM fake app (`src/test/fakeSectionApp.ts`); **no real remote section exists yet**.
+  Router URL synchronisation is a known open issue for Phase 3 (see ADR-0002).
 - **Backends** (Phase 2+): Rails API and FastAPI, each owning its own database and credentials
   on one PostgreSQL instance. Services never modify each other's tables; they talk via APIs.
 - **Hosting**: Phase 1 static (Cloudflare Pages recommended). Later a single VPS with Docker
@@ -82,6 +84,13 @@ their phase.
   Art is isolated behind an asset map so final assets can be dropped in.
 - Significant decisions get an ADR in `docs/adr/` (copy `0000-template.md`).
 - No secrets in the repo. `.env*` files are git-ignored (except `.env.example`).
+
+### Adding a remote (microfrontend) section
+
+Use `mount: remoteMount('/apps/<id>/entry.js')` in the registry entry, with a truthful
+`framework` and a Fun Fact that says it is mounted by the React shell. The entry must be a
+same-origin path and the section cannot be `/`. Resolve ADR-0002's router-synchronisation issue
+before the app uses its own router.
 
 ### Adding a section
 

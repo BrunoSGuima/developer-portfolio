@@ -30,6 +30,13 @@ export const components: readonly ArchitectureComponent[] = [
     status: 'live',
   },
   {
+    id: 'microfrontend-host',
+    name: 'Microfrontend host',
+    description:
+      "The React shell can load and mount independently built apps through a small mount/unmount contract. It's tested with a plain-JavaScript stand-in; no real remote section is mounted yet.",
+    status: 'live',
+  },
+  {
     id: 'static-hosting',
     name: 'Static hosting',
     description: 'Served as static files; deployment not set up yet.',

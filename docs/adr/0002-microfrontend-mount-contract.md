@@ -1,6 +1,6 @@
 # ADR-0002: Framework-agnostic mount contract for microfrontends
 
-- **Status:** Accepted
+- **Status:** Accepted (host implemented in Phase 1, Step 6)
 - **Date:** 2026-10-16
 
 ## Context
@@ -30,15 +30,50 @@ interface SectionApp {
 
 - The sub-app is built independently (Vite library mode) and served **same-origin**, e.g.
   `/apps/career/entry.js`.
-- The shell route (e.g. `/career/*`) renders `<RemoteSection src=…>`, which loads the module with
-  dynamic `import()`, mounts it into a stable element, and unmounts it when the route is left.
+- The registry declares such a section with `mount: remoteMount('/apps/career/entry.js')`. Its
+  shell route is `/career/*` and renders `<RemoteSection load=… basePath="/career">`
+  (`apps/shell/src/microfrontends/`), which loads the module with dynamic `import()`, validates
+  it (`isSectionApp`), mounts it, and unmounts it when the route is left.
 - **Routing:** the shell owns browser history and top-level routes. The sub-app handles only its
   own sub-routes under `basePath` (Vue: `createWebHistory(basePath)`) and uses `ctx.navigate` for
   cross-section links.
 - **Styling:** sub-apps render in light DOM, inherit shared design tokens (CSS custom properties
   on `:root`) and use scoped styles. No Shadow DOM.
-- In Phase 1 the contract type and `<RemoteSection>` host are implemented and tested with a fake
-  module, but no route uses them yet.
+- In Phase 1 (Step 6) the contract and the `<RemoteSection>` host are implemented and tested with
+  a plain-DOM (non-React) fake app; no real section uses them yet.
+
+### Lifecycle guarantees of the host
+
+- `mount` may be async; `unmount` must remove everything `mount` created; `mount` may be called
+  again after `unmount` (React StrictMode and navigating away and back both do this).
+- Each mount attempt gets its own mount point and a `cancelled` flag:
+  - leaving while `load()` is pending: `mount` is never called, and a late failure is ignored;
+  - leaving while `mount()` is pending: `unmount` runs once `mount` settles;
+  - at most one instance is active; the mount count equals the unmount count once the host is gone.
+- If `mount` fails part-way, the host calls `unmount` best-effort and discards the mount point;
+  the original error is reported (a cleanup error is only logged).
+- `load` / validation / `mount` errors, including asynchronous ones after the first render, are
+  re-thrown during render, so the route's error element shows them inside the shell.
+- Moving between sub-paths of the section (`/career/a` → `/career/b`) does not remount the app.
+
+## Known limitation: URL synchronisation between routers
+
+Not solved in Step 6, deliberately: nothing can consume or test a solution until a real sub-app
+exists. It must be decided in Phase 3, before the Vue app uses its own router.
+
+| Scenario                                                                                                                 | React Router (shell)           | Vue Router (`createWebHistory`)                  | Risk                                                                                            |
+| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------ | ------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| Back / Forward                                                                                                           | Listens to `popstate`: updates | Listens to `popstate`: updates                   | Both react independently; update order and double handling are untested.                        |
+| Shell-initiated navigation inside the sub-app's path (nav click `/career/x` → `/career`, or `ctx.navigate('/career/y')`) | Updates (it pushed)            | Not notified: `history.pushState` fires no event | The sub-app shows a stale view.                                                                 |
+| Sub-app-initiated navigation (`router.push('/career/y')` in Vue)                                                         | Not notified                   | Updates                                          | The shell's location is stale: nav highlight, title and the next shell navigation can be wrong. |
+| Leaving the section via `ctx.navigate('/about')`                                                                         | Updates; unmounts the sub-app  | Torn down                                        | Fine (covered by Step 6 tests).                                                                 |
+
+Candidate fixes to evaluate in Phase 3:
+
+1. Make the shell the single source of truth: add `ctx.onLocationChange(listener)` and route the
+   sub-app's internal navigation through `ctx.navigate`.
+2. Use Vue Router's `createMemoryHistory`, synchronised both ways through `ctx`.
+3. A shared history adapter used by both routers.
 
 ## Alternatives considered
 

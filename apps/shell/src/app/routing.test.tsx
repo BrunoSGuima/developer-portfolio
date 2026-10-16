@@ -1,6 +1,8 @@
-import { screen, waitFor, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { act, screen, waitFor, within } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { liveSections, type Section, shellFunFact } from '../sections/registry.ts';
+import { deferred, settle } from '../test/deferred.ts';
+import { createFakeSectionApp } from '../test/fakeSectionApp.ts';
 import { renderRoute } from '../test/renderRoute.tsx';
 
 const SITE_TITLE = 'Bruno Guimarães — Full-Stack Software Engineer';
@@ -147,5 +149,166 @@ describe('Fun Fact in the shell', () => {
     await screen.findByRole('heading', { level: 1, name: 'Page not found' });
 
     expect(funFact()).toHaveTextContent(shellFunFact.text);
+  });
+});
+
+/** A test-only section mounted through the microfrontend contract (no real one exists yet). */
+function remoteSection(load: () => Promise<unknown>): Section {
+  return {
+    id: 'remote',
+    path: '/remote',
+    label: 'Remote',
+    title: 'Remote',
+    framework: 'vue',
+    backend: 'none',
+    status: 'live',
+    mount: { kind: 'remote', entry: '/apps/remote/entry.js', load },
+    funFact: { text: 'This fake section is mounted through the contract.', tech: ['vue'] },
+  };
+}
+
+function renderWithRemote(path: string, load: () => Promise<unknown>) {
+  return renderRoute(path, { sections: [...liveSections, remoteSection(load)] });
+}
+
+const fakeViews = () => document.querySelectorAll('[data-fake-app]');
+
+describe('remote sections in the shell', () => {
+  it('mounts inside the persistent shell, with its own Fun Fact and title', async () => {
+    const { load } = createFakeSectionApp();
+    const { router } = renderWithRemote('/', load);
+    await screen.findByRole('heading', { level: 1 });
+    const header = screen.getByRole('banner');
+    const aside = funFact();
+
+    await act(() => router.navigate('/remote'));
+
+    expect(await screen.findByRole('heading', { name: 'Fake remote section' })).toBeInTheDocument();
+    expect(screen.getByRole('main')).toContainElement(screen.getByRole('heading', { level: 1 }));
+    expect(screen.getByRole('banner')).toBe(header);
+    expect(funFact()).toBe(aside);
+    expect(aside).toHaveTextContent('This fake section is mounted through the contract.');
+    expect(document.title).toBe(`Remote · ${SITE_TITLE}`);
+  });
+
+  it('moves focus to the heading the app renders asynchronously', async () => {
+    const mountDone = deferred();
+    const { load } = createFakeSectionApp({ mountDelay: mountDone.promise });
+    const { router } = renderWithRemote('/', load);
+    await screen.findByRole('heading', { level: 1 });
+
+    await act(() => router.navigate('/remote'));
+    await settle(() => mountDone.resolve());
+
+    const heading = await screen.findByRole('heading', { name: 'Fake remote section' });
+    await waitFor(() => expect(heading).toHaveFocus());
+  });
+
+  it('owns every URL below its base path', async () => {
+    const { load } = createFakeSectionApp();
+    renderWithRemote('/remote/deeper/path', load);
+
+    expect(await screen.findByRole('heading', { name: 'Fake remote section' })).toBeInTheDocument();
+  });
+
+  it('stays mounted while navigating between its own sub-paths', async () => {
+    const { load, stats } = createFakeSectionApp();
+    const { router } = renderWithRemote('/remote/a', load);
+    await screen.findByRole('heading', { name: 'Fake remote section' });
+
+    await act(() => router.navigate('/remote/b'));
+
+    expect(stats.mounts).toBe(1);
+    expect(stats.unmounts).toBe(0);
+    expect(fakeViews()).toHaveLength(1);
+  });
+
+  it('navigates through the shell when the app calls ctx.navigate, unmounting it once', async () => {
+    const { load, stats } = createFakeSectionApp();
+    const { user } = renderWithRemote('/remote', load);
+
+    await user.click(await screen.findByRole('button', { name: 'Go to About' }));
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'About' })).toBeInTheDocument();
+    expect(stats.unmounts).toBe(1);
+    expect(fakeViews()).toHaveLength(0);
+  });
+
+  it('never mounts a stale app when the visitor leaves before load() resolves', async () => {
+    const { app, stats } = createFakeSectionApp();
+    const pending = deferred<unknown>();
+    const { router } = renderWithRemote('/remote', () => pending.promise);
+    expect(await screen.findByRole('status')).toHaveTextContent('Loading section…');
+
+    await act(() => router.navigate('/about'));
+    await settle(() => pending.resolve(app));
+
+    expect(screen.getByRole('heading', { level: 1, name: 'About' })).toBeInTheDocument();
+    expect(stats.mounts).toBe(0);
+    expect(fakeViews()).toHaveLength(0);
+  });
+
+  it('mounts a fresh single instance when the visitor comes back', async () => {
+    const { load, stats } = createFakeSectionApp();
+    const { router } = renderWithRemote('/remote', load);
+    await screen.findByRole('heading', { name: 'Fake remote section' });
+
+    await act(() => router.navigate('/about'));
+    await act(() => router.navigate('/remote'));
+    await screen.findByRole('heading', { name: 'Fake remote section' });
+
+    expect(stats.mounts).toBe(2);
+    expect(stats.unmounts).toBe(1);
+    expect(stats.peakActive).toBe(1);
+    expect(fakeViews()).toHaveLength(1);
+  });
+});
+
+describe('remote section errors reach the route error boundary', () => {
+  let consoleError: MockInstance<typeof console.error>;
+  beforeEach(() => {
+    consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+  });
+  afterEach(() => {
+    consoleError.mockRestore();
+  });
+
+  async function expectErrorPageInsideShell() {
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Something went wrong' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('banner')).toBeInTheDocument();
+    expect(fakeViews()).toHaveLength(0);
+  }
+
+  it('when load() rejects after the first render', async () => {
+    const pending = deferred<unknown>();
+    renderWithRemote('/remote', () => pending.promise);
+    expect(await screen.findByRole('status')).toHaveTextContent('Loading section…');
+
+    await settle(() => pending.reject(new Error('entry not found')));
+
+    await expectErrorPageInsideShell();
+  });
+
+  it('when mount() throws synchronously', async () => {
+    const { load } = createFakeSectionApp({ failMount: 'sync' });
+    renderWithRemote('/remote', load);
+
+    await expectErrorPageInsideShell();
+  });
+
+  it('when mount() rejects after the first render', async () => {
+    const { load } = createFakeSectionApp({ failMount: 'async' });
+    renderWithRemote('/remote', load);
+    expect(screen.getByRole('banner')).toBeInTheDocument();
+
+    await expectErrorPageInsideShell();
+  });
+
+  it('when the loaded module does not implement the contract', async () => {
+    renderWithRemote('/remote', () => Promise.resolve({ mount: () => undefined }));
+
+    await expectErrorPageInsideShell();
   });
 });

@@ -18,8 +18,28 @@ export interface ReactMount {
   load: () => Promise<{ default: ComponentType }>;
 }
 
-/** How the shell renders a section. Step 6 adds a `remote` variant for microfrontends. */
-export type SectionMount = ReactMount;
+/**
+ * An independently built app (e.g. Vue) mounted by the shell through the contract in
+ * `microfrontends/contract.ts` (ADR-0002). Create it with `remoteMount()`.
+ */
+export interface RemoteMount {
+  kind: 'remote';
+  /** Same-origin URL of the app's ES module entry, e.g. '/apps/career/entry.js'. */
+  entry: string;
+  /** Loads the module; RemoteSection validates its shape at runtime. */
+  load: () => Promise<unknown>;
+}
+
+/** How the shell renders a section. */
+export type SectionMount = ReactMount | RemoteMount;
+
+export function remoteMount(entry: string): RemoteMount {
+  return {
+    kind: 'remote',
+    entry,
+    load: () => import(/* @vite-ignore */ entry) as Promise<unknown>,
+  };
+}
 
 /**
  * What the Fun Fact says about a section. Must describe only what exists today; technologies

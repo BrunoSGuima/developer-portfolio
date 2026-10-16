@@ -4,6 +4,7 @@ import {
   type Framework,
   getSection,
   liveSections,
+  remoteMount,
   sections,
   shellFunFact,
 } from './registry.ts';
@@ -42,6 +43,21 @@ describe('section registry', () => {
         expect(section.mount.load).toBeTypeOf('function');
       }
     }
+  });
+
+  it('gives remote sections a same-origin entry and a path other than "/"', () => {
+    for (const section of sections) {
+      if (section.mount.kind !== 'remote') continue;
+      expect(section.mount.entry).toMatch(/^\/(?!\/)/);
+      expect(section.path).not.toBe('/');
+    }
+  });
+
+  it('builds a remote mount from an entry URL', () => {
+    const mount = remoteMount('/apps/career/entry.js');
+
+    expect(mount).toMatchObject({ kind: 'remote', entry: '/apps/career/entry.js' });
+    expect(mount.load).toBeTypeOf('function');
   });
 
   it('looks sections up by id', () => {

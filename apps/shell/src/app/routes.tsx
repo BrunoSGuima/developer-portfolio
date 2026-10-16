@@ -1,4 +1,5 @@
 import type { RouteObject } from 'react-router';
+import RemoteSection from '../microfrontends/RemoteSection.tsx';
 import type { Section } from '../sections/registry.ts';
 import NotFoundPage from './pages/NotFoundPage.tsx';
 import RouteErrorPage from './pages/RouteErrorPage.tsx';
@@ -34,11 +35,22 @@ function sectionRoute(section: Section): RouteObject {
   const handle: RouteHandle =
     section.path === '/' ? { section } : { section, title: section.title };
 
+  const { mount } = section;
+
+  if (mount.kind === 'remote') {
+    // `/*`: the section app owns every URL below its base path.
+    return {
+      path: `${section.path}/*`,
+      handle,
+      element: <RemoteSection load={mount.load} basePath={section.path} />,
+    };
+  }
+
   return {
     path: section.path,
     handle,
     lazy: async () => {
-      const page = await section.mount.load();
+      const page = await mount.load();
       return { Component: page.default };
     },
   };

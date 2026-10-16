@@ -7,8 +7,8 @@ architecture, testing, microfrontends, backend services — instead of just list
 A chibi mascot guides visitors through the site, and a persistent **Fun Fact** banner explains
 the real technology stack behind each section.
 
-> **Status:** Phase 1 (React MVP) — Step 5 complete: Home, About, Projects, Architecture and
-> Contact have real content (typed static data); a few details are marked "To confirm".
+> **Status:** Phase 1 (React MVP) — Step 6 complete: the shell can host independently built
+> section apps through a tested mount/unmount contract (no real microfrontend yet).
 
 ## Roadmap
 
