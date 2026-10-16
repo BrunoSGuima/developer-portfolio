@@ -85,7 +85,7 @@ export const sections: readonly Section[] = [
     status: 'live',
     mount: { kind: 'react', load: () => import('./projects/ProjectsPage.tsx') },
     funFact: {
-      text: "This section is a React page, loaded on demand like every section here. Its project list hasn't been built yet. A Ruby on Rails API is planned to serve it.",
+      text: 'These project cards are rendered by React from typed static data bundled with the page. A Ruby on Rails API is planned to serve them.',
       tech: ['react', 'typescript'],
       plannedTech: ['rails'],
     },
@@ -115,7 +115,7 @@ export const sections: readonly Section[] = [
     status: 'live',
     mount: { kind: 'react', load: () => import('./contact/ContactPage.tsx') },
     funFact: {
-      text: "This site has no backend yet, so there's no contact form: no data about you is collected or stored.",
+      text: 'No contact form here: this site has no backend yet, so this page simply links to ways to reach me, and nothing you type is collected.',
       tech: ['react', 'typescript'],
     },
   },

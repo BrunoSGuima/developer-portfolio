@@ -6,7 +6,7 @@ function SiteFooter() {
   return (
     <footer className={styles.footer}>
       <div className={`container ${styles.inner}`}>
-        <p>© {year} Bruno</p>
+        <p>© {year} Bruno Guimarães</p>
       </div>
     </footer>
   );

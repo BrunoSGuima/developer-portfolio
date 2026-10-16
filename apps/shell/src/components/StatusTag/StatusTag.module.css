@@ -1,0 +1,25 @@
+.tag {
+  display: inline-block;
+  padding: 0 var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+
+.tag[data-status='live'] {
+  background: var(--badge-green-bg);
+  color: var(--badge-green-fg);
+}
+
+.tag[data-status='in-progress'] {
+  background: var(--badge-blue-bg);
+  color: var(--badge-blue-fg);
+}
+
+.tag[data-status='planned'] {
+  border-color: var(--color-border);
+  border-style: dashed;
+  color: var(--color-text-muted);
+}

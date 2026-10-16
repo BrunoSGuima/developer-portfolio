@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { liveSections, type Section, shellFunFact } from '../sections/registry.ts';
 import { renderRoute } from '../test/renderRoute.tsx';
 
-const SITE_TITLE = 'Bruno — Software Engineer';
+const SITE_TITLE = 'Bruno Guimarães — Full-Stack Software Engineer';
 
 function funFact() {
   return screen.getByRole('complementary', { name: 'Fun fact' });

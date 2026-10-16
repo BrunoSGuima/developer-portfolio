@@ -12,7 +12,8 @@ but is powered by several independently developed applications. The site is in E
 ## Current phase
 
 **Phase 1 — React MVP.** Steps 0 (toolchain & docs), 1 (shell scaffold), 2 (design tokens &
-layout), 3 (section registry & routing) and 4 (Fun Fact + TechBadge) are done. The full approved plan and step list
+layout), 3 (section registry & routing), 4 (Fun Fact + TechBadge) and 5 (portfolio content) are
+done. The full approved plan and step list
 lives in `~/.claude/plans/pasted-content-id-6e96-interactive-wiggly-wind.md`.
 
 Phase 1 uses **static data only**. Do not add Rails, Python, PostgreSQL, Redis or Sidekiq until
@@ -65,8 +66,18 @@ their phase.
   framework differs from the shell's, say so (e.g. "built with Vue.js, mounted by the React
   shell"). `registry.test.ts` enforces that the framework badge is present and that live backend
   badges match `backend`.
-- **When a section's content changes, re-check its Fun Fact** in the same step (Step 5 must
-  update Projects and Contact).
+- **When a section's content changes, re-check its Fun Fact** in the same step.
+- **Content** lives as typed data in `apps/shell/src/content/` (shaped like the future Rails
+  models); pages render it. The owner's résumé is the source of truth: **never invent**
+  experience, metrics, achievements or projects; no confidential employer/client details; private
+  professional work is not a portfolio project; Python and AI engineering are presented only as
+  areas of ongoing development. **Never publish a phone number** (`privacy.test.ts` rejects
+  phone-like text using a generic pattern; never write the real number into the repo, tests
+  included). Résumé PDFs are git-ignored, except the public phone-free copy
+  `apps/shell/public/Bruno_Guimaraes_Resume.pdf` (explicit `.gitignore` exception). Before
+  replacing it, check the new PDF's text **and metadata** for a phone number.
+- **Placeholders:** unconfirmed copy is `todo('…')` (renders a "To confirm" chip, never a link).
+  `npm run content:todo` lists pending ones. Step 10 makes "no placeholders" a deploy gate.
 - Mascot: preserve the reference character's identity (`docs/assets/mascot-reference.png`).
   Art is isolated behind an asset map so final assets can be dropped in.
 - Significant decisions get an ADR in `docs/adr/` (copy `0000-template.md`).
@@ -97,17 +108,18 @@ their phase.
 
 Run from the repository root (after `nvm use`):
 
-| Command                | Purpose                                            |
-| ---------------------- | -------------------------------------------------- |
-| `npm install`          | Install all workspace dependencies                 |
-| `npm run dev`          | Start the shell dev server (http://localhost:5173) |
-| `npm run build`        | Type-check and build all workspaces                |
-| `npm run lint`         | ESLint (type-aware) in all workspaces              |
-| `npm run typecheck`    | `tsc -b` in all workspaces                         |
-| `npm test`             | Vitest unit/component tests in all workspaces      |
-| `npm run format`       | Format the whole repo with Prettier                |
-| `npm run format:check` | Check formatting (no writes)                       |
-| `npm run test:e2e`     | Playwright end-to-end tests (from Step 9)          |
+| Command                | Purpose                                               |
+| ---------------------- | ----------------------------------------------------- |
+| `npm install`          | Install all workspace dependencies                    |
+| `npm run dev`          | Start the shell dev server (http://localhost:5173)    |
+| `npm run build`        | Type-check and build all workspaces                   |
+| `npm run lint`         | ESLint (type-aware) in all workspaces                 |
+| `npm run typecheck`    | `tsc -b` in all workspaces                            |
+| `npm test`             | Vitest unit/component tests in all workspaces         |
+| `npm run format`       | Format the whole repo with Prettier                   |
+| `npm run format:check` | Check formatting (no writes)                          |
+| `npm run content:todo` | List content placeholders still awaiting confirmation |
+| `npm run test:e2e`     | Playwright end-to-end tests (from Step 9)             |
 
 Inside a workspace (e.g. `apps/shell`): `npm run test:watch` runs Vitest in watch mode.
 

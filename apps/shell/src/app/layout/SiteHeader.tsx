@@ -14,7 +14,7 @@ function SiteHeader() {
       <div className={`container ${styles.inner}`}>
         <Link to="/" className={styles.brand}>
           <span className={styles.name}>Bruno</span>
-          <span className={styles.role}>Software Engineer</span>
+          <span className={styles.role}>Full-Stack Software Engineer</span>
         </Link>
         <Nav items={navItems} />
       </div>

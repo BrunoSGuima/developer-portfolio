@@ -1,0 +1,66 @@
+.timeline,
+.education,
+.developing,
+.languages {
+  display: grid;
+  gap: var(--space-4);
+  padding: 0;
+  list-style: none;
+}
+
+.job {
+  padding-inline-start: var(--space-4);
+  border-inline-start: 3px solid var(--color-accent);
+}
+
+.meta {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.job .meta {
+  margin-block: var(--space-1) var(--space-2);
+}
+
+.skills {
+  display: grid;
+  gap: var(--space-6);
+}
+
+@media (min-width: 64rem) {
+  .skills {
+    grid-template-columns: 3fr 2fr;
+  }
+}
+
+.skills h3 {
+  margin-block-end: var(--space-3);
+  font-size: var(--text-lg);
+}
+
+.skillList {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.skillList dt {
+  font-weight: var(--weight-semibold);
+}
+
+.skillList dd {
+  margin: 0;
+}
+
+.education li {
+  display: flex;
+  flex-direction: column;
+}
+
+.languages {
+  gap: var(--space-2);
+}
+
+.resume {
+  margin-block-start: var(--space-3);
+}

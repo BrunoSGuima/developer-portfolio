@@ -30,3 +30,11 @@ npm-debug.log*
 Thumbs.db
 *:Zone.Identifier
 *.local
+
+# Personal documents: résumés contain private contact details (e.g. phone number) and must never
+# be committed.
+docs/assets/*.pdf
+*[Rr]esume*.pdf
+# Exception: the public, phone-free résumé served by the site (checked for phone numbers,
+# including PDF metadata, before publishing). Re-check any replacement the same way.
+!apps/shell/public/Bruno_Guimaraes_Resume.pdf

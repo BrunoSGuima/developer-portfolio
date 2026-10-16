@@ -6,7 +6,7 @@ import { readHandle } from './routeHandle.ts';
 import { useCurrentSection } from './useCurrentSection.ts';
 import { useRouteFocus } from './useRouteFocus.ts';
 
-export const SITE_TITLE = 'Bruno — Software Engineer';
+export const SITE_TITLE = 'Bruno Guimarães — Full-Stack Software Engineer';
 
 /** Layout route: the persistent shell around whichever section is active. */
 function RootLayout() {
