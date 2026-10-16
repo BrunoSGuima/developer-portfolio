@@ -11,7 +11,8 @@ but is powered by several independently developed applications. The site is in E
 
 ## Current phase
 
-**Phase 1 — React MVP.** Steps 0 (toolchain & docs) and 1 (shell scaffold) are done. The full approved plan and step list
+**Phase 1 — React MVP.** Steps 0 (toolchain & docs), 1 (shell scaffold) and 2 (design tokens &
+layout) are done. The full approved plan and step list
 lives in `~/.claude/plans/pasted-content-id-6e96-interactive-wiggly-wind.md`.
 
 Phase 1 uses **static data only**. Do not add Rails, Python, PostgreSQL, Redis or Sidekiq until
@@ -37,9 +38,14 @@ their phase.
 ## Conventions
 
 - TypeScript `strict` mode (plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`).
-- Minimal dependencies. Phase 1 runtime deps: `react`, `react-dom`, `react-router` only.
-  Adding a dependency requires a stated reason.
-- Styling: plain CSS + CSS Modules, design tokens as CSS custom properties on `:root`.
+- Minimal dependencies. Phase 1 runtime deps: `react`, `react-dom`, `react-router`, and
+  `@fontsource-variable/inter` (self-hosted font). Adding a dependency requires a stated reason.
+- Styling (ADR-0003): CSS Modules next to each component; global styles only in
+  `apps/shell/src/styles/` (`reset.css`, `tokens.css`, `global.css`, plus the `.container`
+  utility). Components use **purpose-named tokens only** (`--color-text`, `--color-accent`, ...),
+  never raw palette values. Mobile first; breakpoints `40rem` / `48rem` / `64rem`.
+- Muted grey (`#9d928f`) and slate (`#738297`) are decorative only; use `--color-text-muted` /
+  `--color-text-slate` for text.
 - Accessibility is a requirement: semantic landmarks, keyboard navigation, visible focus,
   `prefers-reduced-motion` support, AA contrast. The mascot is decorative
   (`aria-hidden`, `pointer-events: none`) and must never block content.
@@ -95,14 +101,18 @@ The user actively participates in development and reviews every technical decisi
 technical partner, not an autonomous implementer. For **each step**:
 
 1. **Explain** what will be implemented and why.
-2. **Present** the main technical decisions and their alternatives/tradeoffs.
-3. **Wait for explicit approval** before starting the step.
-4. Once approved, implement the **entire approved step** (files and tests) without further
-   prompts — and nothing beyond it.
+2. **Present** the complete implementation plan, the main technical decisions with their
+   alternatives/tradeoffs, and a clear recommendation for every open decision.
+3. **Request approval through the interactive approval menu.** Enter plan mode, write the
+   step's plan to the plan file, and call the plan-approval tool (`ExitPlanMode`). The user
+   then chooses: "Yes, auto mode", "Yes, manually", or provides custom instructions. Do not ask
+   for approval as a typed question.
+4. Only after approval, implement the **entire approved step** (files and tests), and nothing
+   beyond it.
 5. **After implementation:** explain the important code, report test results honestly (including
    failures), update docs/ADRs when relevant, then **wait for the user's review**.
 
 Hard rules:
 
 - **Never continue automatically to the next step.** Suggest it, then stop.
-- **Never create Git commits** unless the user explicitly asks.
+- **Never create Git commits.** The user handles all commits manually.

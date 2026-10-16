@@ -7,8 +7,8 @@ architecture, testing, microfrontends, backend services — instead of just list
 A chibi mascot guides visitors through the site, and a persistent **Fun Fact** banner explains
 the real technology stack behind each section.
 
-> **Status:** Phase 1 (React MVP) — Step 1 complete: the React + TypeScript shell is scaffolded
-> with linting, formatting and tests. No features yet.
+> **Status:** Phase 1 (React MVP) — Step 2 complete: design tokens, typography, page layout and
+> responsive navigation. Routing and content come next.
 
 ## Roadmap
 

@@ -1,0 +1,113 @@
+/*
+ * Design tokens — single source of truth for the visual language.
+ *
+ * Two layers:
+ *   1. Raw values (palette, scales). Never used directly by components.
+ *   2. Purpose-named tokens (--color-text, --color-accent, ...). Components use only these,
+ *      so themes (dark mode, per-section moods) can later remap them in one place.
+ *
+ * Palette sampled from docs/assets/mascot-reference.png. Contrast ratios are WCAG 2.x
+ * against --color-surface (cream) unless noted.
+ *
+ * Breakpoints (CSS variables cannot be used in media queries; repeat these values):
+ *   sm: 40rem (640px)   md: 48rem (768px)   lg: 64rem (1024px)
+ */
+:root {
+  /* ---- Raw palette ---- */
+  --color-charcoal-900: #2a2b30;
+  --color-burgundy-700: #802b2a;
+  --color-peach-300: #fac593;
+  --color-grey-400: #9d928f;
+  --color-grey-700: #5e5a58;
+  --color-slate-400: #738297;
+  --color-slate-700: #4f5d72;
+  --color-cream-50: #fcf5ed;
+  --color-sand-100: #e9e2dd;
+  --color-white: #ffffff;
+
+  /* ---- Purpose-named colours ---- */
+  --color-bg: var(--color-sand-100); /* page background; text on it 11.0:1 */
+  --color-surface: var(--color-cream-50); /* header, cards */
+  --color-text: var(--color-charcoal-900); /* 13.1:1 */
+  --color-text-muted: var(--color-grey-700); /* 6.3:1 */
+  --color-text-slate: var(--color-slate-700); /* 6.2:1 */
+  --color-primary: var(--color-charcoal-900);
+  --color-on-primary: var(--color-cream-50);
+  --color-accent: var(--color-burgundy-700); /* 8.5:1 */
+  --color-highlight: var(--color-peach-300); /* decorative only */
+  --color-border: var(--color-grey-400); /* decorative only (2.8:1), never text */
+  --color-focus: var(--color-burgundy-700);
+
+  /* ---- Mascot (consumed by the placeholder sprite in Step 7) ---- */
+  --mascot-hair: var(--color-charcoal-900);
+  --mascot-suit: var(--color-charcoal-900);
+  --mascot-shirt: var(--color-white);
+  --mascot-tie: var(--color-burgundy-700);
+  --mascot-skin: var(--color-peach-300);
+
+  /* ---- Typography ---- */
+  --font-sans:
+    'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: clamp(1.125rem, 1.05rem + 0.35vw, 1.25rem);
+  --text-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
+  --text-2xl: clamp(1.5rem, 1.25rem + 1.25vw, 2rem);
+  --text-display: clamp(2.5rem, 1.5rem + 4vw, 4rem);
+  --weight-regular: 400;
+  --weight-semibold: 600;
+  --weight-bold: 800;
+  --leading-tight: 1.15;
+  --leading-normal: 1.6;
+  --measure: 65ch;
+
+  /* ---- Spacing (4px grid) ---- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 2.5rem;
+  --space-8: 3rem;
+  --space-9: 4rem;
+  --space-10: 5rem;
+
+  /* ---- Shape & elevation ---- */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-pill: 999px;
+  --shadow-sm: 0 1px 2px rgb(42 43 48 / 0.08), 0 1px 3px rgb(42 43 48 / 0.06);
+  --shadow-md: 0 4px 12px rgb(42 43 48 / 0.1), 0 2px 4px rgb(42 43 48 / 0.06);
+
+  /* ---- Layering ---- */
+  --z-header: 10;
+  --z-mascot: 20;
+  --z-menu: 30;
+
+  /* ---- Layout ---- */
+  --content-max: 72rem;
+  --gutter: var(--space-4);
+  --mascot-lane-height: 0px; /* becomes ~72px when the mascot ships (Step 7) */
+  --mascot-spot-width: 5rem;
+
+  /* ---- Motion ---- */
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (min-width: 48rem) {
+  :root {
+    --gutter: var(--space-6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+  }
+}
