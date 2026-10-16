@@ -12,7 +12,7 @@ but is powered by several independently developed applications. The site is in E
 ## Current phase
 
 **Phase 1 — React MVP.** Steps 0 (toolchain & docs), 1 (shell scaffold), 2 (design tokens &
-layout) and 3 (section registry & routing) are done. The full approved plan and step list
+layout), 3 (section registry & routing) and 4 (Fun Fact + TechBadge) are done. The full approved plan and step list
 lives in `~/.claude/plans/pasted-content-id-6e96-interactive-wiggly-wind.md`.
 
 Phase 1 uses **static data only**. Do not add Rails, Python, PostgreSQL, Redis or Sidekiq until
@@ -24,8 +24,12 @@ their phase.
   navigation, router, Fun Fact banner, mascot layer, page transitions and global UI state. It
   stays mounted while sections change. See ADR-0001.
 - **Section registry** (`apps/shell/src/sections/registry.ts`): single source of truth for every
-  section (`id`, `path`, `label`, `title`, `framework`, `backend`, `status`, `mount`; Fun Fact
-  fields arrive in Step 4). Only `live` sections get routes and nav links.
+  section (`id`, `path`, `label`, `title`, `framework`, `backend`, `status`, `mount`, `funFact`).
+  Only `live` sections get routes and nav links. Badge labels/tones live in
+  `sections/technologies.ts` (`TechId` is derived from its keys).
+- **Fun Fact** (`components/FunFact`): persistent `<aside aria-label="Fun fact">` in the context row,
+  fed by `useCurrentSection()` in `RootLayout`; `shellFunFact` is shown when no section matches.
+  No `aria-live` (focus moves to the page `<h1>` on navigation instead).
 - **Routing** (ADR-0004): React Router 8 in data mode. `buildRoutes(sections)`
   (`apps/shell/src/app/routes.tsx`) generates the tree: `RootLayout` (persistent shell) → a
   pathless error route → one lazy route per section (`handle: { section, title }`) + `*` 404.
@@ -56,6 +60,13 @@ their phase.
   (`aria-hidden`, `pointer-events: none`) and must never block content.
 - **Truthfulness:** the Fun Fact and Architecture page must only describe what is actually
   implemented. Planned components are marked `planned`.
+- **Writing Fun Facts:** describe only what exists at the end of the current step; put future
+  technologies in `plannedTech` (rendered with a visible "planned" label); when a section's
+  framework differs from the shell's, say so (e.g. "built with Vue.js, mounted by the React
+  shell"). `registry.test.ts` enforces that the framework badge is present and that live backend
+  badges match `backend`.
+- **When a section's content changes, re-check its Fun Fact** in the same step (Step 5 must
+  update Projects and Contact).
 - Mascot: preserve the reference character's identity (`docs/assets/mascot-reference.png`).
   Art is isolated behind an asset map so final assets can be dropped in.
 - Significant decisions get an ADR in `docs/adr/` (copy `0000-template.md`).
@@ -65,8 +76,10 @@ their phase.
 
 1. Create the page component: `apps/shell/src/sections/<id>/<Name>Page.tsx` (default export,
    exactly one `<h1>`).
-2. Add an entry to `sections` in `registry.ts` with truthful `framework` / `backend` / `status`.
-3. That's it: the route, nav link, document title and the parameterised routing test pick it up.
+2. Add an entry to `sections` in `registry.ts` with truthful `framework` / `backend` / `status`
+   and a `funFact` (add any new technology to `technologies.ts`).
+3. That's it: the route, nav link, document title, Fun Fact and the parameterised tests pick it
+   up.
 
 ## Testing
 

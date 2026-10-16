@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { getSection, liveSections, sections } from './registry.ts';
+import {
+  type Backend,
+  type Framework,
+  getSection,
+  liveSections,
+  sections,
+  shellFunFact,
+} from './registry.ts';
 
 describe('section registry', () => {
   it('has unique ids and paths', () => {
@@ -40,5 +47,50 @@ describe('section registry', () => {
   it('looks sections up by id', () => {
     expect(getSection('about')?.path).toBe('/about');
     expect(getSection('does-not-exist')).toBeUndefined();
+  });
+});
+
+// The Fun Fact must never claim more than what is implemented. These rules tie its badges to the
+// section's declared framework and backend.
+const FRAMEWORK_TECH: Record<Framework, string> = { react: 'react', vue: 'vue' };
+const BACKEND_TECH: Record<Exclude<Backend, 'none'>, string> = {
+  rails: 'rails',
+  fastapi: 'fastapi',
+};
+
+describe('Fun Fact truthfulness', () => {
+  it.each(liveSections.map((section) => [section.id, section] as const))(
+    '%s has Fun Fact text and at least one live badge',
+    (_id, section) => {
+      expect(section.funFact.text.trim()).not.toBe('');
+      expect(section.funFact.tech.length).toBeGreaterThan(0);
+    },
+  );
+
+  it.each(sections.map((section) => [section.id, section] as const))(
+    '%s lists its own framework as a live badge',
+    (_id, section) => {
+      expect(section.funFact.tech).toContain(FRAMEWORK_TECH[section.framework]);
+    },
+  );
+
+  it.each(sections.map((section) => [section.id, section] as const))(
+    '%s only claims a backend it actually uses',
+    (_id, section) => {
+      const liveTech: readonly string[] = section.funFact.tech;
+      for (const [backend, tech] of Object.entries(BACKEND_TECH)) {
+        expect(liveTech.includes(tech)).toBe(section.backend === backend);
+      }
+    },
+  );
+
+  it.each([
+    ...sections.map((section) => [section.id, section.funFact] as const),
+    ['shell', shellFunFact] as const,
+  ])('%s never lists a technology as both live and planned', (_id, funFact) => {
+    const live = new Set<string>(funFact.tech);
+    for (const tech of funFact.plannedTech ?? []) {
+      expect(live.has(tech)).toBe(false);
+    }
   });
 });

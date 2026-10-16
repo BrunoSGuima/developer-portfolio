@@ -1,9 +1,10 @@
 import type { ComponentType } from 'react';
+import type { TechId } from './technologies.ts';
 
 /**
  * Section registry — the single source of truth for every section of the portfolio.
  *
- * Routes, the main navigation and (from Step 4) the Fun Fact are all derived from this list.
+ * Routes, the main navigation and the Fun Fact are all derived from this list.
  * Describe only what is actually implemented: the Fun Fact and Architecture page rely on it.
  */
 
@@ -20,6 +21,17 @@ export interface ReactMount {
 /** How the shell renders a section. Step 6 adds a `remote` variant for microfrontends. */
 export type SectionMount = ReactMount;
 
+/**
+ * What the Fun Fact says about a section. Must describe only what exists today; technologies
+ * that are coming later go in `plannedTech`, where they are visibly labelled "planned".
+ */
+export interface FunFact {
+  text: string;
+  /** Technologies this section is actually built with. */
+  tech: readonly TechId[];
+  plannedTech?: readonly TechId[];
+}
+
 export interface Section {
   id: string;
   path: string;
@@ -31,6 +43,7 @@ export interface Section {
   backend: Backend;
   status: SectionStatus;
   mount: SectionMount;
+  funFact: FunFact;
 }
 
 export const sections: readonly Section[] = [
@@ -43,6 +56,10 @@ export const sections: readonly Section[] = [
     backend: 'none',
     status: 'live',
     mount: { kind: 'react', load: () => import('./home/HomePage.tsx') },
+    funFact: {
+      text: "This page is built with React and TypeScript and bundled by Vite. There's no backend yet: everything you see is static data, served as plain files.",
+      tech: ['react', 'typescript', 'vite'],
+    },
   },
   {
     id: 'about',
@@ -53,6 +70,10 @@ export const sections: readonly Section[] = [
     backend: 'none',
     status: 'live',
     mount: { kind: 'react', load: () => import('./about/AboutPage.tsx') },
+    funFact: {
+      text: 'This section is a React component loaded on demand. Your browser only downloaded its code when you opened it.',
+      tech: ['react', 'typescript', 'react-router'],
+    },
   },
   {
     id: 'projects',
@@ -63,6 +84,11 @@ export const sections: readonly Section[] = [
     backend: 'none',
     status: 'live',
     mount: { kind: 'react', load: () => import('./projects/ProjectsPage.tsx') },
+    funFact: {
+      text: "This section is a React page, loaded on demand like every section here. Its project list hasn't been built yet. A Ruby on Rails API is planned to serve it.",
+      tech: ['react', 'typescript'],
+      plannedTech: ['rails'],
+    },
   },
   {
     id: 'architecture',
@@ -73,6 +99,11 @@ export const sections: readonly Section[] = [
     backend: 'none',
     status: 'live',
     mount: { kind: 'react', load: () => import('./architecture/ArchitecturePage.tsx') },
+    funFact: {
+      text: 'The whole site is one React app: a persistent shell that swaps sections without reloading the page. A Vue.js section, mounted by this React shell, is planned.',
+      tech: ['react', 'react-router', 'vite'],
+      plannedTech: ['vue'],
+    },
   },
   {
     id: 'contact',
@@ -83,8 +114,18 @@ export const sections: readonly Section[] = [
     backend: 'none',
     status: 'live',
     mount: { kind: 'react', load: () => import('./contact/ContactPage.tsx') },
+    funFact: {
+      text: "This site has no backend yet, so there's no contact form: no data about you is collected or stored.",
+      tech: ['react', 'typescript'],
+    },
   },
 ];
+
+/** Shown when no section matches the URL (not-found and error pages). */
+export const shellFunFact: FunFact = {
+  text: "Even this page is rendered by the React shell. The address didn't match any section, so the router showed this page instead.",
+  tech: ['react', 'react-router'],
+};
 
 /** Sections that are routed and shown in the navigation, in registry order. */
 export const liveSections: readonly Section[] = sections.filter(

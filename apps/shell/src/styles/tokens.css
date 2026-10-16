@@ -38,6 +38,16 @@
   --color-border: var(--color-grey-400); /* decorative only (2.8:1), never text */
   --color-focus: var(--color-burgundy-700);
 
+  /* ---- Tech badges (fg on bg contrast: blue 6.7, slate 6.6, green 6.6, burgundy 7.0) ---- */
+  --badge-blue-bg: #dde7f3;
+  --badge-blue-fg: #2f4f78;
+  --badge-slate-bg: #e6e6ea;
+  --badge-slate-fg: #4a4f5a;
+  --badge-green-bg: #dbece5;
+  --badge-green-fg: #24594b;
+  --badge-burgundy-bg: #f3dcda;
+  --badge-burgundy-fg: var(--color-burgundy-700);
+
   /* ---- Mascot (consumed by the placeholder sprite in Step 7) ---- */
   --mascot-hair: var(--color-charcoal-900);
   --mascot-suit: var(--color-charcoal-900);
