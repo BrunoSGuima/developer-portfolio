@@ -7,20 +7,20 @@ architecture, testing, microfrontends, backend services — instead of just list
 A chibi mascot guides visitors through the site, and a persistent **Fun Fact** banner explains
 the real technology stack behind each section.
 
-> **Status:** Phase 1 (React MVP) — Step 0 complete (toolchain & documentation skeleton).
-> No application code yet.
+> **Status:** Phase 1 (React MVP) — Step 1 complete: the React + TypeScript shell is scaffolded
+> with linting, formatting and tests. No features yet.
 
 ## Roadmap
 
-| Phase | Scope | Status |
-|---|---|---|
-| 1 | React + TypeScript MVP shell, static data, mascot placeholder, Fun Fact, tests | In progress |
-| 2 | Ruby on Rails API + PostgreSQL | Planned |
-| 3 | Vue 3 microfrontend mounted by the React shell | Planned |
-| 4 | Python FastAPI service + interactive quiz | Planned |
-| 5 | Background jobs (Redis + Sidekiq) | Planned |
-| 6 | Production deployment, CI/CD, monitoring | Planned |
-| 7 | AI Lab and future expansion | Planned |
+| Phase | Scope                                                                          | Status      |
+| ----- | ------------------------------------------------------------------------------ | ----------- |
+| 1     | React + TypeScript MVP shell, static data, mascot placeholder, Fun Fact, tests | In progress |
+| 2     | Ruby on Rails API + PostgreSQL                                                 | Planned     |
+| 3     | Vue 3 microfrontend mounted by the React shell                                 | Planned     |
+| 4     | Python FastAPI service + interactive quiz                                      | Planned     |
+| 5     | Background jobs (Redis + Sidekiq)                                              | Planned     |
+| 6     | Production deployment, CI/CD, monitoring                                       | Planned     |
+| 7     | AI Lab and future expansion                                                    | Planned     |
 
 ## Repository layout
 
@@ -33,7 +33,8 @@ docs/adr/    Architecture Decision Records
 docs/assets/ Design references (mascot reference image)
 ```
 
-Only `docs/` exists so far; the other directories are created by the step that needs them.
+Only `apps/shell` and `docs/` exist so far; the other directories are created by the step that
+needs them.
 
 ## Requirements
 
@@ -47,8 +48,15 @@ nvm use
 npm install
 ```
 
-Application scripts (`dev`, `build`, `lint`, `typecheck`, `test`, `test:e2e`) are defined at the
-root and delegate to npm workspaces; they become functional as the workspaces are added.
+```bash
+npm run dev         # shell dev server at http://localhost:5173
+npm run lint        # ESLint (type-aware + accessibility rules)
+npm run typecheck   # TypeScript strict type-check
+npm test            # Vitest + React Testing Library
+npm run build       # production build to apps/shell/dist
+```
+
+Root scripts delegate to npm workspaces. `npm run test:e2e` becomes available in Step 9.
 
 ## Documentation
 

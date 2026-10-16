@@ -17,9 +17,9 @@ Each non-React section exposes a minimal, framework-agnostic ES-module contract:
 
 ```ts
 interface SectionContext {
-  basePath: string;                       // e.g. "/career"
-  navigate(path: string): void;           // cross-section navigation via the shell router
-  emit(event: ShellEvent): void;          // typed events back to the shell
+  basePath: string; // e.g. "/career"
+  navigate(path: string): void; // cross-section navigation via the shell router
+  emit(event: ShellEvent): void; // typed events back to the shell
 }
 
 interface SectionApp {
@@ -42,12 +42,12 @@ interface SectionApp {
 
 ## Alternatives considered
 
-| Option | Why not (for now) |
-|---|---|
-| single-spa | Mature, but adds its own router and lifecycle conventions on top of React Router; overkill for two frameworks. |
+| Option                                 | Why not (for now)                                                                                                                                      |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| single-spa                             | Mature, but adds its own router and lifecycle conventions on top of React Router; overkill for two frameworks.                                         |
 | Web Components (`defineCustomElement`) | Standard, but Shadow DOM complicates shared tokens and fonts, typing of props and events is weaker, and Vue custom elements have caveats with plugins. |
-| Module Federation | Runtime dependency sharing we don't need (React and Vue share nothing); couples build tooling and is fragile across versions. |
-| iframes | Full isolation, but breaks seamless navigation, focus management, history and responsive sizing. |
+| Module Federation                      | Runtime dependency sharing we don't need (React and Vue share nothing); couples build tooling and is fragile across versions.                          |
+| iframes                                | Full isolation, but breaks seamless navigation, focus management, history and responsive sizing.                                                       |
 
 ## Consequences
 

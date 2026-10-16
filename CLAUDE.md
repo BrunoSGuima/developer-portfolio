@@ -11,7 +11,7 @@ but is powered by several independently developed applications. The site is in E
 
 ## Current phase
 
-**Phase 1 — React MVP.** Step 0 (toolchain & docs) is done. The full approved plan and step list
+**Phase 1 — React MVP.** Steps 0 (toolchain & docs) and 1 (shell scaffold) are done. The full approved plan and step list
 lives in `~/.claude/plans/pasted-content-id-6e96-interactive-wiggly-wind.md`.
 
 Phase 1 uses **static data only**. Do not add Rails, Python, PostgreSQL, Redis or Sidekiq until
@@ -63,21 +63,46 @@ their phase.
 
 Run from the repository root (after `nvm use`):
 
-| Command | Purpose |
-|---|---|
-| `npm install` | Install all workspace dependencies |
-| `npm run dev` | Start the shell dev server (from Step 1) |
-| `npm run build` | Build all workspaces |
-| `npm run lint` | Lint all workspaces |
-| `npm run typecheck` | Type-check all workspaces |
-| `npm test` | Unit/component tests in all workspaces |
-| `npm run test:e2e` | Playwright end-to-end tests (from Step 9) |
+| Command                | Purpose                                            |
+| ---------------------- | -------------------------------------------------- |
+| `npm install`          | Install all workspace dependencies                 |
+| `npm run dev`          | Start the shell dev server (http://localhost:5173) |
+| `npm run build`        | Type-check and build all workspaces                |
+| `npm run lint`         | ESLint (type-aware) in all workspaces              |
+| `npm run typecheck`    | `tsc -b` in all workspaces                         |
+| `npm test`             | Vitest unit/component tests in all workspaces      |
+| `npm run format`       | Format the whole repo with Prettier                |
+| `npm run format:check` | Check formatting (no writes)                       |
+| `npm run test:e2e`     | Playwright end-to-end tests (from Step 9)          |
 
-## Workflow
+Inside a workspace (e.g. `apps/shell`): `npm run test:watch` runs Vitest in watch mode.
 
-1. Work in small, approved steps. Explain the objective, decisions and tradeoffs first.
-2. Implement only the approved step — no work from later steps.
-3. Write tests, run them, report results honestly.
-4. Update this file, the README and ADRs when relevant.
-5. **Never commit automatically** — the user reviews and commits.
-6. Suggest the next step.
+### Tooling notes
+
+- `apps/shell` was scaffolded with `create-vite` (react-ts template); the template's oxlint
+  setup was replaced with ESLint as decided in the plan.
+- ESLint 10 flat config (`apps/shell/eslint.config.js`): `typescript-eslint`
+  `recommendedTypeChecked`, `react-hooks`, `react-refresh`, `eslint-plugin-jsx-a11y-x` (the
+  maintained fork of `eslint-plugin-jsx-a11y`, which does not support ESLint 10), and
+  `eslint-config-prettier` last.
+- Vitest config lives in `vite.config.ts` (jsdom environment, `src/test/setup.ts` registers
+  jest-dom matchers). Tests import `describe/it/expect` from `vitest` explicitly (no globals).
+- Prettier config is at the repo root (`.prettierrc.json`) and is shared by all JS workspaces.
+
+## Collaboration rules
+
+The user actively participates in development and reviews every technical decision. Claude is a
+technical partner, not an autonomous implementer. For **each step**:
+
+1. **Explain** what will be implemented and why.
+2. **Present** the main technical decisions and their alternatives/tradeoffs.
+3. **Wait for explicit approval** before starting the step.
+4. Once approved, implement the **entire approved step** (files and tests) without further
+   prompts — and nothing beyond it.
+5. **After implementation:** explain the important code, report test results honestly (including
+   failures), update docs/ADRs when relevant, then **wait for the user's review**.
+
+Hard rules:
+
+- **Never continue automatically to the next step.** Suggest it, then stop.
+- **Never create Git commits** unless the user explicitly asks.
