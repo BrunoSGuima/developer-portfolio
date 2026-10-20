@@ -35,3 +35,12 @@
   background: var(--color-primary);
   color: var(--color-on-primary);
 }
+
+/* Forced colours (e.g. Windows high contrast) drop backgrounds: underline the current language. */
+@media (forced-colors: active) {
+  .link[aria-current='true'] {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.3em;
+  }
+}

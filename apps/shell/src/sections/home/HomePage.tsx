@@ -51,7 +51,7 @@ function HomePage() {
         <h2 id="this-site">{messages.home.thisSite}</h2>
         <p>{pick(home.thisSite, locale)}</p>
         <p className={styles.more}>
-          <Link to={to('/architecture')}>
+          <Link to={to('/architecture')} viewTransition>
             {messages.home.exploreArchitecture} <span aria-hidden="true">→</span>
           </Link>
         </p>

@@ -13,7 +13,8 @@ but is powered by several independently developed applications. The site is in E
 
 **Phase 1 — React MVP.** Steps 0–9 are done (toolchain, shell scaffold, design tokens, registry
 & routing, Fun Fact, portfolio content, microfrontend host, mascot and illustrated Home,
-responsive layout, i18n en + pt-BR). Step 10 (transitions & polish) is next. The roadmap, step
+responsive layout, i18n en + pt-BR). Step 10 (transitions & polish) is implemented and in progress
+until the owner approves the results. The roadmap, step
 list, acceptance criteria and recorded decisions live in **`docs/ROADMAP.md`**
 (version-controlled source of truth; keep it current).
 
@@ -75,7 +76,13 @@ their phase.
   `--color-text-slate` for text.
 - Accessibility is a requirement: semantic landmarks, keyboard navigation, visible focus,
   `prefers-reduced-motion` support, AA contrast. The mascot is decorative
-  (`aria-hidden`, `pointer-events: none`) and must never block content.
+  (`aria-hidden`, `pointer-events: none`) and must never block content. Step 10 audit
+  baseline: 0 axe violations (WCAG 2.2 AA + best practices) in both languages; keep it there.
+- **Page transitions** (ADR-0008): every internal navigation passes React Router's
+  `viewTransition` (links, `ButtonLink`, the language switcher, and `navigate()` calls). Only
+  the region between header and footer crossfades (`view-transition-name: page`); the header
+  and its walking mascot never animate. New motion must use the duration tokens
+  (`--duration-fast`, `--duration-base`; 0ms under reduced motion) and never move layout.
 - **Truthfulness:** the Fun Fact and Architecture page must only describe what is actually
   implemented. Planned components are marked `planned`.
 - **Writing Fun Facts:** describe only what exists at the end of the current step; put future
@@ -208,6 +215,7 @@ Run from the repository root (after `nvm use`):
 | `npm run format:check`                | Check formatting (no writes)                          |
 | `npm run content:todo`                | List content placeholders still awaiting confirmation |
 | `npm run illustrations -w apps/shell` | Rebuild WebP derivatives from `docs/assets/source/`   |
+| `npm run favicon -w apps/shell`       | Rebuild the favicons (mascot head crop) in `public/`  |
 | `npm run test:e2e`                    | Playwright end-to-end tests (from Step 11)            |
 
 Inside a workspace (e.g. `apps/shell`): `npm run test:watch` runs Vitest in watch mode.

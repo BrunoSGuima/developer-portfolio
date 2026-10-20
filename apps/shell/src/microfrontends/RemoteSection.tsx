@@ -58,7 +58,8 @@ function RemoteSection({ load, basePath, locale = DEFAULT_LOCALE, onEvent }: Rem
       basePath,
       locale: localeConfig[locale].htmlLang,
       // Paths are language-neutral for the app: the shell keeps the visitor's language.
-      navigate: (to) => void navigateRef.current(localizePath(stripLocale(to), locale)),
+      navigate: (to) =>
+        void navigateRef.current(localizePath(stripLocale(to), locale), { viewTransition: true }),
       emit: (event) => onEventRef.current?.(event),
     };
 

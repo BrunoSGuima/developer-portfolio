@@ -38,6 +38,19 @@
   display: none;
 }
 
+/* Small screens: the panel fades in (no movement; instant with reduced motion via the token). */
+@media (max-width: 47.99rem) {
+  .panel[data-open='true'] {
+    animation: panel-in var(--duration-fast) var(--ease-out);
+  }
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+  }
+}
+
 .list {
   display: flex;
   flex-direction: column;

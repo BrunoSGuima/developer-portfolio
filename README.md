@@ -9,7 +9,7 @@ the real technology stack behind each section.
 
 > **Status:** Phase 1 (React MVP) — Steps 0–9 complete (shell, routing, Fun Fact, content,
 > microfrontend host, illustrated Home and mascot, responsive layout, English and Brazilian
-> Portuguese under `/pt-br`). Step 10 (transitions & polish) is next. See
+> Portuguese under `/pt-br`). Step 10 (transitions & polish) is in progress. See
 > [`docs/ROADMAP.md`](./docs/ROADMAP.md).
 
 ## Roadmap

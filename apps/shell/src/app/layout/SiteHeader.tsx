@@ -26,7 +26,7 @@ function SiteHeader({ lane }: SiteHeaderProps) {
     <header className={styles.header}>
       <div className={`container ${styles.inner}`}>
         {lane}
-        <Link to={localizePath('/', locale)} className={styles.brand}>
+        <Link to={localizePath('/', locale)} className={styles.brand} viewTransition>
           <span className={styles.name}>{profile.fullName}</span>{' '}
           <span className={styles.role}>{pick(profile.role, locale)}</span>
         </Link>

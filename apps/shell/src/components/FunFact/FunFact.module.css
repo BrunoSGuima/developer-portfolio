@@ -32,6 +32,12 @@
   animation: fade-in var(--duration-base) var(--ease-out);
 }
 
+/* During a page transition the region already crossfades (ADR-0008): don't fade twice. Browsers
+   without view transitions keep this fade. */
+:global(:root:active-view-transition) .content {
+  animation: none;
+}
+
 .label {
   font-size: var(--text-lg);
 }

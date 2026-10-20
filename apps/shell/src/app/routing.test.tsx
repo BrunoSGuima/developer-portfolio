@@ -234,7 +234,8 @@ describe('remote sections in the shell', () => {
     await user.click(await screen.findByRole('button', { name: 'Go to About' }));
 
     expect(await screen.findByRole('heading', { level: 1, name: 'About' })).toBeInTheDocument();
-    expect(stats.unmounts).toBe(1);
+    // The app is unmounted in an effect cleanup, which can land just after the new page renders.
+    await waitFor(() => expect(stats.unmounts).toBe(1));
     expect(fakeViews()).toHaveLength(0);
   });
 

@@ -11,7 +11,7 @@ interface ButtonLinkProps {
 /** An internal navigation link styled as a button (it navigates, so it stays a link). */
 function ButtonLink({ to, variant = 'primary', children }: ButtonLinkProps) {
   return (
-    <Link to={to} className={styles.button} data-variant={variant}>
+    <Link to={to} className={styles.button} data-variant={variant} viewTransition>
       {children}
     </Link>
   );

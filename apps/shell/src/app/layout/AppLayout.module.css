@@ -32,6 +32,8 @@
   isolation: isolate;
   overflow-x: clip;
   container-type: inline-size;
+  /* Page transitions crossfade this region only; the header and footer stay put (global.css). */
+  view-transition-name: page;
 }
 
 /* Positioned: on Home (≥ 64rem) the Fun Fact stage is placed over the right of the hero. */

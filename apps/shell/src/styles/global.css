@@ -75,6 +75,43 @@ a {
   }
 }
 
+/*
+ * Page transitions (ADR-0008). Internal links navigate with React Router's `viewTransition`, so
+ * supporting browsers crossfade the page region between the header and the footer
+ * (`view-transition-name: page` in AppLayout). The rest of the document (the header, its
+ * walking mascot, the footer) is the root snapshot: not animated, so it stays live and still.
+ * Browsers without the API swap instantly, as before. Reduced motion: the duration tokens are
+ * 0ms, and the rule below removes the animations outright.
+ */
+::view-transition-group(root),
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+::view-transition-group(page) {
+  animation-duration: var(--duration-base);
+  animation-timing-function: var(--ease-out);
+}
+
+::view-transition-old(page) {
+  animation-duration: var(--duration-fast);
+  animation-timing-function: var(--ease-out);
+}
+
+::view-transition-new(page) {
+  animation-duration: var(--duration-base);
+  animation-timing-function: var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
 /* Centred content column with responsive side gutters. */
 .container {
   width: min(100% - 2 * var(--gutter), var(--content-max));

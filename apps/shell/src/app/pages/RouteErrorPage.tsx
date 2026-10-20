@@ -1,3 +1,4 @@
+import buttonStyles from '../../components/ButtonLink/ButtonLink.module.css';
 import { useMessages } from '../../i18n/context.ts';
 
 /** Rendered inside the shell when a section fails to load or render. */
@@ -9,7 +10,12 @@ function RouteErrorPage() {
       <h1>{messages.error.title}</h1>
       <p>{messages.error.text}</p>
       <p>
-        <button type="button" onClick={() => window.location.reload()}>
+        <button
+          type="button"
+          className={buttonStyles.button}
+          data-variant="primary"
+          onClick={() => window.location.reload()}
+        >
           {messages.error.reload}
         </button>
       </p>

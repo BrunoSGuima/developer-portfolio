@@ -1,3 +1,4 @@
+/* Also used by real <button>s that should look like the site's buttons (e.g. the error page). */
 .button {
   display: inline-flex;
   align-items: center;

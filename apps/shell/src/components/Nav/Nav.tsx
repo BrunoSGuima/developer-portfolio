@@ -81,6 +81,7 @@ function Nav({ items, panelFooter }: NavProps) {
               <NavLink
                 to={item.to}
                 end={item.end ?? false}
+                viewTransition
                 // CSS module keys are typed `string | undefined`; NavLink's className rejects undefined.
                 className={styles.link ?? ''}
                 onClick={close}

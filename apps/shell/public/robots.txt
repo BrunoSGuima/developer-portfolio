@@ -1,0 +1,3 @@
+# The whole portfolio may be crawled. (A sitemap is added once the public domain is known.)
+User-agent: *
+Allow: /

@@ -1,4 +1,4 @@
-import { act, screen, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { localizePath } from '../i18n/locales.ts';
 import { messages } from '../i18n/messages/index.ts';
@@ -111,7 +111,8 @@ describe('switching languages', () => {
     const heading = await screen.findByRole('heading', { level: 1, name: 'Sobre' });
     expect(router.state.location.pathname).toBe('/pt-br/about');
     expect(screen.getByRole('banner')).toBe(header);
-    expect(heading).toHaveFocus();
+    // Focus moves in an effect after the new page renders.
+    await waitFor(() => expect(heading).toHaveFocus());
     expect(document.documentElement.lang).toBe('pt-BR');
     // The panel closed with the navigation; both switchers (panel and header) mark Portuguese.
     for (const link of screen.getAllByRole('link', { name: /^PT —/, hidden: true })) {

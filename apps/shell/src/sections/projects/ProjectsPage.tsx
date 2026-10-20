@@ -18,7 +18,9 @@ function ProjectsPage() {
       lead={
         <>
           {messages.projects.leadBeforeLink}{' '}
-          <Link to={to('/about')}>{messages.projects.leadLink}</Link>
+          <Link to={to('/about')} viewTransition>
+            {messages.projects.leadLink}
+          </Link>
           {messages.projects.leadAfterLink}
         </>
       }

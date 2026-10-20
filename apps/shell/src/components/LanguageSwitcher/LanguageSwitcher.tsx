@@ -5,8 +5,9 @@ import styles from './LanguageSwitcher.module.css';
 
 /**
  * EN / PT links to the same page in each language (ADR-0007). They are real links, so they
- * work like any navigation (no reload, back/forward, open in new tab) and can be crawled.
- * The scroll position is kept; focus moves to the new page's heading like on any navigation.
+ * work like any navigation (no reload, back/forward, open in new tab, the page crossfade) and
+ * can be crawled. The scroll position is kept; focus moves to the new page's heading like on
+ * any navigation.
  *
  * Each link is marked with its own language, so its name ("PT — Português (Brasil)") is
  * pronounced correctly, and its name starts with the visible label (WCAG 2.5.3).
@@ -31,6 +32,7 @@ function LanguageSwitcher() {
                 aria-label={`${short} — ${name}`}
                 aria-current={target === locale ? 'true' : undefined}
                 preventScrollReset
+                viewTransition
               >
                 {short}
               </Link>

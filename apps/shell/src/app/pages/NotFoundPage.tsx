@@ -10,7 +10,9 @@ function NotFoundPage() {
       <h1>{messages.notFound.title}</h1>
       <p>{messages.notFound.text}</p>
       <p>
-        <Link to={to('/')}>{messages.notFound.home}</Link>
+        <Link to={to('/')} viewTransition>
+          {messages.notFound.home}
+        </Link>
       </p>
     </>
   );
