@@ -2,6 +2,7 @@ import { act, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { liveSections, type Section, shellFunFact } from '../sections/registry.ts';
 import { deferred, settle } from '../test/deferred.ts';
+import { setMedia } from '../test/media.ts';
 import { createFakeSectionApp } from '../test/fakeSectionApp.ts';
 import { renderRoute } from '../test/renderRoute.tsx';
 
@@ -310,5 +311,96 @@ describe('remote section errors reach the route error boundary', () => {
     renderWithRemote('/remote', () => Promise.resolve({ mount: () => undefined }));
 
     await expectErrorPageInsideShell();
+  });
+});
+
+describe('mascot compositions', () => {
+  const composition = () =>
+    document.querySelector('[data-composition]')?.getAttribute('data-composition');
+  const funFactMascots = () => document.querySelectorAll('[data-mascot="fun-fact"]');
+  const headerMascot = () => document.querySelector<HTMLElement>('[data-mascot="header"]');
+
+  it.each([
+    ['/', 'hero'],
+    ['/about', 'peek'],
+    ['/projects', 'peek'],
+    ['/architecture', 'peek'],
+    ['/contact', 'peek'],
+    ['/does-not-exist', 'peek'],
+  ])('%s shows the Fun Fact mascot in the %s composition', async (path, expected) => {
+    renderRoute(path);
+    await screen.findByRole('heading', { level: 1 });
+
+    expect(composition()).toBe(expected);
+    expect(funFactMascots()).toHaveLength(1);
+  });
+
+  it('switches composition between pages while the Fun Fact card stays the same element', async () => {
+    const { router } = renderRoute('/');
+    await screen.findByRole('heading', { level: 1 });
+    const aside = funFact();
+    expect(composition()).toBe('hero');
+
+    await act(() => router.navigate('/about'));
+    await screen.findByRole('heading', { level: 1, name: 'About' });
+    expect(composition()).toBe('peek');
+    expect(funFact()).toBe(aside);
+
+    await act(() => router.navigate('/'));
+    await screen.findByRole('heading', { level: 1, name: "Hi, I'm Bruno." });
+    expect(composition()).toBe('hero');
+    expect(funFact()).toBe(aside);
+  });
+
+  it('shows both independent mascots on desktop; only the header one ever moves', async () => {
+    const { router } = renderRoute('/');
+    await screen.findByRole('heading', { level: 1 });
+    expect(headerMascot()).not.toBeNull();
+
+    await act(() => router.navigate('/about'));
+    await screen.findByRole('heading', { level: 1, name: 'About' });
+
+    expect(headerMascot()).not.toBeNull();
+    expect(funFactMascots()).toHaveLength(1);
+    const funFactMascot = funFactMascots()[0] as HTMLElement;
+    expect(funFactMascot).toHaveAttribute('data-pose', 'peeking');
+    // Stationary: no positioning transform on the Fun Fact mascot or its slot.
+    expect(funFactMascot.style.transform).toBe('');
+    expect(funFactMascot.parentElement?.style.transform).toBe('');
+  });
+
+  it('keeps the Fun Fact mascot on small screens, without the header mascot', async () => {
+    setMedia({ desktop: false });
+    renderRoute('/about');
+    await screen.findByRole('heading', { level: 1 });
+
+    expect(headerMascot()).toBeNull();
+    expect(composition()).toBe('peek');
+    expect(funFactMascots()).toHaveLength(1);
+  });
+
+  it('shows the illustrated backdrop on Home only', async () => {
+    const backdrop = () => document.querySelector('[data-slot="backdrop"]');
+    const { router } = renderRoute('/');
+    await screen.findByRole('heading', { level: 1 });
+    expect(backdrop()).not.toBeNull();
+
+    await act(() => router.navigate('/about'));
+    await screen.findByRole('heading', { level: 1, name: 'About' });
+    expect(backdrop()).toBeNull();
+  });
+
+  it.each([
+    ['/', 'stacked'],
+    ['/about', 'aside'],
+    ['/projects', 'intro'],
+    ['/architecture', 'intro'],
+    ['/contact', 'aside'],
+    ['/does-not-exist', 'stacked'],
+  ])('%s places the Fun Fact %s', async (path, expected) => {
+    renderRoute(path);
+    await screen.findByRole('heading', { level: 1 });
+
+    expect(document.querySelector('[data-context]')).toHaveAttribute('data-context', expected);
   });
 });

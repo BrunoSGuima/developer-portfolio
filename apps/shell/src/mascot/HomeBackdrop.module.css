@@ -1,0 +1,58 @@
+/* Full-bleed, behind everything in the hero region; height = the measured hero (see AppLayout). */
+.backdrop {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: 0;
+  height: calc(var(--home-hero-bottom, var(--home-backdrop-fallback)) + var(--space-8));
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* Never stretched: cover, anchored to the bottom so the desk the mascot stands on stays. */
+  object-fit: cover;
+  object-position: 50% 100%;
+}
+
+/* Fades the artwork into the page below the hero, so the composition doesn't end in a hard edge. */
+.backdrop::after {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: var(--space-8);
+  background: linear-gradient(to bottom, transparent, var(--color-bg));
+  content: '';
+}
+
+/* Desktop: the text column is on the left, so the veil fades from the left (text) to clear. */
+.scrim {
+  position: absolute;
+  inset: 0;
+}
+
+/*
+ * Desktop: the text column is on the left. The veil keeps full strength until 1rem past the
+ * column's right edge, then fades out over the illustration. The edge is computed from the
+ * container (centred, max --content-max), so it tracks the column on any screen width.
+ */
+@media (min-width: 64rem) {
+  .scrim {
+    --container: min(100% - 2 * var(--gutter), var(--content-max));
+    /* The text column's right edge (+1rem): 44% of the container, capped like the hero. */
+    --text-edge: calc(
+      (100% - var(--container)) / 2 +
+        min(var(--container) * var(--home-hero-text-ratio), var(--home-hero-text-max) + 1rem)
+    );
+
+    background: linear-gradient(
+      to right,
+      var(--hero-scrim) 0,
+      var(--hero-scrim) calc(var(--text-edge) + 1rem),
+      transparent calc(var(--text-edge) + 12rem)
+    );
+  }
+}

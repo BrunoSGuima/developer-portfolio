@@ -110,3 +110,23 @@ describe('Fun Fact truthfulness', () => {
     }
   });
 });
+
+describe('Fun Fact placement per page', () => {
+  it('uses only the allowed placements', () => {
+    for (const section of sections) {
+      expect([undefined, 'stacked', 'aside', 'intro']).toContain(section.contextPlacement);
+    }
+  });
+
+  it('puts the Fun Fact in a side column on About and Contact only (for now)', () => {
+    const aside = sections.filter((section) => section.contextPlacement === 'aside');
+
+    expect(aside.map((section) => section.id).sort()).toEqual(['about', 'contact']);
+  });
+
+  it('puts the Fun Fact beside the intro on Projects and Architecture', () => {
+    const intro = sections.filter((section) => section.contextPlacement === 'intro');
+
+    expect(intro.map((section) => section.id).sort()).toEqual(['architecture', 'projects']);
+  });
+});

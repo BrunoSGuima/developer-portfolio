@@ -64,6 +64,12 @@ export interface Section {
   status: SectionStatus;
   mount: SectionMount;
   funFact: FunFact;
+  /**
+   * Where the Fun Fact sits on this page from 64rem: 'aside' puts it in a right-hand column so
+   * the content starts near the top; 'intro' puts it beside the page's intro, with the content
+   * full width below (the page must render `PageIntro`). Defaults to 'stacked' (above).
+   */
+  contextPlacement?: 'stacked' | 'aside' | 'intro';
 }
 
 export const sections: readonly Section[] = [
@@ -89,6 +95,7 @@ export const sections: readonly Section[] = [
     framework: 'react',
     backend: 'none',
     status: 'live',
+    contextPlacement: 'aside',
     mount: { kind: 'react', load: () => import('./about/AboutPage.tsx') },
     funFact: {
       text: 'This section is a React component loaded on demand. Your browser only downloaded its code when you opened it.',
@@ -109,6 +116,7 @@ export const sections: readonly Section[] = [
       tech: ['react', 'typescript'],
       plannedTech: ['rails'],
     },
+    contextPlacement: 'intro',
   },
   {
     id: 'architecture',
@@ -124,6 +132,7 @@ export const sections: readonly Section[] = [
       tech: ['react', 'react-router', 'vite'],
       plannedTech: ['vue'],
     },
+    contextPlacement: 'intro',
   },
   {
     id: 'contact',
@@ -133,6 +142,7 @@ export const sections: readonly Section[] = [
     framework: 'react',
     backend: 'none',
     status: 'live',
+    contextPlacement: 'aside',
     mount: { kind: 'react', load: () => import('./contact/ContactPage.tsx') },
     funFact: {
       text: 'No contact form here: this site has no backend yet, so this page simply links to ways to reach me, and nothing you type is collected.',

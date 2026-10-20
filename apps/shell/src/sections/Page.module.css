@@ -1,5 +1,7 @@
 /* Layout patterns shared by the section pages. */
+/* Every page intro: a wider (still comfortable) line length than body text, --measure-lead. */
 .lead {
+  max-width: var(--measure-lead);
   margin-block-start: var(--space-4);
   color: var(--color-text-muted);
   font-size: var(--text-lg);
@@ -13,11 +15,15 @@
   margin-block-end: var(--space-4);
 }
 
-.cardGrid {
+.cardGrid,
+.cardGridFit {
   display: grid;
-  gap: var(--space-4);
   padding: 0;
   list-style: none;
+}
+
+.cardGrid {
+  gap: var(--space-4);
 }
 
 @media (min-width: 48rem) {
@@ -26,11 +32,46 @@
   }
 }
 
+/*
+ * Sized by the space it actually has (e.g. a column beside the Fun Fact), not the viewport.
+ * Tune per list with custom properties:
+ *   --grid-min  smallest comfortable item width (default 16rem);
+ *   --grid-cols most columns allowed (default 2): a column is never narrower than 1/cols;
+ *   --grid-max  widest an item may get (default: its track), so a lone item never stretches;
+ *   --grid-gap  the gap (default --space-4).
+ * auto-fill (not auto-fit) keeps empty tracks, so a short list keeps normal item widths.
+ */
+.cardGridFit {
+  --_gap: var(--grid-gap, var(--space-4));
+  --_cols: var(--grid-cols, 2);
+
+  gap: var(--_gap);
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(
+      min(
+        100%,
+        max(var(--grid-min, 16rem), (100% - (var(--_cols) - 1) * var(--_gap)) / var(--_cols))
+      ),
+      1fr
+    )
+  );
+}
+
+.cardGridFit > * {
+  max-width: var(--grid-max, none);
+}
+
 .card {
   padding: var(--space-5);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
   box-shadow: var(--shadow-sm);
+}
+
+/* Denser cards for narrower columns; same typography. */
+.cardCompact {
+  padding: var(--space-4);
 }
 
 .card > h3 {

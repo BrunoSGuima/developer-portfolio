@@ -1,6 +1,6 @@
 .layout {
   display: grid;
-  grid-template-rows: auto auto 1fr auto;
+  grid-template-rows: auto 1fr auto;
   min-height: 100vh;
   min-height: 100dvh;
 }
@@ -22,6 +22,90 @@
   transform: none;
 }
 
+/*
+ * Own stacking context; the backdrop (z 0) sits behind the Fun Fact and the page (z 1).
+ * An inline-size container, so the Home stage can measure the free space beside the centred
+ * container in cqi units (which, unlike vw, exclude the scrollbar).
+ */
+.region {
+  position: relative;
+  isolation: isolate;
+  overflow-x: clip;
+  container-type: inline-size;
+}
+
+/* Positioned: on Home (≥ 64rem) the Fun Fact stage is placed over the right of the hero. */
+.contextRow,
 .main {
-  padding-block: var(--space-7) var(--space-9);
+  position: relative;
+  z-index: 1;
+}
+
+.main {
+  padding-block: var(--page-top-space) var(--space-9);
+}
+
+/*
+ * Aside layout (sections that opt in, ≥ 64rem): page content on the left, the Fun Fact in a
+ * right-hand column, both starting on the same line below the navbar. DOM order is unchanged
+ * (Fun Fact first), so reading and focus order stay the same. Nothing here clips vertically,
+ * so the peeking mascot's head and its pop-up are never cut off.
+ */
+@media (min-width: 64rem) {
+  .columns[data-context='aside'] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--aside-width);
+    column-gap: var(--space-8);
+    align-items: start;
+  }
+
+  .columns[data-context='aside'] .main {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  .columns[data-context='aside'] .contextRow {
+    grid-row: 1;
+    grid-column: 2;
+    padding-block-start: var(--page-top-space);
+  }
+
+  /*
+   * Intro layout (sections that opt in and render PageIntro): the intro (heading + lead) on the
+   * left with the Fun Fact beside it, then the page body across the full width below both.
+   * <main> is a subgrid spanning both columns and rows, so its intro and the Fun Fact share row
+   * 1 (as tall as the taller of the two) and the body always starts below them. The Fun Fact
+   * column gets the same top spacing as <main>, so both start on one line below the navbar.
+   */
+  .columns[data-context='intro'] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--aside-width);
+    grid-template-rows: auto auto;
+    column-gap: var(--space-8);
+    align-items: start;
+  }
+
+  .columns[data-context='intro'] .main {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+    grid-row: 1 / span 2;
+    grid-column: 1 / -1;
+  }
+
+  .columns[data-context='intro'] .contextRow {
+    grid-row: 1;
+    grid-column: 2;
+    padding-block-start: var(--page-top-space);
+  }
+
+  .columns[data-context='intro'] [data-slot='page-intro'] {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  .columns[data-context='intro'] [data-slot='page-body'] {
+    grid-row: 2;
+    grid-column: 1 / -1;
+  }
 }

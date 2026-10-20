@@ -2,6 +2,7 @@
 
 export const profile = {
   name: 'Bruno Guimarães',
+  fullName: 'Bruno Soares Guimarães',
   firstName: 'Bruno',
   role: 'Full-Stack Software Engineer',
   location: 'Salvador, Brazil',
@@ -9,7 +10,7 @@ export const profile = {
 };
 
 export const home = {
-  lead: 'Full-Stack Software Engineer building production web applications with Ruby on Rails, React and Vue.js since 2023. Currently expanding into Python and AI engineering.',
+  lead: 'Full-Stack Software Engineer building production web applications with Ruby on Rails, React and Vue.js. Currently expanding into Python and AI engineering.',
   whatIDo: [
     {
       title: 'Full-stack product work',

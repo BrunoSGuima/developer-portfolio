@@ -8,6 +8,11 @@
   list-style: none;
 }
 
+/* With page.cardGridFit: two columns of jobs when each can be ≥ 26rem (wide screens). */
+.timeline {
+  --grid-min: 26rem;
+}
+
 .job {
   padding-inline-start: var(--space-4);
   border-inline-start: 3px solid var(--color-accent);

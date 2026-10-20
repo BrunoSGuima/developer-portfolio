@@ -12,8 +12,8 @@ function AboutPage() {
       <p className={page.lead}>{about.lead}</p>
 
       <section className={page.section} aria-labelledby="experience">
-        <h2 id="experience">Experience at a glance</h2>
-        <ol className={styles.timeline}>
+        <h2 id="experience">Experience</h2>
+        <ol className={`${page.cardGridFit} ${styles.timeline}`}>
           {experience.map((job) => (
             <li key={`${job.company}-${job.start}`}>
               <article className={styles.job} aria-label={`${job.role}, ${job.company}`}>

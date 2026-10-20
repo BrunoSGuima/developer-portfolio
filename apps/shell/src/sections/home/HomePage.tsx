@@ -7,28 +7,34 @@ import styles from './HomePage.module.css';
 function HomePage() {
   return (
     <>
-      <h1>Hi, I&apos;m Bruno.</h1>
-      <p className={page.lead}>{home.lead}</p>
-      <div className={styles.actions}>
-        <ButtonLink to="/projects">
-          View Projects <span aria-hidden="true">→</span>
-        </ButtonLink>
-        <ButtonLink to="/about" variant="secondary">
-          About Me
-        </ButtonLink>
-      </div>
+      {/* The hero and "What I do" share one grid from 64rem (see .top). */}
+      <div className={styles.top}>
+        {/* From 64rem up, the shell's Fun Fact scene sits to the right of this block. */}
+        <div className={styles.hero} data-slot="hero">
+          <h1>Hi, I&apos;m Bruno.</h1>
+          <p className={page.lead}>{home.lead}</p>
+          <div className={styles.actions}>
+            <ButtonLink to="/projects">
+              View Projects <span aria-hidden="true">→</span>
+            </ButtonLink>
+            <ButtonLink to="/about" variant="secondary">
+              About Me
+            </ButtonLink>
+          </div>
+        </div>
 
-      <section className={page.section} aria-labelledby="what-i-do">
-        <h2 id="what-i-do">What I do</h2>
-        <ul className={`${page.cardGrid} ${styles.threeUp}`}>
-          {home.whatIDo.map((item) => (
-            <li key={item.title} className={page.card}>
-              <h3>{item.title}</h3>
-              <p>{item.text}</p>
-            </li>
-          ))}
-        </ul>
-      </section>
+        <section className={`${page.section} ${styles.whatIDo}`} aria-labelledby="what-i-do">
+          <h2 id="what-i-do">What I do</h2>
+          <ul className={`${page.cardGrid} ${styles.threeUp}`}>
+            {home.whatIDo.map((item) => (
+              <li key={item.title} className={page.card}>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
 
       <section className={page.section} aria-labelledby="now-learning">
         <h2 id="now-learning">Now learning</h2>

@@ -11,10 +11,12 @@ but is powered by several independently developed applications. The site is in E
 
 ## Current phase
 
-**Phase 1 — React MVP.** Steps 0 (toolchain & docs), 1 (shell scaffold), 2 (design tokens &
-layout), 3 (section registry & routing), 4 (Fun Fact + TechBadge), 5 (portfolio content) and 6
-(microfrontend host) are done. The full approved plan and step list
-lives in `~/.claude/plans/pasted-content-id-6e96-interactive-wiggly-wind.md`.
+**Phase 1 — React MVP.** Steps 0–7 are done (toolchain, shell scaffold, design tokens, registry
+& routing, Fun Fact, portfolio content, microfrontend host, mascot and illustrated Home). Step 8
+(responsive layout & screen-space optimisation) is implemented and awaiting the owner's visual
+review; Step 9 (i18n, en + pt-BR) is next. The roadmap, step list, acceptance criteria and
+recorded decisions live in **`docs/ROADMAP.md`** (version-controlled source of truth; keep it
+current).
 
 Phase 1 uses **static data only**. Do not add Rails, Python, PostgreSQL, Redis or Sidekiq until
 their phase.
@@ -79,9 +81,59 @@ their phase.
   `apps/shell/public/Bruno_Guimaraes_Resume.pdf` (explicit `.gitignore` exception). Before
   replacing it, check the new PDF's text **and metadata** for a phone number.
 - **Placeholders:** unconfirmed copy is `todo('…')` (renders a "To confirm" chip, never a link).
-  `npm run content:todo` lists pending ones. Step 10 makes "no placeholders" a deploy gate.
-- Mascot: preserve the reference character's identity (`docs/assets/mascot-reference.png`).
-  Art is isolated behind an asset map so final assets can be dropped in.
+  `npm run content:todo` lists pending ones. Step 12 makes "no placeholders" a deploy gate.
+- **Mascot** (ADR-0005, `apps/shell/src/mascot/`): decorative only (`aria-hidden`,
+  `pointer-events: none`, never focusable, never covers content). A pure state machine
+  (`machine.ts`) plus CSS transitions. **Two independent instances**, sharing only the art:
+  the navigation mascot (`HeaderMascot`, ≥ 48rem, placeholder SVG) walks above the menu only
+  when the **active section** changes; the stationary Fun Fact mascot (`FunFactStage` +
+  `FunFactMascot`, all widths) uses the **approved raster illustrations**: it presents the card
+  in the Home hero (`docs/assets/homepage.png`) and peeks over it elsewhere, with its fingertips
+  drawn in front of the card (`docs/assets/funfact.png`). The card is always the top layer.
+  Never redraw approved art with SVG/CSS shapes.
+- **Home hero:** the shell renders one full-bleed backdrop (`HomeBackdrop`: A1/A2 + scrim)
+  behind the Fun Fact and the page hero; `useHeroExtent` sizes it to the real hero
+  (`[data-slot="hero"]`). HomePage and the stage share `--home-hero-text-ratio` and
+  `--home-stage-height`; change them together. Hero text uses `--color-text` (the muted grey
+  fails contrast over artwork; measured ≥ 4.9:1 with the scrim). From 64rem the hero and "What
+  I do" share one grid (`.top` in `HomePage.module.css`): hero, then the heading (a flexible
+  row), then the cards; the section is a subgrid and a spacer spanning rows 1–2
+  (`--home-stage-height` + `--space-3`) keeps the cards below the stage. The presenting mascot's
+  height and left offset are tied to `--home-stage-height` so its fingertip stays under the card
+  (see the comment in `FunFactStage.module.css`); change them together. No fixed hero height:
+  if the hero wraps, the heading and cards move down. The stage extends right by
+  `--home-stage-shift` (up to 4rem of the free space beside the container, always leaving
+  `--space-4`; measured in `cqi` against the hero region, an inline-size container).
+- **Page layout:** `AppLayout` wraps the Fun Fact row and `<main>` in one centred `.columns`
+  container. A section's optional `contextPlacement` (registry) chooses `'stacked'` (default:
+  Fun Fact above the content), `'aside'` (from 64rem: content left, Fun Fact in a
+  `--aside-width` right column) or `'intro'` (from 64rem: the page's intro left with the Fun
+  Fact beside it, the body full width below both; `<main>` is a subgrid). `'intro'` pages
+  render `components/PageIntro` (`title`, `lead`, optional `column`, body as children), which
+  provides the `page-intro` / `page-body` slots; `column` content stays in the left column
+  beside the Fun Fact (Architecture puts "How it's built today" there, like About's layout),
+  and the body is full width for later sections and diagrams. For cards, use
+  `page.cardGridFit` (container-sized, `auto-fill`; tune per list with `--grid-min`,
+  `--grid-cols`, `--grid-max`, `--grid-gap`) and `page.cardCompact`.
+  Everything starts at `--page-top-space` below the navbar. Currently `'aside'`: About and
+  Contact; `'intro'`: Projects and Architecture. Home is always stacked.
+- **Responsive layout** (ADR-0006): `--content-max` is fluid (72rem up to a 1280px viewport,
+  at most 96rem); paragraphs keep `--measure`. Wider screens add columns, not longer lines.
+  Prefer container-sized grids over new viewport breakpoints. The Home stage and hero text
+  column are capped at their 72rem sizes (`--home-stage-max`, `--home-hero-text-max`) so the
+  tuned composition never drifts; from 64rem the Fun Fact card is placed from the third "What I
+  do" card (`--home-card-width`, tied to that grid's gap and the container formula), then the
+  whole stage is nudged left by `--home-stage-nudge` (2.5rem) for visual balance; between
+  64rem and 80rem the stage flows (mascot below the card) and the spacer follows its measured
+  height (`--home-stage-block`, set by `useHeroExtent`). Page
+  intros (`page.lead`) share `--measure-lead` (75ch); body text keeps `--measure` (65ch). Verify layout changes in a real browser (jsdom can't lay out).
+- **Illustrations:** sources in `docs/assets/source/` are never modified. `npm run illustrations
+-w apps/shell` (dev dependency `sharp`) writes WebP derivatives + `manifest.json` to
+  `apps/shell/src/assets/illustrations/` (committed). Components read dimensions from the
+  manifest. See `docs/assets/ART-BRIEF.md` §8.
+- **Final mascot art:** add the new art components (same props, drawn facing right) and point
+  `mascotAssets` in `mascot/assets.ts` at them; set `isPlaceholderArt = false` and update the
+  Architecture "Mascot guide" wording. Nothing else changes.
 - Significant decisions get an ADR in `docs/adr/` (copy `0000-template.md`).
 - No secrets in the repo. `.env*` files are git-ignored (except `.env.example`).
 
@@ -104,6 +156,8 @@ before the app uses its own router.
 ## Testing
 
 - React: Vitest + React Testing Library (query by role/label, not implementation details).
+  `window.matchMedia` is mocked in `src/test/media.ts` (default: desktop, motion allowed; use
+  `setMedia()`). Mascot tests stub `getBoundingClientRect` and use fake `setTimeout` only.
   Route-level tests use `renderRoute(path)` (`apps/shell/src/test/renderRoute.tsx`), which renders
   the real route tree in a memory router; components using `Link`/`NavLink` need a
   `MemoryRouter` wrapper. jsdom has no media queries, so the nav renders collapsed (mobile).
@@ -117,18 +171,19 @@ before the app uses its own router.
 
 Run from the repository root (after `nvm use`):
 
-| Command                | Purpose                                               |
-| ---------------------- | ----------------------------------------------------- |
-| `npm install`          | Install all workspace dependencies                    |
-| `npm run dev`          | Start the shell dev server (http://localhost:5173)    |
-| `npm run build`        | Type-check and build all workspaces                   |
-| `npm run lint`         | ESLint (type-aware) in all workspaces                 |
-| `npm run typecheck`    | `tsc -b` in all workspaces                            |
-| `npm test`             | Vitest unit/component tests in all workspaces         |
-| `npm run format`       | Format the whole repo with Prettier                   |
-| `npm run format:check` | Check formatting (no writes)                          |
-| `npm run content:todo` | List content placeholders still awaiting confirmation |
-| `npm run test:e2e`     | Playwright end-to-end tests (from Step 9)             |
+| Command                               | Purpose                                               |
+| ------------------------------------- | ----------------------------------------------------- |
+| `npm install`                         | Install all workspace dependencies                    |
+| `npm run dev`                         | Start the shell dev server (http://localhost:5173)    |
+| `npm run build`                       | Type-check and build all workspaces                   |
+| `npm run lint`                        | ESLint (type-aware) in all workspaces                 |
+| `npm run typecheck`                   | `tsc -b` in all workspaces                            |
+| `npm test`                            | Vitest unit/component tests in all workspaces         |
+| `npm run format`                      | Format the whole repo with Prettier                   |
+| `npm run format:check`                | Check formatting (no writes)                          |
+| `npm run content:todo`                | List content placeholders still awaiting confirmation |
+| `npm run illustrations -w apps/shell` | Rebuild WebP derivatives from `docs/assets/source/`   |
+| `npm run test:e2e`                    | Playwright end-to-end tests (from Step 11)            |
 
 Inside a workspace (e.g. `apps/shell`): `npm run test:watch` runs Vitest in watch mode.
 

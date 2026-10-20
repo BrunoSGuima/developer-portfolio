@@ -3,6 +3,7 @@
  * anchored to the nearest positioned ancestor (the site header), spanning its full width.
  */
 .nav {
+  flex: none; /* never squeezed by the brand */
   display: flex;
   justify-content: flex-end;
 }

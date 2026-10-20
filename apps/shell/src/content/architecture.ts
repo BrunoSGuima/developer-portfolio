@@ -10,6 +10,7 @@ export interface ArchitectureComponent {
   status: Status;
 }
 
+// Order matters on the page: neighbours in the two-column grid have similar amounts of text.
 export const components: readonly ArchitectureComponent[] = [
   {
     id: 'react-shell',
@@ -24,9 +25,10 @@ export const components: readonly ArchitectureComponent[] = [
     status: 'live',
   },
   {
-    id: 'routing',
-    name: 'Client-side routing',
-    description: 'React Router; each section loads on demand.',
+    id: 'mascot',
+    name: 'Mascot guide',
+    description:
+      'The Home and Fun Fact mascot uses the final illustrations; the walking navigation mascot still uses placeholder art until its final frames are ready.',
     status: 'live',
   },
   {
@@ -43,10 +45,10 @@ export const components: readonly ArchitectureComponent[] = [
     status: 'planned',
   },
   {
-    id: 'mascot',
-    name: 'Mascot guide',
-    description: 'Animated character that walks the navigation.',
-    status: 'planned',
+    id: 'routing',
+    name: 'Client-side routing',
+    description: 'React Router; each section loads on demand.',
+    status: 'live',
   },
   {
     id: 'vue-microfrontend',

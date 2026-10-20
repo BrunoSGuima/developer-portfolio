@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { isPlaceholderArt } from '../mascot/assets.ts';
 import RemoteSection from '../microfrontends/RemoteSection.tsx';
 import { remoteMount, sections } from '../sections/registry.ts';
 import { components, timeline } from './architecture.ts';
@@ -41,6 +42,12 @@ describe('architecture truthfulness', () => {
       expect(componentById('microfrontend-host').description).toMatch(
         /no real remote section is mounted yet/,
       );
+    }
+  });
+
+  it('says the navigation mascot is a placeholder while its art is the placeholder', () => {
+    if (isPlaceholderArt) {
+      expect(componentById('mascot').description).toMatch(/navigation mascot.*placeholder/i);
     }
   });
 

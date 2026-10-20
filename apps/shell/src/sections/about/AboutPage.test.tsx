@@ -3,6 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { experience } from '../../content/experience.ts';
 import { PHONE_PATTERN } from '../../test/privacy.ts';
 import { renderPage } from '../../test/renderPage.tsx';
+import page from '../Page.module.css';
+import aboutCss from './AboutPage.module.css?raw';
+import styles from './AboutPage.module.css';
 import AboutPage from './AboutPage.tsx';
 
 describe('AboutPage', () => {
@@ -10,13 +13,7 @@ describe('AboutPage', () => {
     renderPage(AboutPage);
 
     expect(screen.getByRole('heading', { level: 1, name: 'About' })).toBeInTheDocument();
-    for (const name of [
-      'Experience at a glance',
-      'Skills',
-      'Education',
-      'Languages',
-      'Background',
-    ]) {
+    for (const name of ['Experience', 'Skills', 'Education', 'Languages', 'Background']) {
       expect(screen.getByRole('heading', { level: 2, name })).toBeInTheDocument();
     }
   });
@@ -61,5 +58,16 @@ describe('AboutPage', () => {
 
     expect(screen.queryByText(/^To confirm:/)).not.toBeInTheDocument();
     expect(container.textContent).not.toMatch(PHONE_PATTERN);
+  });
+
+  it('uses more width on wide screens: experience in up to two columns', () => {
+    renderPage(AboutPage);
+    // jsdom can't lay out: check the classes and the grid setting (verified in Chromium).
+    const experienceList = within(screen.getByRole('region', { name: 'Experience' })).getAllByRole(
+      'list',
+    )[0];
+
+    expect(experienceList).toHaveClass(page.cardGridFit!, styles.timeline!);
+    expect(aboutCss).toMatch(/\.timeline\s*\{[^}]*--grid-min:\s*26rem;/);
   });
 });

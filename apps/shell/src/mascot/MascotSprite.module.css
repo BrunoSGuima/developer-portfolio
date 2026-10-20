@@ -1,0 +1,26 @@
+/* Fills its container: each placement (header lane, Fun Fact stage) sets the size. */
+.sprite {
+  width: 100%;
+  height: 100%;
+}
+
+.flip {
+  width: 100%;
+  height: 100%;
+}
+
+/* The art is drawn facing right; mirror it to face left. */
+.sprite[data-facing='left'] .flip {
+  transform: scaleX(-1);
+}
+
+/* Idle: a gentle bob (motion only). */
+.sprite[data-pose='idle'][data-motion='full'] {
+  animation: bob 2.4s ease-in-out infinite;
+}
+
+@keyframes bob {
+  50% {
+    transform: translateY(-2px);
+  }
+}

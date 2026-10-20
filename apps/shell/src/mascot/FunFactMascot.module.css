@@ -1,0 +1,25 @@
+.mascot,
+.pop {
+  width: 100%;
+  height: 100%;
+}
+
+/* Front layer: only the fingertips below the ledge line show, over the card's top edge. */
+.mascot[data-layer='front'] {
+  clip-path: inset(calc(var(--peek-ledge) * 100%) 0 0 0);
+}
+
+/* Pops up from behind the card when it appears (motion only). */
+.mascot[data-motion='full'] .pop {
+  animation: pop-up 320ms var(--ease-out);
+}
+
+@keyframes pop-up {
+  from {
+    transform: translateY(6px);
+  }
+
+  to {
+    transform: none;
+  }
+}

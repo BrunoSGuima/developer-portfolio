@@ -24,6 +24,8 @@
   --color-cream-50: #fcf5ed;
   --color-sand-100: #e9e2dd;
   --color-white: #ffffff;
+  --color-ink-950: #141518;
+  --color-charcoal-700: #45464d;
 
   /* ---- Purpose-named colours ---- */
   --color-bg: var(--color-sand-100); /* page background; text on it 11.0:1 */
@@ -54,6 +56,43 @@
   --mascot-shirt: var(--color-white);
   --mascot-tie: var(--color-burgundy-700);
   --mascot-skin: var(--color-peach-300);
+  --mascot-outline: var(--color-ink-950); /* glasses, eyes, shoes */
+  --mascot-lapel: var(--color-charcoal-700);
+  --mascot-width: 2.25rem; /* 36px: keep in sync with MASCOT_WIDTH in mascot/geometry.ts */
+  --mascot-height: 3rem; /* 48px */
+  --mascot-step-ms: 360ms; /* walk-cycle frame swap */
+  /* Fun Fact mascot peeking over the card (A5): its width; the height follows the art. */
+  --mascot-peek-width: clamp(10rem, 18vw, 13rem);
+
+  /* Home hero (illustrated, docs/assets/homepage.png). HomePage and the shell's Fun Fact stage
+     share these: change them together. */
+  --home-hero-text-ratio: 0.44; /* text column share of the container, ≥ 64rem; stage = rest */
+  /* The illustrated stage, ≥ 64rem: sized so the mascot (A3) stands on its bottom edge. */
+  --home-stage-height: clamp(28.25rem, 39.5vw, 33.875rem);
+  --home-scene-height: 11rem; /* mascot height under the card, < 64rem */
+  /* The stage's width at a 72rem container (56% of 1152px). Capped there, so the tuned mascot,
+     card and fingertip alignment stay identical on wider containers. */
+  --home-stage-max: 40.32rem;
+  /* Moves the whole stage (card + mascot) left from its aligned position, ≥ 64rem: a visual
+     balance tweak. 0 puts the card's left edge exactly on the third "What I do" card. */
+  --home-stage-nudge: 2.5rem;
+  /* Likewise the hero text column (44% of 1152px − 1rem): wider screens keep its line breaks,
+     so the gap between the buttons and "What I do" stays as tuned. */
+  --home-hero-text-max: 30.68rem;
+  /* How far the stage (≥ 64rem) extends past the container's right edge: up to 4rem of the free
+     side space, always leaving --space-4 to the viewport edge. cqi: the hero region's width. */
+  --home-stage-shift: clamp(
+    0px,
+    (100cqi - min(100cqi - 2 * var(--gutter), var(--content-max))) / 2 - var(--space-4),
+    4rem
+  );
+
+  /* Page layout: the gap between the navbar and page content, shared by <main> and (in the
+     aside layout) the Fun Fact column, so both start on the same line. */
+  --page-top-space: var(--space-7);
+  --aside-width: 22rem; /* Fun Fact column in the aside layout, ≥ 64rem */
+  --home-backdrop-fallback: 40rem; /* until the hero is measured (see useHeroExtent) */
+  --hero-scrim: rgb(252 245 237 / 0.62); /* cream veil behind text over the artwork */
 
   /* ---- Typography ---- */
   --font-sans:
@@ -64,6 +103,8 @@
   --text-lg: clamp(1.125rem, 1.05rem + 0.35vw, 1.25rem);
   --text-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
   --text-2xl: clamp(1.5rem, 1.25rem + 1.25vw, 2rem);
+  --text-hero-lead: 1.375rem; /* Home hero introduction, ≥ 64rem */
+  --text-3xl: 3.25rem; /* desktop-only emphasis (Home "What I do"); below --text-display */
   --text-display: clamp(2.5rem, 1.5rem + 4vw, 4rem);
   --weight-regular: 400;
   --weight-semibold: 600;
@@ -71,6 +112,7 @@
   --leading-tight: 1.15;
   --leading-normal: 1.6;
   --measure: 65ch;
+  --measure-lead: 75ch; /* page intros (larger text): uses wide columns, still comfortable */
 
   /* ---- Spacing (4px grid) ---- */
   --space-1: 0.25rem;
@@ -98,9 +140,11 @@
   --z-menu: 30;
 
   /* ---- Layout ---- */
-  --content-max: 72rem;
+  /* Fluid: 72rem up to a 1280px viewport (100vw − 8rem), then grows with the screen up to 96rem
+     (1536px, reached at 1664px), always leaving at least 4rem each side on wide screens. */
+  --content-max: clamp(72rem, 100vw - 8rem, 96rem);
   --gutter: var(--space-4);
-  --mascot-lane-height: 0px; /* becomes ~72px when the mascot ships (Step 7) */
+  --mascot-lane-height: 0px; /* no lane on small screens; see the md breakpoint below */
   --mascot-spot-width: 5rem;
 
   /* ---- Motion ---- */
@@ -112,6 +156,8 @@
 @media (min-width: 48rem) {
   :root {
     --gutter: var(--space-6);
+    --mascot-lane-height: 3rem; /* the header mascot's lane (= --mascot-height) */
+    --home-scene-height: 15rem;
   }
 }
 

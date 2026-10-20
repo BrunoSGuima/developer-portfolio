@@ -3,7 +3,6 @@
   gap: var(--space-4);
   align-items: flex-start;
   max-width: 40rem;
-  margin-block-start: var(--space-5);
   padding: var(--space-4) var(--space-5);
   border-radius: var(--radius-lg);
   background: var(--color-surface);

@@ -5,7 +5,92 @@
   margin-block-start: var(--space-6);
 }
 
+/*
+ * The hero sits over the shell's illustrated backdrop. Below 64rem it follows the Fun Fact scene,
+ * so it gets its own full-bleed cream veil for readability. From 64rem the backdrop's left-hand
+ * scrim does that, and the hero keeps to the left column (tokens shared with the stage).
+ */
+.hero {
+  position: relative;
+  padding-block: var(--space-5) var(--space-6);
+}
+
+/* Over artwork, the muted grey fails contrast: hero text uses the full text colour. */
+.hero p {
+  color: var(--color-text);
+}
+
+.hero::before {
+  position: absolute;
+  inset: 0 calc(var(--gutter) * -1);
+  z-index: -1;
+  background: linear-gradient(to bottom, transparent, var(--hero-scrim) var(--space-5));
+  content: '';
+}
+
 @media (min-width: 64rem) {
+  .hero {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    max-width: min(
+      calc(100% * var(--home-hero-text-ratio) - var(--space-4)),
+      var(--home-hero-text-max)
+    );
+    padding-block: var(--space-6) 0;
+  }
+
+  .hero::before {
+    display: none;
+  }
+
+  .hero p {
+    font-size: var(--text-hero-lead);
+  }
+
+  /*
+   * The hero and "What I do" share one grid, so the heading follows the buttons in the left-hand
+   * flow while its cards start below the illustrated stage:
+   *   row 1: the hero (its content height; it may wrap onto more lines),
+   *   row 2: the "What I do" heading (flexible: absorbs the space down to the stage's bottom;
+   *          the heading sits at the row's end, just above its cards),
+   *   row 3: the cards.
+   * The stage is absolutely positioned, so a content-free spacer spanning rows 1–2 stands in for
+   * it: the stage's measured height (useHeroExtent), or the same token until it is measured. It
+   * only sets a minimum: a taller hero pushes the heading and cards down.
+   */
+  .top {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+  }
+
+  .top::before {
+    grid-row: 1 / 3;
+    grid-column: 1;
+    height: calc(var(--home-stage-block, var(--home-stage-height)) + var(--space-3));
+    pointer-events: none;
+    content: '';
+  }
+
+  .top > .hero {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  /* A subgrid, so the heading and its cards stay in one labelled <section>. */
+  .whatIDo {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: 2 / span 2;
+    grid-column: 1;
+  }
+
+  .whatIDo > h2 {
+    align-self: end;
+    margin-block-end: var(--space-6); /* breathing room above the cards (they stay in row 3) */
+    font-size: var(--text-3xl);
+  }
+
   .threeUp {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }

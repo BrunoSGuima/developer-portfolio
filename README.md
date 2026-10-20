@@ -7,20 +7,21 @@ architecture, testing, microfrontends, backend services — instead of just list
 A chibi mascot guides visitors through the site, and a persistent **Fun Fact** banner explains
 the real technology stack behind each section.
 
-> **Status:** Phase 1 (React MVP) — Step 6 complete: the shell can host independently built
-> section apps through a tested mount/unmount contract (no real microfrontend yet).
+> **Status:** Phase 1 (React MVP) — Steps 0–7 complete (shell, routing, Fun Fact, content,
+> microfrontend host, illustrated Home and mascot). Step 8 (responsive layout) is awaiting visual
+> review; Step 9 adds English and Brazilian Portuguese. See [`docs/ROADMAP.md`](./docs/ROADMAP.md).
 
 ## Roadmap
 
-| Phase | Scope                                                                          | Status      |
-| ----- | ------------------------------------------------------------------------------ | ----------- |
-| 1     | React + TypeScript MVP shell, static data, mascot placeholder, Fun Fact, tests | In progress |
-| 2     | Ruby on Rails API + PostgreSQL                                                 | Planned     |
-| 3     | Vue 3 microfrontend mounted by the React shell                                 | Planned     |
-| 4     | Python FastAPI service + interactive quiz                                      | Planned     |
-| 5     | Background jobs (Redis + Sidekiq)                                              | Planned     |
-| 6     | Production deployment, CI/CD, monitoring                                       | Planned     |
-| 7     | AI Lab and future expansion                                                    | Planned     |
+| Phase | Scope                                                                        | Status      |
+| ----- | ---------------------------------------------------------------------------- | ----------- |
+| 1     | React + TypeScript MVP shell, static data, mascot, Fun Fact, en/pt-BR, tests | In progress |
+| 2     | Ruby on Rails API + PostgreSQL                                               | Planned     |
+| 3     | Vue 3 microfrontend mounted by the React shell                               | Planned     |
+| 4     | Python FastAPI service + interactive quiz                                    | Planned     |
+| 5     | Background jobs (Redis + Sidekiq)                                            | Planned     |
+| 6     | Production deployment, CI/CD, monitoring                                     | Planned     |
+| 7     | AI Lab and future expansion                                                  | Planned     |
 
 ## Repository layout
 
@@ -56,9 +57,10 @@ npm test            # Vitest + React Testing Library
 npm run build       # production build to apps/shell/dist
 ```
 
-Root scripts delegate to npm workspaces. `npm run test:e2e` becomes available in Step 9.
+Root scripts delegate to npm workspaces. `npm run test:e2e` becomes available in Step 11.
 
 ## Documentation
 
 - [`CLAUDE.md`](./CLAUDE.md) — architecture, conventions, commands and development workflow.
+- [`docs/ROADMAP.md`](./docs/ROADMAP.md) — phases, Phase 1 steps, acceptance criteria and decisions.
 - [`docs/adr/`](./docs/adr/) — Architecture Decision Records.

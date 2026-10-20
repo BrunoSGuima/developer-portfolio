@@ -1,0 +1,119 @@
+.svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.skin {
+  fill: var(--mascot-skin);
+}
+
+.hair {
+  fill: var(--mascot-hair);
+}
+
+.eye {
+  fill: var(--mascot-outline);
+}
+
+.highlight {
+  fill: var(--mascot-shirt);
+}
+
+.brow {
+  fill: none;
+  stroke: var(--mascot-hair);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+}
+
+.smile {
+  fill: none;
+  stroke: var(--mascot-outline);
+  stroke-width: 0.9;
+  stroke-linecap: round;
+}
+
+.suit {
+  fill: var(--mascot-suit);
+}
+
+.shirt {
+  fill: var(--mascot-shirt);
+}
+
+.tie {
+  fill: var(--mascot-tie);
+}
+
+.lapel {
+  fill: none;
+  stroke: var(--mascot-lapel);
+  stroke-width: 0.6;
+}
+
+.sleeve,
+.leg {
+  fill: none;
+  stroke: var(--mascot-suit);
+  stroke-linecap: round;
+}
+
+.sleeve {
+  stroke-width: 3;
+}
+
+.leg {
+  stroke-width: 4.2;
+}
+
+.finger {
+  fill: none;
+  stroke: var(--mascot-skin);
+  stroke-width: 1;
+  stroke-linecap: round;
+}
+
+.shoe {
+  fill: var(--mascot-outline);
+}
+
+/* Walk cycle: two frames, swapped in steps. */
+.frameA {
+  animation: frame-a var(--mascot-step-ms) steps(1, end) infinite;
+}
+
+.frameB {
+  animation: frame-b var(--mascot-step-ms) steps(1, end) infinite;
+}
+
+@keyframes frame-a {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes frame-b {
+  0% {
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Reduced motion: freeze on frame A. */
+[data-motion='reduced'] .frameA,
+[data-motion='reduced'] .frameB {
+  animation: none;
+}
+
+[data-motion='reduced'] .frameB {
+  opacity: 0;
+}

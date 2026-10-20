@@ -1,0 +1,72 @@
+{
+  "heroDesktop": {
+    "source": "hero-background-desktop.png",
+    "width": 1174,
+    "height": 645,
+    "files": [
+      {
+        "name": "heroDesktop-1174.webp",
+        "width": 1174,
+        "height": 645,
+        "bytes": 52968
+      },
+      {
+        "name": "heroDesktop-800.webp",
+        "width": 800,
+        "height": 440,
+        "bytes": 33128
+      }
+    ]
+  },
+  "heroMobile": {
+    "source": "hero-background-mobile.png",
+    "width": 415,
+    "height": 829,
+    "files": [
+      {
+        "name": "heroMobile-415.webp",
+        "width": 415,
+        "height": 829,
+        "bytes": 30500
+      }
+    ]
+  },
+  "mascotPresenting": {
+    "source": "mascot-presenting.png",
+    "width": 1154,
+    "height": 1363,
+    "files": [
+      {
+        "name": "mascotPresenting-760.webp",
+        "width": 760,
+        "height": 898,
+        "bytes": 67748
+      },
+      {
+        "name": "mascotPresenting-380.webp",
+        "width": 380,
+        "height": 449,
+        "bytes": 29438
+      }
+    ]
+  },
+  "mascotPeeking": {
+    "source": "mascot-peeking.png",
+    "width": 1608,
+    "height": 978,
+    "files": [
+      {
+        "name": "mascotPeeking-640.webp",
+        "width": 640,
+        "height": 389,
+        "bytes": 30326
+      },
+      {
+        "name": "mascotPeeking-320.webp",
+        "width": 320,
+        "height": 195,
+        "bytes": 13238
+      }
+    ]
+  }
+}

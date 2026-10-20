@@ -1,0 +1,8 @@
+/* The cards follow the intro directly, in the intro column beside the Fun Fact. */
+.cards {
+  --grid-min: 20rem;
+  --grid-cols: 2;
+  --grid-max: 32rem; /* a single project never stretches across a wide column */
+
+  margin-block-start: var(--space-6);
+}
