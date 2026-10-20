@@ -1,17 +1,14 @@
 import type { Status } from '../../content/status.ts';
+import { useMessages } from '../../i18n/context.ts';
 import styles from './StatusTag.module.css';
 
-const LABELS: Record<Status, string> = {
-  live: 'Live',
-  'in-progress': 'In progress',
-  planned: 'Planned',
-};
-
-/** Delivery status as a word (never colour alone). */
+/** Delivery status as a word (never colour alone), in the active language. */
 function StatusTag({ status }: { status: Status }) {
+  const messages = useMessages();
+
   return (
     <span className={styles.tag} data-status={status}>
-      {LABELS[status]}
+      {messages.status[status]}
     </span>
   );
 }

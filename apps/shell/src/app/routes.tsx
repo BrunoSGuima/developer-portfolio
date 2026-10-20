@@ -1,4 +1,5 @@
 import type { RouteObject } from 'react-router';
+import { LOCALES, type Locale, localeConfig, localizePath } from '../i18n/locales.ts';
 import RemoteSection from '../microfrontends/RemoteSection.tsx';
 import type { Section } from '../sections/registry.ts';
 import NotFoundPage from './pages/NotFoundPage.tsx';
@@ -7,13 +8,18 @@ import RootLayout from './RootLayout.tsx';
 import type { RouteHandle } from './routeHandle.ts';
 
 /**
- * Builds the route tree from the section registry.
+ * Builds the route tree from the section registry, once per language (ADR-0004, ADR-0007):
  *
- * RootLayout (the persistent shell) wraps a pathless route whose error element catches failures
- * in any section (e.g. a chunk that fails to load), so errors render inside the shell.
+ *   RootLayout (the persistent shell)
+ *   └── error route (failures render inside the shell)
+ *       ├── "/"       English:    sections + "*" 404
+ *       └── "/pt-br"  Portuguese: the same sections + "*" 404
+ *
+ * Both languages share the same pages and lazy chunks; only the URL differs. The shell reads
+ * the language from the URL, so `/pt-br/anything-unknown` shows the Portuguese 404.
  */
 export function buildRoutes(sections: readonly Section[]): RouteObject[] {
-  const notFoundHandle: RouteHandle = { title: 'Page not found' };
+  const notFoundHandle: RouteHandle = { notFound: true };
 
   return [
     {
@@ -21,37 +27,43 @@ export function buildRoutes(sections: readonly Section[]): RouteObject[] {
       children: [
         {
           errorElement: <RouteErrorPage />,
-          children: [
-            ...sections.map(sectionRoute),
-            { path: '*', element: <NotFoundPage />, handle: notFoundHandle },
-          ],
+          children: LOCALES.map((locale) => ({
+            path: localeConfig[locale].prefix || '/',
+            children: [
+              ...sections.map((section) => sectionRoute(section, locale)),
+              { path: '*', element: <NotFoundPage />, handle: notFoundHandle },
+            ],
+          })),
         },
       ],
     },
   ];
 }
 
-function sectionRoute(section: Section): RouteObject {
-  const handle: RouteHandle =
-    section.path === '/' ? { section } : { section, title: section.title };
-
+function sectionRoute(section: Section, locale: Locale): RouteObject {
+  const handle: RouteHandle = { section };
   const { mount } = section;
+  // Child paths are relative to the language's prefix; the home section is the index route.
+  const relative = section.path.replace(/^\//, '');
 
   if (mount.kind === 'remote') {
     // `/*`: the section app owns every URL below its base path.
     return {
-      path: `${section.path}/*`,
+      path: `${relative}/*`,
       handle,
-      element: <RemoteSection load={mount.load} basePath={section.path} />,
+      element: (
+        <RemoteSection
+          load={mount.load}
+          basePath={localizePath(section.path, locale)}
+          locale={locale}
+        />
+      ),
     };
   }
 
-  return {
-    path: section.path,
-    handle,
-    lazy: async () => {
-      const page = await mount.load();
-      return { Component: page.default };
-    },
+  const lazy = async () => {
+    const page = await mount.load();
+    return { Component: page.default };
   };
+  return relative === '' ? { index: true, handle, lazy } : { path: relative, handle, lazy };
 }

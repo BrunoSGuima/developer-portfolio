@@ -6,12 +6,15 @@ import MascotSprite from './MascotSprite.tsx';
 import { useMascotTimers } from './useMascotTimers.ts';
 import { useReducedMotion } from './useMediaQuery.ts';
 
-const ACTIVE_NAV_LINK = 'nav[aria-label="Main"] a[aria-current="page"]';
-const FUN_FACT_CARD = 'aside[aria-label="Fun fact"]';
+// Data attributes, not labels: the accessible names are translated.
+const ACTIVE_NAV_LINK = '[data-nav="main"] a[aria-current="page"]';
+const FUN_FACT_CARD = '[data-fun-fact]';
 
 interface HeaderMascotProps {
   /** The active section; the mascot walks only when this changes (not on sub-path moves). */
   sectionId: string | undefined;
+  /** The active language: the nav labels change width with it, so the mascot is re-placed. */
+  locale?: string;
 }
 
 /**
@@ -19,7 +22,7 @@ interface HeaderMascotProps {
  * changes, then turns toward the Fun Fact card and points at it. Decorative only: hidden from
  * assistive technology and never intercepts pointer events.
  */
-function HeaderMascot({ sectionId }: HeaderMascotProps) {
+function HeaderMascot({ sectionId, locale }: HeaderMascotProps) {
   const laneRef = useRef<HTMLDivElement>(null);
   const walkerRef = useRef<HTMLDivElement>(null);
   const placedSection = useRef<string | undefined>(undefined);
@@ -68,6 +71,16 @@ function HeaderMascot({ sectionId }: HeaderMascotProps) {
       reducedMotion,
     });
   }, [sectionId, reducedMotion, measureTarget, currentX]);
+
+  // Language switch: same section, but the active link moved (labels changed width). Snap to it
+  // without walking.
+  const placedLocale = useRef(locale);
+  useEffect(() => {
+    if (placedLocale.current === locale) return;
+    placedLocale.current = locale;
+    const target = measureTarget();
+    if (target) dispatch({ type: 'PLACE', x: target.x });
+  }, [locale, measureTarget]);
 
   // Layout changes (resize, font load): snap to the active item without walking.
   useEffect(() => {

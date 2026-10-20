@@ -1,6 +1,7 @@
 /*
- * Mobile first: Menu button visible, list collapsed until opened. The open list is a panel
- * anchored to the nearest positioned ancestor (the site header), spanning its full width.
+ * Mobile first: Menu button visible, panel collapsed until opened. The open panel (the links,
+ * then the language switcher) is anchored to the nearest positioned ancestor (the site header),
+ * spanning its full width.
  */
 .nav {
   flex: none; /* never squeezed by the brand */
@@ -20,22 +21,35 @@
   background: var(--color-bg);
 }
 
-.list {
+.panel {
   position: absolute;
   inset-inline: 0;
   top: 100%;
   z-index: var(--z-menu);
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--space-3);
   padding: var(--space-3) var(--gutter) var(--space-4);
-  list-style: none;
   background: var(--color-surface);
   box-shadow: var(--shadow-md);
 }
 
-.list[data-open='false'] {
+.panel[data-open='false'] {
   display: none;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: 0;
+  list-style: none;
+}
+
+.panelFooter {
+  display: flex;
+  padding-block-start: var(--space-3);
+  border-block-start: 1px solid var(--color-border);
 }
 
 .link {
@@ -66,8 +80,8 @@
     display: none;
   }
 
-  .list,
-  .list[data-open] {
+  .panel,
+  .panel[data-open] {
     position: static;
     display: flex;
     flex-direction: row;
@@ -75,5 +89,15 @@
     padding: 0;
     background: none;
     box-shadow: none;
+  }
+
+  .list {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  /* On wide screens the header shows the language switcher itself. */
+  .panelFooter {
+    display: none;
   }
 }

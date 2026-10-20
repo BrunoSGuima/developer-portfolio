@@ -65,13 +65,13 @@ describe('Nav', () => {
     expect(menuButton).toHaveAttribute('aria-expanded', 'false');
   });
 
-  it('links the Menu button to the list it controls', async () => {
+  it('links the Menu button to the panel it controls, which holds the list', async () => {
     const { user, menuButton, nav } = renderNav();
     await user.click(menuButton);
 
     const listId = menuButton.getAttribute('aria-controls');
     expect(listId).toBeTruthy();
-    expect(within(nav).getByRole('list')).toHaveAttribute('id', listId);
+    expect(document.getElementById(listId!)).toContainElement(within(nav).getByRole('list'));
   });
 
   it('closes the menu on Escape and returns focus to the Menu button', async () => {

@@ -7,9 +7,10 @@ architecture, testing, microfrontends, backend services — instead of just list
 A chibi mascot guides visitors through the site, and a persistent **Fun Fact** banner explains
 the real technology stack behind each section.
 
-> **Status:** Phase 1 (React MVP) — Steps 0–7 complete (shell, routing, Fun Fact, content,
-> microfrontend host, illustrated Home and mascot). Step 8 (responsive layout) is awaiting visual
-> review; Step 9 adds English and Brazilian Portuguese. See [`docs/ROADMAP.md`](./docs/ROADMAP.md).
+> **Status:** Phase 1 (React MVP) — Steps 0–9 complete (shell, routing, Fun Fact, content,
+> microfrontend host, illustrated Home and mascot, responsive layout, English and Brazilian
+> Portuguese under `/pt-br`). Step 10 (transitions & polish) is next. See
+> [`docs/ROADMAP.md`](./docs/ROADMAP.md).
 
 ## Roadmap
 

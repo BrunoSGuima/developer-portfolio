@@ -11,12 +11,11 @@ but is powered by several independently developed applications. The site is in E
 
 ## Current phase
 
-**Phase 1 — React MVP.** Steps 0–7 are done (toolchain, shell scaffold, design tokens, registry
-& routing, Fun Fact, portfolio content, microfrontend host, mascot and illustrated Home). Step 8
-(responsive layout & screen-space optimisation) is implemented and awaiting the owner's visual
-review; Step 9 (i18n, en + pt-BR) is next. The roadmap, step list, acceptance criteria and
-recorded decisions live in **`docs/ROADMAP.md`** (version-controlled source of truth; keep it
-current).
+**Phase 1 — React MVP.** Steps 0–9 are done (toolchain, shell scaffold, design tokens, registry
+& routing, Fun Fact, portfolio content, microfrontend host, mascot and illustrated Home,
+responsive layout, i18n en + pt-BR). Step 10 (transitions & polish) is next. The roadmap, step
+list, acceptance criteria and recorded decisions live in **`docs/ROADMAP.md`**
+(version-controlled source of truth; keep it current).
 
 Phase 1 uses **static data only**. Do not add Rails, Python, PostgreSQL, Redis or Sidekiq until
 their phase.
@@ -27,22 +26,36 @@ their phase.
   navigation, router, Fun Fact banner, mascot layer, page transitions and global UI state. It
   stays mounted while sections change. See ADR-0001.
 - **Section registry** (`apps/shell/src/sections/registry.ts`): single source of truth for every
-  section (`id`, `path`, `label`, `title`, `framework`, `backend`, `status`, `mount`, `funFact`).
+  section (`id`, language-neutral `path`, `label`, `title`, `description`, `framework`, `backend`,
+  `status`, `mount`, `funFact`; the text fields are `Localized`).
   Only `live` sections get routes and nav links. Badge labels/tones live in
   `sections/technologies.ts` (`TechId` is derived from its keys).
-- **Fun Fact** (`components/FunFact`): persistent `<aside aria-label="Fun fact">` in the context row,
+- **Fun Fact** (`components/FunFact`): persistent `<aside data-fun-fact>` (labelled "Fun fact" /
+  "Curiosidade") in the context row,
   fed by `useCurrentSection()` in `RootLayout`; `shellFunFact` is shown when no section matches.
   No `aria-live` (focus moves to the page `<h1>` on navigation instead).
 - **Routing** (ADR-0004): React Router 8 in data mode. `buildRoutes(sections)`
   (`apps/shell/src/app/routes.tsx`) generates the tree: `RootLayout` (persistent shell) → a
-  pathless error route → one lazy route per section (`handle: { section, title }`) + `*` 404.
-  Import from `react-router`; `RouterProvider` from `react-router/dom`. Use `Link`/`NavLink`,
-  never plain `<a href>` for internal links.
+  pathless error route → per language (`/` English, `/pt-br` Portuguese) one lazy route per
+  section (`handle: { section }`) + `*` 404 (`handle: { notFound: true }`). Import from
+  `react-router`; `RouterProvider` from `react-router/dom`. Use `Link`/`NavLink`, never plain
+  `<a href>` for internal links, and build them with `useLocalizedPath()`.
+- **i18n** (ADR-0007, `apps/shell/src/i18n/`): English (default, unprefixed) and pt-BR (`/pt-br`).
+  The URL is the only source of truth (no redirects, no stored preference). `RootLayout`
+  provides the locale (`LocaleContext`); use `useLocale()`, `useMessages()`,
+  `useLocalizedPath()`, `pick()` / `text()`. Interface strings live in `i18n/messages/en.ts`
+  (defines the shape) and `pt-BR.ts` (typed `Messages`); content and registry prose are
+  `Localized` fields beside single-sourced facts. `Metadata.tsx` renders title, description,
+  canonical and hreflang; `useDocumentLang` sets `<html lang>`. The language switcher
+  (`components/LanguageSwitcher`) is in the menu panel below 48rem, in the header lane above
+  the brand at 48–64rem and inline from 64rem.
 - **Microfrontends** (ADR-0002): non-React sections implement the contract in
   `apps/shell/src/microfrontends/contract.ts` (`mount(el, ctx) / unmount()`), are built
   independently, served same-origin (e.g. `/apps/career/entry.js`) and hosted by
   `<RemoteSection>` (route `<path>/*`). The host is implemented and tested (Step 6) with a
   plain-DOM fake app (`src/test/fakeSectionApp.ts`); **no real remote section exists yet**.
+  The context carries `locale` and a language-specific `basePath`; `ctx.navigate` takes
+  language-neutral paths; a language switch remounts the app (ADR-0002, ADR-0007).
   Router URL synchronisation is a known open issue for Phase 3 (see ADR-0002).
 - **Backends** (Phase 2+): Rails API and FastAPI, each owning its own database and credentials
   on one PostgreSQL instance. Services never modify each other's tables; they talk via APIs.
@@ -71,6 +84,13 @@ their phase.
   shell"). `registry.test.ts` enforces that the framework badge is present and that live backend
   badges match `backend`.
 - **When a section's content changes, re-check its Fun Fact** in the same step.
+- **Languages:** no hardcoded user-facing strings in components (including `aria-label`s and
+  titles). Interface strings go into **both** `i18n/messages/en.ts` and `pt-BR.ts`; content and
+  registry prose are `Localized` fields (facts such as dates, links and statuses stay
+  single-sourced). Translations must sound natural, keep the facts identical, and leave
+  proper nouns and official course names untranslated. Never select elements by translated
+  text: use data attributes. `i18n/completeness.test.ts` enforces matching keys, non-empty
+  values and no untranslated copies (allowlist for words identical in both).
 - **Content** lives as typed data in `apps/shell/src/content/` (shaped like the future Rails
   models); pages render it. The owner's résumé is the source of truth: **never invent**
   experience, metrics, achievements or projects; no confidential employer/client details; private
@@ -100,7 +120,9 @@ their phase.
   row), then the cards; the section is a subgrid and a spacer spanning rows 1–2
   (`--home-stage-height` + `--space-3`) keeps the cards below the stage. The presenting mascot's
   height and left offset are tied to `--home-stage-height` so its fingertip stays under the card
-  (see the comment in `FunFactStage.module.css`); change them together. No fixed hero height:
+  (see the comment in `FunFactStage.module.css`); change them together. The stage is a grid
+  with a minimum height: a taller Fun Fact card (narrow widths, Portuguese) pushes the mascot
+  down instead of covering its fingertip, and the spacer follows (`--home-stage-block`). No fixed hero height:
   if the hero wraps, the heading and cards move down. The stage extends right by
   `--home-stage-shift` (up to 4rem of the free space beside the container, always leaving
   `--space-4`; measured in `cqi` against the hero region, an inline-size container).
@@ -160,7 +182,10 @@ before the app uses its own router.
   `setMedia()`). Mascot tests stub `getBoundingClientRect` and use fake `setTimeout` only.
   Route-level tests use `renderRoute(path)` (`apps/shell/src/test/renderRoute.tsx`), which renders
   the real route tree in a memory router; components using `Link`/`NavLink` need a
-  `MemoryRouter` wrapper. jsdom has no media queries, so the nav renders collapsed (mobile).
+  `MemoryRouter` wrapper. jsdom has no media queries, so the nav renders collapsed (mobile) and
+  the language switcher is reached through the Menu panel. Portuguese routes are tested with
+  `renderRoute('/pt-br/...')`; test fixtures use `same()` (`src/test/localized.ts`). Layout is
+  verified in Chromium in both languages (jsdom can't lay out).
 - Vue (Phase 3): Vitest + Vue Test Utils.
 - Rails (Phase 2): RSpec + FactoryBot (model, request, job specs).
 - Python (Phase 4): Pytest + HTTPX.

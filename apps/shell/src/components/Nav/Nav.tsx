@@ -1,17 +1,22 @@
-import { useEffect, useRef, useState } from 'react';
-import { NavLink } from 'react-router';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { NavLink, useLocation } from 'react-router';
+import { useMessages } from '../../i18n/context.ts';
 import styles from './Nav.module.css';
 
 export interface NavItem {
   label: string;
   to: string;
+  /** Matches only this exact path (the home link). */
+  end?: boolean;
 }
 
 interface NavProps {
   items: readonly NavItem[];
+  /** Shown below the links in the small-screen panel only (the language switcher). */
+  panelFooter?: ReactNode;
 }
 
-const LIST_ID = 'primary-nav-list';
+const PANEL_ID = 'primary-nav-panel';
 
 /**
  * Main navigation (a disclosure on small screens).
@@ -22,10 +27,16 @@ const LIST_ID = 'primary-nav-list';
  * by CSS and the list is always shown inline.
  *
  * Links are router NavLinks: navigation happens client-side and the active link gets
- * aria-current="page" automatically ("/" only matches exactly, via `end`).
+ * aria-current="page" automatically (the home link only matches exactly, via `end`).
  */
-function Nav({ items }: NavProps) {
-  const [isOpen, setIsOpen] = useState(false);
+function Nav({ items, panelFooter }: NavProps) {
+  const messages = useMessages();
+  const { pathname } = useLocation();
+  // The panel is open only on the page where it was opened, so any navigation (a link, a
+  // language switch, back/forward) closes it.
+  const [openOn, setOpenOn] = useState<string | null>(null);
+  const isOpen = openOn === pathname;
+  const close = () => setOpenOn(null);
   const navRef = useRef<HTMLElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
 
@@ -34,13 +45,13 @@ function Nav({ items }: NavProps) {
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key !== 'Escape') return;
-      setIsOpen(false);
+      close();
       toggleRef.current?.focus();
     }
 
     function handlePointerDown(event: PointerEvent) {
       if (event.target instanceof Node && navRef.current?.contains(event.target)) return;
-      setIsOpen(false);
+      close();
     }
 
     document.addEventListener('keydown', handleKeyDown);
@@ -52,32 +63,35 @@ function Nav({ items }: NavProps) {
   }, [isOpen]);
 
   return (
-    <nav ref={navRef} aria-label="Main" className={styles.nav}>
+    <nav ref={navRef} aria-label={messages.layout.mainNav} className={styles.nav} data-nav="main">
       <button
         ref={toggleRef}
         type="button"
         className={styles.toggle}
         aria-expanded={isOpen}
-        aria-controls={LIST_ID}
-        onClick={() => setIsOpen((open) => !open)}
+        aria-controls={PANEL_ID}
+        onClick={() => setOpenOn(isOpen ? null : pathname)}
       >
-        Menu
+        {messages.layout.menu}
       </button>
-      <ul id={LIST_ID} className={styles.list} data-open={isOpen}>
-        {items.map((item) => (
-          <li key={item.to}>
-            <NavLink
-              to={item.to}
-              end={item.to === '/'}
-              // CSS module keys are typed `string | undefined`; NavLink's className rejects undefined.
-              className={styles.link ?? ''}
-              onClick={() => setIsOpen(false)}
-            >
-              {item.label}
-            </NavLink>
-          </li>
-        ))}
-      </ul>
+      <div id={PANEL_ID} className={styles.panel} data-open={isOpen}>
+        <ul className={styles.list}>
+          {items.map((item) => (
+            <li key={item.to}>
+              <NavLink
+                to={item.to}
+                end={item.end ?? false}
+                // CSS module keys are typed `string | undefined`; NavLink's className rejects undefined.
+                className={styles.link ?? ''}
+                onClick={close}
+              >
+                {item.label}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+        {panelFooter && <div className={styles.panelFooter}>{panelFooter}</div>}
+      </div>
     </nav>
   );
 }

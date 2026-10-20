@@ -2,10 +2,11 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import FunFact from '../components/FunFact/FunFact.tsx';
 import type { FunFact as FunFactContent } from '../sections/registry.ts';
+import { same } from '../test/localized.ts';
 import FunFactStage, { type FunFactComposition } from './FunFactStage.tsx';
 import stageCss from './FunFactStage.module.css?raw';
 
-const fact: FunFactContent = { text: 'Built with React.', tech: ['react', 'typescript'] };
+const fact: FunFactContent = { text: same('Built with React.'), tech: ['react', 'typescript'] };
 
 function renderStage(composition: FunFactComposition) {
   const view = render(
@@ -106,21 +107,27 @@ describe('FunFactStage: peek (other pages)', () => {
 });
 
 describe('FunFactStage: hero geometry (≥ 64rem)', () => {
-  it('sizes the presenting mascot by the stage height, anchored at its fingertip', () => {
-    // jsdom can't apply media queries: check the rule. The mascot stands on the stage's bottom
-    // edge; its height and left offset are derived together (see the stylesheet comment).
-    // The ≥ 64rem rule: the one that positions it (the first is the mobile layout, the last
-    // the 80rem card-alignment override, tested below).
-    const presenter = [
-      ...stageCss.matchAll(/\.stage\[data-composition='hero'\] \.presenter\s*\{([^}]*)\}/g),
-    ]
-      .map((match) => match[1] ?? '')
-      .find((block) => /bottom:\s*0;/.test(block));
+  // jsdom can't apply media queries: these check the rules. Chromium verified the result (both
+  // languages, 320–2560px): English is pixel-identical to Step 8 and the fingertip stays visible.
+  const hero = stageCss.slice(stageCss.indexOf('@media (min-width: 64rem) {\n  .stage'));
+  const rule = (selector: string) =>
+    new RegExp(`${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\{([^}]*)\\}`).exec(
+      hero,
+    )?.[1] ?? '';
 
-    expect(presenter).toMatch(/bottom:\s*0;/);
-    expect(presenter).toMatch(/left:\s*calc\(-4% \+ 0\.068 \* var\(--home-stage-height\)\);/);
-    expect(presenter).toMatch(/height:\s*84\.2%;/);
+  it('sizes the presenting mascot by the stage height, anchored at its fingertip', () => {
+    const presenter = rule(".stage[data-composition='hero'] .presenter");
+
+    expect(presenter).toMatch(/align-self:\s*end;/);
+    expect(presenter).toMatch(
+      /left:\s*calc\(72% - var\(--home-card-width\) \+ 0\.068 \* var\(--home-stage-height\)\);/,
+    );
+    expect(presenter).toMatch(/height:\s*var\(--home-mascot-height\);/);
+    expect(presenter).toMatch(
+      /margin:\s*calc\(var\(--home-fingertip-gap\) - 0\.324 \* var\(--home-mascot-height\)\) 0 0;/,
+    );
     expect(presenter).not.toMatch(/transform/);
+    expect(hero).toMatch(/--home-mascot-height:\s*calc\(0\.842 \* var\(--home-stage-height\)\)/);
   });
 
   it('caps the stage width, so the composition is identical on wide containers', () => {
@@ -129,29 +136,29 @@ describe('FunFactStage: hero geometry (≥ 64rem)', () => {
     );
   });
 
-  it('from 64rem, lines the card up with the third "What I do" card, the mascot following it', () => {
-    const wide = stageCss.slice(stageCss.indexOf('@media (min-width: 64rem) {\n  .stage'));
-
-    expect(wide).toMatch(
+  it('from 64rem, lines the card up with the third "What I do" card', () => {
+    expect(hero).toMatch(
       /--home-card-width:\s*calc\(\s*\(min\(100cqi - 2 \* var\(--gutter\), var\(--content-max\)\) - 2 \* var\(--space-4\)\) \/ 3 \+\s*var\(--home-stage-shift\)\s*\)/,
     );
-    expect(wide).toMatch(/\.frame\s*\{\s*width:\s*var\(--home-card-width\);/);
-    expect(wide).toMatch(
-      /\.presenter\s*\{\s*left:\s*calc\(72% - var\(--home-card-width\) \+ 0\.068 \* var\(--home-stage-height\)\);/,
+    expect(rule(".stage[data-composition='hero'] .frame")).toMatch(
+      /justify-self:\s*end;[^}]*width:\s*var\(--home-card-width\);/,
     );
   });
 
-  it('between 64rem and 80rem, stands the mascot below the taller card, fingertip just under it', () => {
-    const band = stageCss.slice(
-      stageCss.indexOf('@media (min-width: 64rem) and (max-width: 79.99rem)'),
-    );
+  it('grows the stage when the card is taller (narrow widths, longer translations)', () => {
+    const stage = rule(".stage[data-composition='hero']");
+    expect(stage).toMatch(/grid-template-rows:\s*auto 1fr;/);
+    expect(stage).toMatch(/min-height:\s*var\(--home-stage-min\);/);
+    expect(stage).not.toMatch(/(^|[^-])height:\s*var\(--home-stage-height\)/);
 
-    expect(band).toMatch(/grid-template-columns:\s*minmax\(0, 1fr\)/);
-    expect(band).toMatch(/height:\s*auto/);
-    expect(band).toMatch(
-      /margin-block-start:\s*calc\(var\(--space-2\) - 0\.324 \* var\(--home-mascot-height\)\)/,
+    // 64–80rem: the mascot always follows the card; from 80rem the stage keeps its fixed height
+    // unless the card needs more room.
+    const band = stageCss.slice(stageCss.indexOf('(max-width: 79.99rem)'));
+    expect(band).toMatch(/--home-stage-min:\s*0px;\s*--home-fingertip-gap:\s*var\(--space-2\);/);
+    const wide = stageCss.slice(stageCss.lastIndexOf('@media (min-width: 80rem)'));
+    expect(wide).toMatch(
+      /--home-stage-min:\s*var\(--home-stage-height\);\s*--home-fingertip-gap:\s*var\(--space-1\);/,
     );
-    expect(band).toMatch(/--home-mascot-height:\s*calc\(0\.842 \* var\(--home-stage-height\)\)/);
   });
 
   it('nudges the whole stage (card and mascot together) left by a single token', () => {

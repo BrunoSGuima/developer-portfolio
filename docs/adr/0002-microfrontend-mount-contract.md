@@ -17,8 +17,9 @@ Each non-React section exposes a minimal, framework-agnostic ES-module contract:
 
 ```ts
 interface SectionContext {
-  basePath: string; // e.g. "/career"
-  navigate(path: string): void; // cross-section navigation via the shell router
+  basePath: string; // e.g. "/career", or "/pt-br/career" in Portuguese
+  locale: string; // the shell's language, a BCP 47 tag: 'en' | 'pt-BR' (ADR-0007)
+  navigate(path: string): void; // cross-section navigation; language-neutral paths
   emit(event: ShellEvent): void; // typed events back to the shell
 }
 
@@ -55,6 +56,16 @@ interface SectionApp {
 - `load` / validation / `mount` errors, including asynchronous ones after the first render, are
   re-thrown during render, so the route's error element shows them inside the shell.
 - Moving between sub-paths of the section (`/career/a` → `/career/b`) does not remount the app.
+
+### Language (added in Step 9, ADR-0007)
+
+- `ctx.locale` is the shell's language; the app renders in it with its own translations (e.g.
+  vue-i18n seeded from `ctx.locale`). The shell only passes the code.
+- `basePath` includes the language prefix, so the app's own router stays inside it.
+- `ctx.navigate('/about')` takes a language-neutral path; the shell keeps the visitor's language
+  (`/pt-br/about`). Language switching is the shell's job.
+- A language switch changes the URL prefix, which matches another route subtree: the app is
+  unmounted and mounted again with the new `locale`. No change notification is needed (tested).
 
 ## Known limitation: URL synchronisation between routers
 

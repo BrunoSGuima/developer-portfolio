@@ -1,31 +1,36 @@
 import PageIntro from '../../components/PageIntro/PageIntro.tsx';
 import StatusTag from '../../components/StatusTag/StatusTag.tsx';
 import { components, decisions, timeline } from '../../content/architecture.ts';
+import { useLocale, useMessages } from '../../i18n/context.ts';
+import { pick, text } from '../../i18n/localized.ts';
 import page from '../Page.module.css';
+import { sectionTitle } from '../registry.ts';
 import styles from './ArchitecturePage.module.css';
 
 function ArchitecturePage() {
+  const locale = useLocale();
+  const messages = useMessages();
+
   return (
     <PageIntro
-      title="Architecture"
+      title={sectionTitle('architecture', locale)}
       lead={
         <>
-          This portfolio is a learning project as much as a showcase. Here&apos;s how it&apos;s
-          built today, and where it&apos;s going. Anything marked <strong>Planned</strong>{' '}
-          doesn&apos;t exist yet.
+          {messages.architecture.leadBeforeStatus} <strong>{messages.status.planned}</strong>{' '}
+          {messages.architecture.leadAfterStatus}
         </>
       }
       column={
         <section className={page.section} aria-labelledby="built-today">
-          <h2 id="built-today">How it&apos;s built today</h2>
+          <h2 id="built-today">{messages.architecture.builtToday}</h2>
           <ul className={`${page.cardGridFit} ${styles.builtToday}`}>
             {components.map((component) => (
               <li key={component.id} className={`${page.card} ${page.cardCompact}`}>
                 <div className={styles.componentHeader}>
-                  <h3>{component.name}</h3>
+                  <h3>{text(component.name, locale)}</h3>
                   <StatusTag status={component.status} />
                 </div>
-                <p>{component.description}</p>
+                <p>{pick(component.description, locale)}</p>
               </li>
             ))}
           </ul>
@@ -33,12 +38,12 @@ function ArchitecturePage() {
       }
     >
       <section className={page.section} aria-labelledby="evolution">
-        <h2 id="evolution">How it will evolve</h2>
+        <h2 id="evolution">{messages.architecture.evolution}</h2>
         <ol className={`${page.cardGridFit} ${styles.timeline}`}>
           {timeline.map((milestone) => (
             <li key={milestone.version}>
               <span className={styles.version}>{milestone.version}</span>
-              <span className={styles.milestone}>{milestone.name}</span>
+              <span className={styles.milestone}>{pick(milestone.name, locale)}</span>
               <StatusTag status={milestone.status} />
             </li>
           ))}
@@ -46,14 +51,14 @@ function ArchitecturePage() {
       </section>
 
       <section className={page.section} aria-labelledby="decisions">
-        <h2 id="decisions">Key decisions</h2>
+        <h2 id="decisions">{messages.architecture.decisions}</h2>
         <ul className={`${page.cardGridFit} ${styles.decisions}`}>
           {decisions.map((decision) => (
             <li key={decision.id}>
               <strong>
-                {decision.id}: {decision.title}
+                {decision.id}: {pick(decision.title, locale)}
               </strong>
-              <span>{decision.summary}</span>
+              <span>{pick(decision.summary, locale)}</span>
             </li>
           ))}
         </ul>

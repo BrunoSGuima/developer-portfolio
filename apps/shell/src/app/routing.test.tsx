@@ -4,6 +4,7 @@ import { liveSections, type Section, shellFunFact } from '../sections/registry.t
 import { deferred, settle } from '../test/deferred.ts';
 import { setMedia } from '../test/media.ts';
 import { createFakeSectionApp } from '../test/fakeSectionApp.ts';
+import { same } from '../test/localized.ts';
 import { renderRoute } from '../test/renderRoute.tsx';
 
 const SITE_TITLE = 'Bruno Guimarães — Full-Stack Software Engineer';
@@ -31,7 +32,7 @@ describe('routing', () => {
       expect(screen.getByRole('main')).toContainElement(heading);
       expect(screen.getByRole('banner')).toBeInTheDocument();
       if (section.path !== '/') {
-        expect(heading).toHaveTextContent(section.title);
+        expect(heading).toHaveTextContent(section.title.en);
       }
     },
   );
@@ -101,13 +102,14 @@ describe('routing', () => {
     const broken: Section = {
       id: 'broken',
       path: '/broken',
-      label: 'Broken',
-      title: 'Broken',
+      label: same('Broken'),
+      title: same('Broken'),
+      description: same('A broken section.'),
       framework: 'react',
       backend: 'none',
       status: 'live',
       mount: { kind: 'react', load: () => Promise.reject(new Error('chunk failed')) },
-      funFact: { text: 'Broken section.', tech: ['react'] },
+      funFact: { text: same('Broken section.'), tech: ['react'] },
     };
 
     renderRoute('/broken', { sections: [...liveSections, broken] });
@@ -127,7 +129,7 @@ describe('Fun Fact in the shell', () => {
       renderRoute(path);
       await screen.findByRole('heading', { level: 1 });
 
-      expect(funFact()).toHaveTextContent(section.funFact.text);
+      expect(funFact()).toHaveTextContent(section.funFact.text.en);
     },
   );
 
@@ -149,7 +151,7 @@ describe('Fun Fact in the shell', () => {
     renderRoute('/does-not-exist');
     await screen.findByRole('heading', { level: 1, name: 'Page not found' });
 
-    expect(funFact()).toHaveTextContent(shellFunFact.text);
+    expect(funFact()).toHaveTextContent(shellFunFact.text.en);
   });
 });
 
@@ -158,13 +160,14 @@ function remoteSection(load: () => Promise<unknown>): Section {
   return {
     id: 'remote',
     path: '/remote',
-    label: 'Remote',
-    title: 'Remote',
+    label: same('Remote'),
+    title: same('Remote'),
+    description: same('A fake remote section.'),
     framework: 'vue',
     backend: 'none',
     status: 'live',
     mount: { kind: 'remote', entry: '/apps/remote/entry.js', load },
-    funFact: { text: 'This fake section is mounted through the contract.', tech: ['vue'] },
+    funFact: { text: same('This fake section is mounted through the contract.'), tech: ['vue'] },
   };
 }
 

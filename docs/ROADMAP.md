@@ -18,21 +18,21 @@ approval → implement with tests → report → the owner reviews and commits.
 
 ## Phase 1 steps
 
-| #   | Step                                          | Status                              | Deliverables                                                                                                                                          |
-| --- | --------------------------------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0   | Toolchain & docs skeleton                     | Done                                | Node 22 (`.nvmrc`), npm workspaces, `CLAUDE.md`, `README.md`, ADR-0001/0002                                                                           |
-| 1   | Scaffold shell                                | Done                                | Vite react-ts, strict TypeScript, ESLint + Prettier, Vitest + RTL                                                                                     |
-| 2   | Design tokens & layout                        | Done                                | `tokens.css`, header/main/footer, skip link, responsive nav (ADR-0003)                                                                                |
-| 3   | Section registry & routing                    | Done                                | `registry.ts`, generated lazy routes, 404, `aria-current`, focus management (ADR-0004)                                                                |
-| 4   | Fun Fact + TechBadge                          | Done                                | Registry-driven Fun Fact, truthfulness tests                                                                                                          |
-| 5   | Portfolio content                             | Done                                | Home, About, Projects, Architecture, Contact from the résumé                                                                                          |
-| 6   | Microfrontend host                            | Done                                | `SectionApp` contract, `RemoteSection`, lifecycle tests (ADR-0002)                                                                                    |
-| 7   | Mascot v0 + illustrated Home                  | Done                                | State machine, approved raster art, Fun Fact stage, per-page Fun Fact placements (ADR-0005)                                                           |
-| 8   | Responsive layout & screen-space optimisation | Implemented, awaiting visual review | Fluid container up to 96rem, container-sized card grids, per-page layout strategies, Home composition kept intact on wide screens (ADR-0006)          |
-| 9   | Internationalisation (en + pt-BR)             | Planned                             | Typed translations, accessible language switcher, language-specific URLs (see below)                                                                  |
-| 10  | Transitions & polish                          | Planned                             | View Transitions for section changes (with fallback), visual polish, accessibility pass                                                               |
-| 11  | Playwright E2E                                | Planned                             | `e2e/` workspace against `vite preview`, core journeys, axe scans, both languages and the language switcher, layout at key widths (320px → ultrawide) |
-| 12  | Production build & CI                         | Planned                             | Build verification, `ci.yml` (lint, typecheck, unit, build, e2e), "no placeholders" gate; no deploy step until a host is chosen                       |
+| #   | Step                                          | Status  | Deliverables                                                                                                                                          |
+| --- | --------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0   | Toolchain & docs skeleton                     | Done    | Node 22 (`.nvmrc`), npm workspaces, `CLAUDE.md`, `README.md`, ADR-0001/0002                                                                           |
+| 1   | Scaffold shell                                | Done    | Vite react-ts, strict TypeScript, ESLint + Prettier, Vitest + RTL                                                                                     |
+| 2   | Design tokens & layout                        | Done    | `tokens.css`, header/main/footer, skip link, responsive nav (ADR-0003)                                                                                |
+| 3   | Section registry & routing                    | Done    | `registry.ts`, generated lazy routes, 404, `aria-current`, focus management (ADR-0004)                                                                |
+| 4   | Fun Fact + TechBadge                          | Done    | Registry-driven Fun Fact, truthfulness tests                                                                                                          |
+| 5   | Portfolio content                             | Done    | Home, About, Projects, Architecture, Contact from the résumé                                                                                          |
+| 6   | Microfrontend host                            | Done    | `SectionApp` contract, `RemoteSection`, lifecycle tests (ADR-0002)                                                                                    |
+| 7   | Mascot v0 + illustrated Home                  | Done    | State machine, approved raster art, Fun Fact stage, per-page Fun Fact placements (ADR-0005)                                                           |
+| 8   | Responsive layout & screen-space optimisation | Done    | Fluid container up to 96rem, container-sized card grids, per-page layout strategies, Home composition kept intact on wide screens (ADR-0006)          |
+| 9   | Internationalisation (en + pt-BR)             | Done    | Typed translations, accessible language switcher, language-specific URLs, localized metadata (ADR-0007)                                               |
+| 10  | Transitions & polish                          | Planned | View Transitions for section changes (with fallback), visual polish, accessibility pass                                                               |
+| 11  | Playwright E2E                                | Planned | `e2e/` workspace against `vite preview`, core journeys, axe scans, both languages and the language switcher, layout at key widths (320px → ultrawide) |
+| 12  | Production build & CI                         | Planned | Build verification, `ci.yml` (lint, typecheck, unit, build, e2e), "no placeholders" gate; no deploy step until a host is chosen                       |
 
 Steps 8 and 9 were added before the original Step 8; the original Steps 8–10 are now 10–12.
 Layout comes before i18n so Portuguese text expansion is checked against the final layout, and
@@ -83,16 +83,20 @@ animations, content and mobile layouts are preserved.
   `/pt-br/projects`), never redirecting to Home.
 - An accessible language switcher in the navigation (keyboard and screen-reader friendly, each
   option marked with its `lang`); switching does not reload the application.
-- The preference persists across navigation and refreshes (the URL is the state; a stored
-  preference only decides where `/` sends a returning visitor).
+- **Decision (owner): the URL is fully authoritative.** `/` is always English and `/pt-br` always
+  Portuguese: no redirects, no stored preference, no browser-language detection. The language
+  persists across navigation, refreshes and shared links because it is part of the URL.
 - All user-facing text is translated: navigation, headings, descriptions, projects,
   architecture content, Fun Facts, status labels, buttons and accessibility labels. No
   hardcoded strings scattered across components; per-locale typed content with identical
   shapes, completeness enforced by types and tests.
-- Library choice is made in the step's plan (leading candidate: a small typed in-house layer;
-  alternative: `react-i18next`).
+- **Decision: no i18n library**: a small typed in-house layer (dictionaries typed against
+  English, `Localized` content fields); see ADR-0007.
 - Integrates with the section registry, generated routes, lazy loading and the microfrontend
-  contract (`SectionContext` gains the locale and a change notification; ADR-0002 update).
+  contract (`SectionContext` gains `locale`; a language switch remounts the app, so no change
+  notification is needed; ADR-0002 update).
+- Completed after the owner's review of the Portuguese text and of the layouts in both
+  languages.
 - `<html lang>`, titles and metadata follow the active language; layouts handle Portuguese text
   expansion.
 - Tests: switching, persistence, equivalent-page links, translation completeness, navigation in

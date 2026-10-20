@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { LOCALES } from '../i18n/locales.ts';
 import {
   type Backend,
   type Framework,
@@ -25,10 +26,11 @@ describe('section registry', () => {
     expect(sections.filter((section) => section.path === '/')).toHaveLength(1);
   });
 
-  it('gives every section a label and a title', () => {
+  it.each(LOCALES)('gives every section a label, a title and a description in %s', (locale) => {
     for (const section of sections) {
-      expect(section.label.trim()).not.toBe('');
-      expect(section.title.trim()).not.toBe('');
+      expect(section.label[locale].trim()).not.toBe('');
+      expect(section.title[locale].trim()).not.toBe('');
+      expect(section.description[locale].trim()).not.toBe('');
     }
   });
 
@@ -76,9 +78,9 @@ const BACKEND_TECH: Record<Exclude<Backend, 'none'>, string> = {
 
 describe('Fun Fact truthfulness', () => {
   it.each(liveSections.map((section) => [section.id, section] as const))(
-    '%s has Fun Fact text and at least one live badge',
+    '%s has Fun Fact text in every language and at least one live badge',
     (_id, section) => {
-      expect(section.funFact.text.trim()).not.toBe('');
+      for (const locale of LOCALES) expect(section.funFact.text[locale].trim()).not.toBe('');
       expect(section.funFact.tech.length).toBeGreaterThan(0);
     },
   );

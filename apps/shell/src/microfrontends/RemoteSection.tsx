@@ -1,11 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { useMessages } from '../i18n/context.ts';
+import {
+  DEFAULT_LOCALE,
+  type Locale,
+  localeConfig,
+  localizePath,
+  stripLocale,
+} from '../i18n/locales.ts';
 import { isSectionApp, type SectionApp, type SectionContext, type ShellEvent } from './contract.ts';
 
 interface RemoteSectionProps {
   /** Loads the section app's module (e.g. a dynamic import of its entry URL). */
   load: () => Promise<unknown>;
   basePath: string;
+  /** The shell's language, passed to the app as `ctx.locale` (a BCP 47 tag). */
+  locale?: Locale;
   onEvent?: (event: ShellEvent) => void;
 }
 
@@ -16,8 +26,12 @@ interface RemoteSectionProps {
  * StrictMode re-runs, fast navigation and late promises can never leave a stale or duplicate
  * app behind. Failures are re-thrown during render, so the route's error element shows them
  * inside the shell.
+ *
+ * A language switch changes the URL prefix, which matches another route: the app is unmounted
+ * and mounted again with the new `locale` (no change notification needed; ADR-0002).
  */
-function RemoteSection({ load, basePath, onEvent }: RemoteSectionProps) {
+function RemoteSection({ load, basePath, locale = DEFAULT_LOCALE, onEvent }: RemoteSectionProps) {
+  const messages = useMessages();
   const hostRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const navigateRef = useRef(navigate);
@@ -42,7 +56,9 @@ function RemoteSection({ load, basePath, onEvent }: RemoteSectionProps) {
 
     const ctx: SectionContext = {
       basePath,
-      navigate: (to) => void navigateRef.current(to),
+      locale: localeConfig[locale].htmlLang,
+      // Paths are language-neutral for the app: the shell keeps the visitor's language.
+      navigate: (to) => void navigateRef.current(localizePath(stripLocale(to), locale)),
       emit: (event) => onEventRef.current?.(event),
     };
 
@@ -85,13 +101,13 @@ function RemoteSection({ load, basePath, onEvent }: RemoteSectionProps) {
       if (mountedApp) teardown(mountedApp);
       else if (!mountPoint.hasChildNodes()) mountPoint.remove();
     };
-  }, [load, basePath]);
+  }, [load, basePath, locale]);
 
   if (failure) throw failure.error;
 
   return (
     <>
-      {!isMounted && <p role="status">Loading section…</p>}
+      {!isMounted && <p role="status">{messages.remote.loading}</p>}
       <div ref={hostRef} />
     </>
   );

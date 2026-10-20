@@ -2,18 +2,24 @@ import { Link } from 'react-router';
 import PageIntro from '../../components/PageIntro/PageIntro.tsx';
 import ProjectCard from '../../components/ProjectCard/ProjectCard.tsx';
 import { projects } from '../../content/projects.ts';
+import { useLocale, useLocalizedPath, useMessages } from '../../i18n/context.ts';
 import page from '../Page.module.css';
+import { sectionTitle } from '../registry.ts';
 import styles from './ProjectsPage.module.css';
 
 function ProjectsPage() {
+  const locale = useLocale();
+  const messages = useMessages();
+  const to = useLocalizedPath();
+
   return (
     <PageIntro
-      title="Projects"
+      title={sectionTitle('projects', locale)}
       lead={
         <>
-          Things I&apos;ve built in public. Most of my professional work lives in private client
-          codebases, so it isn&apos;t shown here; my experience is summarised on the{' '}
-          <Link to="/about">About</Link> page.
+          {messages.projects.leadBeforeLink}{' '}
+          <Link to={to('/about')}>{messages.projects.leadLink}</Link>
+          {messages.projects.leadAfterLink}
         </>
       }
       column={
@@ -25,7 +31,7 @@ function ProjectsPage() {
               </li>
             ))}
           </ul>
-          <p className={page.note}>More public projects will be added as this portfolio grows.</p>
+          <p className={page.note}>{messages.projects.note}</p>
         </>
       }
     />

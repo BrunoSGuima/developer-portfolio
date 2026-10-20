@@ -90,46 +90,21 @@
 }
 
 /* ---- Hero (Home), ≥ 64rem: the scene from docs/assets/homepage.png, right of the hero text ---- */
-@media (min-width: 64rem) {
-  .stage[data-composition='hero'] {
-    position: absolute;
-    top: var(--space-7);
-    /* Shifted right into the free space beside the container, then nudged back left for visual
-       balance (mascot and card move together; sizes and the fingertip are unaffected). */
-    right: calc(var(--home-stage-shift) * -1 + var(--home-stage-nudge));
-    display: block;
-    width: min(calc(100% * (1 - var(--home-hero-text-ratio))), var(--home-stage-max));
-    height: var(--home-stage-height);
-    margin: 0;
-  }
-
-  .stage[data-composition='hero'] .frame {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 76%;
-    margin: 0;
-  }
-
-  /*
-   * The mascot stands on the stage's bottom edge. Its size and offset keep its fingertip (at
-   * 86.2% / 32.4% of the A3 art) at the same spot under the card: the stage height and these
-   * two values come from scaling the original layout (stage S, mascot 88% of S, left -4%) by
-   * 0.9 around that fingertip. Change them together.
-   */
-  .stage[data-composition='hero'] .presenter {
-    position: absolute;
-    bottom: 0;
-    left: calc(-4% + 0.068 * var(--home-stage-height));
-    height: 84.2%;
-    margin: 0;
-  }
-}
 
 /*
- * The card's left edge lines up with the third "What I do" card: one column of HomePage's 3-up
- * grid ((container − 2 gaps) / 3, gap --space-4, container as in .container, measured in the
- * hero region's cqi) plus the stage's shift past the container; its right edge is unchanged.
+ * A two-row grid: the card on top, the mascot below it.
+ * - Card: its left edge lines up with the third "What I do" card: one column of HomePage's
+ *   3-up grid ((container − 2 gaps) / 3, gap --space-4, container as in .container, measured in
+ *   the hero region's cqi) plus the stage's shift past the container. Its right edge is the
+ *   stage's.
+ * - Mascot: it stands on the stage's bottom edge. The stage is at least --home-stage-min tall;
+ *   if the card is taller than usual (narrow widths, longer translations), the mascot's top
+ *   margin keeps its fingertip (32.4% down the A3 art) --home-fingertip-gap below the card's real
+ *   bottom edge, and the stage grows (HomePage's spacer follows: --home-stage-block, see
+ *   useHeroExtent). Horizontally it keeps its offset from the card's left edge (72% = 100% − the
+ *   28% it sat left of a 76% card), so the fingertip stays at the same spot under the card.
+ * - Size: the mascot's height (84.2% of --home-stage-height) and the 0.068 offset come from
+ *   scaling the original layout by 0.9 around the fingertip. Change them together.
  */
 @media (min-width: 64rem) {
   .stage[data-composition='hero'] {
@@ -137,59 +112,55 @@
       (min(100cqi - 2 * var(--gutter), var(--content-max)) - 2 * var(--space-4)) / 3 +
         var(--home-stage-shift)
     );
-  }
-}
-
-/*
- * From 80rem the card is short enough to sit above the mascot's fingertip in the fixed-height
- * stage. The mascot keeps its offset from the card's left edge (72% = 100% − the 28% it sat left
- * of a 76% card), so the fingertip stays at the same spot under the card.
- */
-@media (min-width: 80rem) {
-  .stage[data-composition='hero'] .frame {
-    width: var(--home-card-width);
-  }
-
-  .stage[data-composition='hero'] .presenter {
-    left: calc(72% - var(--home-card-width) + 0.068 * var(--home-stage-height));
-  }
-}
-
-/*
- * 64–80rem: the aligned card is narrower (≈ 320–410px), so its text takes more lines. The stage
- * flows instead (card, then the mascot below it) and grows with the card: the mascot's top margin
- * puts its fingertip (32.4% down the A3 art) --space-2 below the card's real bottom edge, whatever
- * the card's height. Same mascot size and horizontal offset as above; HomePage's spacer follows
- * the taller stage (--home-stage-block, see useHeroExtent).
- */
-@media (min-width: 64rem) and (max-width: 79.99rem) {
-  .stage[data-composition='hero'] {
     --home-mascot-height: calc(0.842 * var(--home-stage-height));
 
+    position: absolute;
+    top: var(--space-7);
+    /* Shifted right into the free space beside the container, then nudged back left for visual
+       balance (mascot and card move together; sizes and the fingertip are unaffected). */
+    right: calc(var(--home-stage-shift) * -1 + var(--home-stage-nudge));
     display: grid;
     grid-template-areas:
       'card'
       'mascot';
     grid-template-columns: minmax(0, 1fr); /* one column (the < 64rem rule has two) */
-    height: auto;
+    grid-template-rows: auto 1fr;
+    width: min(calc(100% * (1 - var(--home-hero-text-ratio))), var(--home-stage-max));
+    min-height: var(--home-stage-min);
+    margin: 0;
   }
 
   .stage[data-composition='hero'] .frame {
     position: relative;
-    top: auto;
-    right: auto;
     grid-area: card;
     justify-self: end;
     width: var(--home-card-width);
+    margin: 0;
   }
 
   .stage[data-composition='hero'] .presenter {
     position: relative;
-    bottom: auto;
     grid-area: mascot;
+    align-self: end;
     justify-self: start;
     left: calc(72% - var(--home-card-width) + 0.068 * var(--home-stage-height));
     height: var(--home-mascot-height);
-    margin-block-start: calc(var(--space-2) - 0.324 * var(--home-mascot-height));
+    margin: calc(var(--home-fingertip-gap) - 0.324 * var(--home-mascot-height)) 0 0;
+  }
+}
+
+/* 64–80rem: the aligned card is narrow (≈ 320–410px) and always taller: the mascot follows it. */
+@media (min-width: 64rem) and (max-width: 79.99rem) {
+  .stage[data-composition='hero'] {
+    --home-stage-min: 0px;
+    --home-fingertip-gap: var(--space-2);
+  }
+}
+
+/* From 80rem: a fixed-height stage unless the card needs more room (e.g. in Portuguese). */
+@media (min-width: 80rem) {
+  .stage[data-composition='hero'] {
+    --home-stage-min: var(--home-stage-height);
+    --home-fingertip-gap: var(--space-1);
   }
 }

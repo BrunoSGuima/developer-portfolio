@@ -2,17 +2,18 @@ import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { todo } from '../../content/placeholder.ts';
 import type { Project } from '../../content/projects.ts';
+import { same } from '../../test/localized.ts';
 import ProjectCard from './ProjectCard.tsx';
 
 const project: Project = {
   id: 'demo',
-  name: 'Demo project',
+  name: same('Demo project'),
   status: 'in-progress',
-  description: 'A demo.',
+  description: same('A demo.'),
   tech: ['react', 'typescript'],
   links: [
-    { label: 'Live demo', href: 'https://example.com' },
-    { label: 'Source code', href: todo('repository URL') },
+    { label: same('Live demo'), href: 'https://example.com' },
+    { label: same('Source code'), href: todo('repository URL') },
   ],
 };
 

@@ -1,4 +1,5 @@
 import { type ReactNode, useRef } from 'react';
+import { useMessages } from '../../i18n/context.ts';
 import styles from './AppLayout.module.css';
 import SiteFooter from './SiteFooter.tsx';
 import SiteHeader from './SiteHeader.tsx';
@@ -31,13 +32,14 @@ function AppLayout({
   contextPlacement = 'stacked',
   children,
 }: AppLayoutProps) {
+  const messages = useMessages();
   const regionRef = useRef<HTMLDivElement>(null);
   useHeroExtent(regionRef, Boolean(backdrop));
 
   return (
     <div className={styles.layout}>
       <a href="#main" className={styles.skipLink}>
-        Skip to content
+        {messages.layout.skipLink}
       </a>
       <SiteHeader lane={headerLane} />
       {/* The region spans the full width so a backdrop can sit behind the Fun Fact and the hero. */}

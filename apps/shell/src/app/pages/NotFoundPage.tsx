@@ -1,12 +1,16 @@
 import { Link } from 'react-router';
+import { useLocalizedPath, useMessages } from '../../i18n/context.ts';
 
 function NotFoundPage() {
+  const messages = useMessages();
+  const to = useLocalizedPath();
+
   return (
     <>
-      <h1>Page not found</h1>
-      <p>There is nothing at this address.</p>
+      <h1>{messages.notFound.title}</h1>
+      <p>{messages.notFound.text}</p>
       <p>
-        <Link to="/">Back to home</Link>
+        <Link to={to('/')}>{messages.notFound.home}</Link>
       </p>
     </>
   );

@@ -1,6 +1,6 @@
 # ADR-0006: Responsive layout strategy (fluid container, container-sized grids)
 
-- **Status:** Accepted (Phase 1, Step 8; awaiting the owner's visual review)
+- **Status:** Accepted (Phase 1, Step 8)
 - **Date:** 2026-10-19
 
 ## Context
@@ -45,10 +45,12 @@ page widens. The visual identity, typography, art and mobile layouts are out of 
 6. **Home card alignment (whole desktop layout, from 64rem):** the Fun Fact card's left edge
    lines up with the third "What I do" card (`--home-card-width`: one column of the 3-up grid
    plus the stage shift; the right edge is unchanged), and the mascot keeps its horizontal
-   offset from the card's left edge, so the fingertip stays at the same spot. From 80rem the
-   stage keeps its fixed height. Between 64rem and 80rem the aligned card is narrower and
-   taller, so the stage flows instead (card, then the mascot below it): the mascot's top margin
-   puts its fingertip `--space-2` below the card's real bottom, and `useHeroExtent` publishes
+   offset from the card's left edge, so the fingertip stays at the same spot. The stage is a
+   two-row grid (card, then the mascot standing on its bottom edge) with a minimum height
+   (`--home-stage-min`): from 80rem it is the fixed stage height, so a short card changes
+   nothing; between 64rem and 80rem it is 0, because the aligned card is narrower and taller.
+   When the card is taller (narrow widths, Portuguese), the mascot's top margin keeps its
+   fingertip `--home-fingertip-gap` below the card's real bottom, and `useHeroExtent` publishes
    the stage's rendered height (`--home-stage-block`) so HomePage's spacer keeps the "What I
    do" cards below the mascot's feet. Measured in Chromium with a 15px scrollbar: 0.0px
    difference at 1024, 1100, 1200, 1279, 1280 and 1440px, no overlaps.

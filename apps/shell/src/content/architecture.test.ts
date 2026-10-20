@@ -36,18 +36,20 @@ describe('architecture truthfulness', () => {
     }
   });
 
-  it('says no real remote section is mounted while no section uses one', () => {
+  it('says, in both languages, that no real remote section is mounted while none is', () => {
     const anyRemote = sections.some((section) => section.mount.kind === 'remote');
     if (!anyRemote) {
-      expect(componentById('microfrontend-host').description).toMatch(
-        /no real remote section is mounted yet/,
-      );
+      const { description } = componentById('microfrontend-host');
+      expect(description.en).toMatch(/no real remote section is mounted yet/);
+      expect(description['pt-BR']).toMatch(/nenhuma seção remota real está montada ainda/);
     }
   });
 
-  it('says the navigation mascot is a placeholder while its art is the placeholder', () => {
+  it('says, in both languages, that the navigation mascot is still a placeholder', () => {
     if (isPlaceholderArt) {
-      expect(componentById('mascot').description).toMatch(/navigation mascot.*placeholder/i);
+      const { description } = componentById('mascot');
+      expect(description.en).toMatch(/navigation mascot.*placeholder/i);
+      expect(description['pt-BR']).toMatch(/navegação.*provisória/i);
     }
   });
 

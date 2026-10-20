@@ -1,27 +1,33 @@
 import { contact } from '../../content/contact.ts';
+import { useLocale, useMessages } from '../../i18n/context.ts';
+import { pick } from '../../i18n/localized.ts';
 import page from '../Page.module.css';
+import { sectionTitle } from '../registry.ts';
 import styles from './ContactPage.module.css';
 
 function ContactPage() {
+  const locale = useLocale();
+  const messages = useMessages();
+
   return (
     <>
-      <h1>Contact</h1>
-      <p className={page.lead}>{contact.lead}</p>
+      <h1>{sectionTitle('contact', locale)}</h1>
+      <p className={page.lead}>{pick(contact.lead, locale)}</p>
       <dl className={`${page.section} ${styles.channels}`}>
         {contact.channels.map((channel) => (
-          <div key={channel.label}>
-            <dt>{channel.label}</dt>
+          <div key={channel.href}>
+            <dt>{pick(channel.label, locale)}</dt>
             <dd>
               <a href={channel.href}>{channel.display}</a>
             </dd>
           </div>
         ))}
         <div>
-          <dt>Location</dt>
-          <dd>{contact.location}</dd>
+          <dt>{messages.contact.location}</dt>
+          <dd>{pick(contact.location, locale)}</dd>
         </div>
       </dl>
-      <p className={page.note}>{contact.availability}</p>
+      <p className={page.note}>{pick(contact.availability, locale)}</p>
     </>
   );
 }

@@ -14,9 +14,20 @@
 export type ShellEvent = { type: 'ready' } | { type: 'error'; message: string };
 
 export interface SectionContext {
-  /** The section's base path, e.g. "/career". The app owns everything below it. */
+  /**
+   * The section's base path in the active language, e.g. "/career" or "/pt-br/career". The app
+   * owns everything below it.
+   */
   basePath: string;
-  /** Navigate through the shell's router (e.g. to another section). */
+  /**
+   * The shell's language as a BCP 47 tag ('en' or 'pt-BR'). The app renders in it with its own
+   * translations; a language switch remounts the app with the new value.
+   */
+  locale: string;
+  /**
+   * Navigate through the shell's router (e.g. to another section). Takes a path without a
+   * language prefix ("/about"); the shell keeps the visitor's language ("/pt-br/about").
+   */
   navigate(to: string): void;
   emit(event: ShellEvent): void;
 }

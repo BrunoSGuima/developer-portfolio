@@ -55,7 +55,7 @@ describe('ArchitecturePage', () => {
     expect(items).toHaveLength(timeline.length);
     items.forEach((item, index) => {
       expect(item).toHaveTextContent(timeline[index]!.version);
-      expect(item).toHaveTextContent(timeline[index]!.name);
+      expect(item).toHaveTextContent(timeline[index]!.name.en);
       expect(within(item).getByText(STATUS_WORD)).toBeInTheDocument();
     });
     expect(items[0]).toHaveTextContent('In progress');

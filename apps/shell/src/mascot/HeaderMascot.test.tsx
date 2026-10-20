@@ -14,6 +14,8 @@ const LINK_LEFT: Record<string, number> = {
   Projects: 800,
   Architecture: 900,
   Contact: 1000,
+  // Portuguese labels have other widths, so the active link sits elsewhere.
+  Sobre: 720,
 };
 const LINK_WIDTH = 80;
 const LANE_WIDTH = 1216;
@@ -31,7 +33,7 @@ const eagerSections: Section[] = liveSections.map((section) => ({
   ...section,
   mount: {
     kind: 'react',
-    load: () => Promise.resolve({ default: () => <h1>{section.title}</h1> }),
+    load: () => Promise.resolve({ default: () => <h1>{section.title.en}</h1> }),
   },
 }));
 
@@ -70,10 +72,10 @@ beforeEach(() => {
     if (this.matches('[data-mascot="header"]')) return rect(0, LANE_WIDTH);
     if (this.parentElement?.matches('[data-mascot="header"]'))
       return rect(walkerLeft, MASCOT_WIDTH);
-    if (this.matches('nav[aria-label="Main"] a')) {
+    if (this.matches('[data-nav="main"] a')) {
       return rect(LINK_LEFT[this.textContent ?? ''] ?? 0, LINK_WIDTH);
     }
-    if (this.matches('aside[aria-label="Fun fact"]')) return rect(card.left, card.width);
+    if (this.matches('[data-fun-fact]')) return rect(card.left, card.width);
     return rect(0);
   });
 });
@@ -186,6 +188,17 @@ describe('HeaderMascot (desktop)', () => {
 
     expect(pose()).toBe('idle');
     expect(position()).toBe(at('Projects'));
+  });
+
+  it('snaps (without walking) to the moved link when the language changes', async () => {
+    const { go } = await renderShell('/about');
+    expect(position()).toBe(at('About'));
+
+    await go('/pt-br/about');
+
+    expect(pose()).toBe('idle');
+    expect(position()).toBe(at('Sobre'));
+    expect(walker().style.transitionDuration).toBe('0ms');
   });
 
   it('keeps nav links clickable', async () => {

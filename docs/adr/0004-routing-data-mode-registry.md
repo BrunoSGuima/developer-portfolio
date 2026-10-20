@@ -21,8 +21,10 @@ microfrontend (ADR-0002) and API-backed sections in later phases.
   - A pathless child route has the `errorElement`, so 404s and load failures render inside the
     shell.
   - Each live section becomes a route with `lazy` (one chunk per section) and
-    `handle: { section, title }`.
-  - `*` renders the not-found page.
+    `handle: { section }`.
+  - `*` renders the not-found page (`handle: { notFound: true }`).
+  - Since Step 9 (ADR-0007) the section routes and the 404 are generated once per language:
+    under `/` (English) and under `/pt-br` (Portuguese). Registry paths stay language-neutral.
 - The shell reads route metadata via `useMatches()` + `handle` (document title now; the Fun Fact
   in Step 4).
 - `<ScrollRestoration>` handles scroll; `useRouteFocus` moves focus to the new page's `<h1>` after
