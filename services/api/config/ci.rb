@@ -1,4 +1,4 @@
-# Run using bin/ci: every check the API must pass, locally and in CI (Step 2.2 calls it).
+# Run using bin/ci: every check the API must pass, locally and in CI (the `api` job runs it).
 # Needs PostgreSQL running (infra/compose.yaml) and the connection settings (.env locally).
 
 CI.run do

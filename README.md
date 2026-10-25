@@ -70,7 +70,8 @@ npm run test:e2e    # Playwright E2E + axe against the production build (both la
 ```
 
 CI (`.github/workflows/ci.yml`, ADR-0010) runs the same commands on every push to `main` and
-every pull request, plus `npm run content:check` (no unconfirmed `todo()` content).
+every pull request, plus `npm run content:check` (no unconfirmed `todo()` content), and the
+Rails API's `bin/ci` against a PostgreSQL service container.
 
 The E2E suite needs a browser once: `npx playwright install chromium` (on Linux/WSL also
 `sudo npx playwright install-deps chromium`). Root scripts delegate to npm workspaces.

@@ -16,8 +16,8 @@ tokens, registry & routing, Fun Fact, portfolio content, microfrontend host, mas
 illustrated Home, responsive layout, i18n en + pt-BR, transitions & polish, Playwright E2E, CI;
 CI is green on GitHub; Architecture page updated). Phase 1 is **not** the MVP.
 
-**Phase 2 — Ruby on Rails API + PostgreSQL: in progress** (Step 2.0 done; Step 2.1, the API
-toolchain and skeleton in `services/api`, ready for review).
+**Phase 2 — Ruby on Rails API + PostgreSQL: in progress** (Steps 2.0–2.1 done: ADRs, the API
+toolchain and skeleton in `services/api`; Step 2.2, the CI `api` job, ready for review).
 Phase 2 is complete when the API, persistence, endpoints, security and RSpec suite work on their
 own (no frontend required). **The MVP is complete only at the end of Phase 3** (integration and
 full-stack validation). **Deployment is postponed** to Phase 4; do not add hosting, CD or
@@ -74,11 +74,15 @@ static data until Phase 3.
 - **Hosting**: not deployed yet (owner's decision). The first release is Phase 4, after the Rails
   API and PostgreSQL are integrated (Phases 2–3); then a single VPS with Docker Compose behind
   Caddy, path-routed same-origin, is the current plan. No Kubernetes in the MVP.
-- **CI** (ADR-0010, `.github/workflows/ci.yml`): on pushes to `main` and pull requests, two
+- **CI** (ADR-0010, `.github/workflows/ci.yml`): on pushes to `main` and pull requests, three
   parallel jobs: `quality` (`npm ci`, format, lint, typecheck, unit tests, `content:check`,
-  build) and `e2e` (Playwright + axe, HTML report artifact). Read-only token, actions pinned to
-  commit SHAs (update SHA and release comment together), no secrets. Keep CI calling root npm
-  scripts so it never drifts from local commands.
+  build), `e2e` (Playwright + axe, HTML report artifact) and `api` (`ruby/setup-ruby` from
+  `services/api/.ruby-version` with the Bundler cache, a `postgres:18.6-trixie` service container,
+  then `bin/ci`). Read-only token, actions pinned to commit SHAs (update SHA and release comment
+  together), no secrets (the `api` job's database password is a documented throwaway). Keep CI
+  calling root npm scripts and `bin/ci` so it never drifts from local commands: new API checks
+  go into `services/api/config/ci.rb`, not the workflow. Keep the PostgreSQL image tag identical
+  in `infra/compose.yaml` and the workflow; bump the setup-ruby SHA with `.ruby-version`.
 
 ## Conventions
 

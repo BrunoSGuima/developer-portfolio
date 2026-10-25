@@ -1,0 +1,65 @@
+ .prettierignore                                              |   5 [32m++[m
+ CLAUDE.md                                                    |  21 [32m++++[m[31m-[m
+ README.md                                                    |  11 [32m+[m[31m--[m
+ docs/ROADMAP.md                                              |  33 [32m+++++[m[31m---[m
+ docs/adr/0011-rails-api-backend.md                           |  29 [32m+++++[m[31m--[m
+ infra/.env.example                                           |   5 [32m++[m
+ infra/compose.yaml                                           |  31 [32m++++++++[m
+ services/api/.env.example                                    |   7 [32m++[m
+ services/api/.gitattributes                                  |   9 [32m+++[m
+ services/api/.gitignore                                      |  27 [32m+++++++[m
+ services/api/.rspec                                          |   1 [32m+[m
+ services/api/.rubocop.yml                                    |   8 [32m++[m
+ services/api/.ruby-version                                   |   1 [32m+[m
+ services/api/Gemfile                                         |  40 [32m++++++++++[m
+ services/api/Gemfile.lock                                    | 435 [32m++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++[m
+ services/api/README.md                                       | 119 [32m++++++++++++++++++++++++++++[m
+ services/api/Rakefile                                        |   6 [32m++[m
+ services/api/app/controllers/application_controller.rb       |   2 [32m+[m
+ services/api/app/controllers/concerns/.keep                  |   0
+ services/api/app/jobs/application_job.rb                     |   7 [32m++[m
+ services/api/app/mailers/application_mailer.rb               |   4 [32m+[m
+ services/api/app/models/application_record.rb                |   3 [32m+[m
+ services/api/app/models/concerns/.keep                       |   0
+ services/api/app/views/layouts/mailer.html.erb               |  13 [32m++++[m
+ services/api/app/views/layouts/mailer.text.erb               |   1 [32m+[m
+ services/api/bin/brakeman                                    |   7 [32m++[m
+ services/api/bin/bundler-audit                               |   6 [32m++[m
+ services/api/bin/ci                                          |   6 [32m++[m
+ services/api/bin/dev                                         |   2 [32m+[m
+ services/api/bin/rails                                       |   4 [32m+[m
+ services/api/bin/rake                                        |   4 [32m+[m
+ services/api/bin/rubocop                                     |   8 [32m++[m
+ services/api/bin/setup                                       |  48 [32m++++++++++++[m
+ services/api/config.ru                                       |   6 [32m++[m
+ services/api/config/application.rb                           |  44 [32m+++++++++++[m
+ services/api/config/boot.rb                                  |   4 [32m+[m
+ services/api/config/bundler-audit.yml                        |   5 [32m++[m
+ services/api/config/ci.rb                                    |  13 [32m++++[m
+ services/api/config/credentials.yml.enc                      |   1 [32m+[m
+ services/api/config/database.yml                             |  29 [32m+++++++[m
+ services/api/config/environment.rb                           |   5 [32m++[m
+ services/api/config/environments/development.rb              |  67 [32m++++++++++++++++[m
+ services/api/config/environments/production.rb               |  83 [32m++++++++++++++++++++[m
+ services/api/config/environments/test.rb                     |  50 [32m++++++++++++[m
+ services/api/config/initializers/filter_parameter_logging.rb |   8 [32m++[m
+ services/api/config/initializers/inflections.rb              |  16 [32m++++[m
+ services/api/config/locales/en.yml                           |  31 [32m++++++++[m
+ services/api/config/puma.rb                                  |  39 [32m++++++++++[m
+ services/api/config/routes.rb                                |  10 [32m+++[m
+ services/api/db/seeds.rb                                     |   9 [32m+++[m
+ services/api/lib/tasks/.keep                                 |   0
+ services/api/log/.keep                                       |   0
+ services/api/public/robots.txt                               |   1 [32m+[m
+ services/api/script/.keep                                    |   0
+ services/api/spec/factories/.keep                            |   0
+ services/api/spec/rails_helper.rb                            |  25 [32m++++++[m
+ services/api/spec/requests/health_spec.rb                    |   9 [32m+++[m
+ services/api/spec/setup/database_spec.rb                     |  37 [32m+++++++++[m
+ services/api/spec/setup/environment_spec.rb                  |  26 [32m+++++++[m
+ services/api/spec/spec_helper.rb                             |  21 [32m+++++[m
+ services/api/spec/support/factory_bot.rb                     |   4 [32m+[m
+ services/api/tmp/.keep                                       |   0
+ services/api/tmp/pids/.keep                                  |   0
+ services/api/vendor/.keep                                    |   0
+ 64 files changed, 1420 insertions(+), 26 deletions(-)

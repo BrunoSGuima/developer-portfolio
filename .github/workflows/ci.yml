@@ -1,6 +1,6 @@
 # Continuous integration (ADR-0010): every push to main and every pull request runs the same
-# checks as a local `npm run …`. No deployment: hosting is postponed until the Rails API and
-# PostgreSQL are integrated (docs/ROADMAP.md).
+# checks as a local `npm run …` (frontend) and `bin/ci` (Rails API). No deployment: hosting is
+# postponed until the Rails API and PostgreSQL are integrated (docs/ROADMAP.md).
 name: CI
 
 on:
@@ -104,3 +104,49 @@ jobs:
           name: playwright-report
           path: e2e/playwright-report/
           retention-days: 14
+
+  api:
+    name: Rails API (RuboCop, bundler-audit, Brakeman, RSpec)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: services/api
+    services:
+      # Same image as infra/compose.yaml. The password below is NOT a secret: it only guards this
+      # job's own throwaway container on the runner (destroyed with it). It is a literal because
+      # service definitions can't read the job's env, and repository secrets aren't available to
+      # pull requests from forks.
+      postgres:
+        image: postgres:18.6-trixie
+        env:
+          POSTGRES_USER: portfolio
+          POSTGRES_PASSWORD: ci-throwaway-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U portfolio -d postgres"
+          --health-interval 5s --health-timeout 3s --health-retries 10 --health-start-period 10s
+    # The connection settings a developer keeps in services/api/.env (config/database.yml).
+    env:
+      RAILS_ENV: test
+      DATABASE_HOST: 127.0.0.1
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: portfolio
+      DATABASE_PASSWORD: ci-throwaway-password
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Ruby from services/api/.ruby-version; gems installed from the frozen Gemfile.lock and
+      # cached (key: OS, Ruby version, Gemfile.lock).
+      - uses: ruby/setup-ruby@7f797815d8adceb1c412e7abefdd1ab4abc47a5f # v1.335.0
+        with:
+          working-directory: services/api
+          bundler-cache: true
+
+      # The same command as locally (config/ci.rb): setup (development and test databases),
+      # RuboCop, bundler-audit, Brakeman and RSpec. Any failing step fails the job.
+      - name: API checks (bin/ci)
+        run: bin/ci

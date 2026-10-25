@@ -105,6 +105,16 @@ Only use it on purpose.
   the test database, transactional isolation).
 - The suite needs PostgreSQL running and nothing else (no Node, no shell).
 
+## Continuous integration
+
+GitHub Actions' `api` job (`.github/workflows/ci.yml`, ADR-0010) runs **`bin/ci`**, the same
+command as locally, with Ruby from `.ruby-version`, cached gems and a `postgres:18.6-trixie`
+service container. There is no `.env` in CI: the connection comes from `DATABASE_*` variables
+(a throwaway password for the job's own container; no repository secrets). To add a check, add a
+step to `config/ci.rb`; it then runs both locally and in CI. Keep the PostgreSQL image tag
+identical in `infra/compose.yaml` and the workflow, and bump the pinned `ruby/setup-ruby` SHA
+when `.ruby-version` changes.
+
 ## Troubleshooting
 
 | Symptom                                                      | Fix                                                                                                                                                                                                                      |
