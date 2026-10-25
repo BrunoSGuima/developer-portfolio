@@ -41,7 +41,7 @@ URLs, correct `<html lang>` and metadata, and no changes to the approved English
    after the nav from 64rem.
 5. **Metadata:** `app/Metadata.tsx` renders the localized title and description, a canonical
    URL and `hreflang` alternates (en, pt-BR, x-default; none on 404s), from the route only, so
-   prerendering (Phase 6) can reuse it. `VITE_SITE_ORIGIN` sets the absolute origin.
+   prerendering (Phase 4) can reuse it. `VITE_SITE_ORIGIN` sets the absolute origin.
    `useDocumentLang` sets `<html lang>` before paint. `index.html` has no static description.
 6. **Microfrontends** (ADR-0002 update): `SectionContext` gains `locale` (a BCP 47 tag) and a
    language-specific `basePath`; `ctx.navigate()` takes language-neutral paths and the shell
@@ -68,7 +68,8 @@ URLs, correct `<html lang>` and metadata, and no changes to the approved English
   attributes (`[data-nav="main"]`, `[data-fun-fact]`).
 - Both languages ship in the main bundle (a few KB); per-locale chunks can come later.
 - SEO is limited while the site is client-rendered; the metadata becomes fully effective with
-  prerendering (Phase 6). The static host must serve `index.html` for every route (SPA
-  fallback), which Step 11 (E2E) and Step 12 (deploy) verify.
+  prerendering (Phase 4). The static host must serve `index.html` for every route (SPA
+  fallback): Step 11's E2E suite verifies it against `vite preview`, and the deployment phase
+  must keep it.
 - Longer Portuguese text is absorbed by the layout: the Home stage grows when the Fun Fact card
   is taller (the mascot's fingertip stays visible), and English stays pixel-identical.

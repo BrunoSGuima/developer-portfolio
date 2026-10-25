@@ -5,7 +5,7 @@
 
 ## Context
 
-From Phase 3, sections built with Vue 3 (and possibly other frameworks) must appear inside the
+From Phase 5 (renumbered 2026-10-24; see docs/ROADMAP.md), sections built with Vue 3 (and possibly other frameworks) must appear inside the
 React shell (ADR-0001) with seamless navigation: no full-page reloads, the shell (navigation,
 mascot, Fun Fact) stays mounted, and each app remains independently developed, built and
 deployed. Sub-apps also need to report events back to the shell (e.g. "data loaded") so the
@@ -70,7 +70,7 @@ interface SectionApp {
 ## Known limitation: URL synchronisation between routers
 
 Not solved in Step 6, deliberately: nothing can consume or test a solution until a real sub-app
-exists. It must be decided in Phase 3, before the Vue app uses its own router.
+exists. It must be decided in Phase 5, before the Vue app uses its own router.
 
 | Scenario                                                                                                                 | React Router (shell)           | Vue Router (`createWebHistory`)                  | Risk                                                                                            |
 | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------ | ------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
@@ -79,7 +79,7 @@ exists. It must be decided in Phase 3, before the Vue app uses its own router.
 | Sub-app-initiated navigation (`router.push('/career/y')` in Vue)                                                         | Not notified                   | Updates                                          | The shell's location is stale: nav highlight, title and the next shell navigation can be wrong. |
 | Leaving the section via `ctx.navigate('/about')`                                                                         | Updates; unmounts the sub-app  | Torn down                                        | Fine (covered by Step 6 tests).                                                                 |
 
-Candidate fixes to evaluate in Phase 3:
+Candidate fixes to evaluate in Phase 5:
 
 1. Make the shell the single source of truth: add `ctx.onLocationChange(listener)` and route the
    sub-app's internal navigation through `ctx.navigate`.

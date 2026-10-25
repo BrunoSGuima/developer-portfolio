@@ -48,6 +48,6 @@ microfrontend (ADR-0002) and API-backed sections in later phases.
 - Routes are objects rather than JSX, and a few data-router concepts (`lazy`, `handle`,
   `errorElement`) must be understood.
 - Static hosts must serve `index.html` for unknown paths (SPA fallback). Unknown URLs then
-  return HTTP 200 with an in-app "Page not found" (a soft 404); revisit for SEO in Phase 6.
-- Phase 2 can fetch Rails data with route loaders; Phase 3 can mount the Vue app on a
+  return HTTP 200 with an in-app "Page not found" (a soft 404); revisit for SEO in the deployment phase (Phase 4).
+- Phase 2 can fetch Rails data with route loaders; Phase 5 can mount the Vue app on a
   `/career/*` route.

@@ -12,6 +12,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "content:todo": "vitest run src/content/placeholder.test.ts --silent=false",
+    "content:check": "VITE_CONTENT_STRICT=1 vitest run src/content/placeholder.test.ts --silent=false",
     "illustrations": "node scripts/build-illustrations.mjs",
     "favicon": "node scripts/build-favicon.mjs"
   },

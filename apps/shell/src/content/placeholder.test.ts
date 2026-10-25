@@ -17,9 +17,13 @@ describe('placeholders', () => {
   it('reports the placeholders still pending in the site content', () => {
     const pending = listPlaceholders(allContent);
 
-    // Not a failure: Step 10 turns this into a deploy gate. Printed so it stays visible.
+    // Printed so it stays visible. Locally it never fails; CI runs `npm run content:check`
+    // (VITE_CONTENT_STRICT=1), where any pending placeholder fails the build (ADR-0010).
     const list = pending.length > 0 ? `\n- ${pending.join('\n- ')}` : ' none';
     console.info(`Pending content placeholders (${pending.length}):${list}`);
     expect(pending.every((description) => description.trim() !== '')).toBe(true);
+    if (import.meta.env.VITE_CONTENT_STRICT) {
+      expect(pending, 'unconfirmed content (todo)').toEqual([]);
+    }
   });
 });

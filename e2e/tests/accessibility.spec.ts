@@ -1,6 +1,6 @@
 import { expect, type Page, test } from '@playwright/test';
 import { expectNoA11yViolations } from '../support/a11y.ts';
-import { open, openMenuIfCollapsed } from '../support/shell.ts';
+import { open, openMenuIfCollapsed, waitForStableLayout } from '../support/shell.ts';
 import { languageOf, LOCALES, localizePath, notFoundCase, pages } from '../support/site.ts';
 
 test.describe('axe (WCAG 2.2 AA + best practices) @a11y', () => {
@@ -47,6 +47,11 @@ async function contrastBehindText(page: Page, selector: string) {
       return { rects, color };
     });
   }, selector);
+  // Let the browser paint the hidden text before photographing it (otherwise the screenshot can
+  // still show the previous frame, text included).
+  await page.evaluate(
+    () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+  );
   const image = (await page.screenshot()).toString('base64');
   return page.evaluate(
     async ({ image, targets }) => {
@@ -89,6 +94,8 @@ test.describe('contrast over the illustration @a11y', () => {
     }) => {
       test.skip(isMobile, 'the desktop hero sits over the artwork');
       await open(page, localizePath('/', locale));
+      // Text boxes are measured, then the page is photographed: nothing may move in between.
+      await waitForStableLayout(page);
 
       const worst = await contrastBehindText(page, '[data-slot="hero"] :is(h1, p), #what-i-do');
       expect(worst).toBeGreaterThanOrEqual(4.5);

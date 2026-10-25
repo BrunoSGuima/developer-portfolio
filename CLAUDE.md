@@ -11,12 +11,14 @@ but is powered by several independently developed applications. The site is in E
 
 ## Current phase
 
-**Phase 1 — React MVP.** Steps 0–9 are done (toolchain, shell scaffold, design tokens, registry
-& routing, Fun Fact, portfolio content, microfrontend host, mascot and illustrated Home,
-responsive layout, i18n en + pt-BR). Step 10 (transitions & polish) is implemented and in progress
-until the owner approves the results. The roadmap, step
-list, acceptance criteria and recorded decisions live in **`docs/ROADMAP.md`**
-(version-controlled source of truth; keep it current).
+**Phase 1 — React MVP.** Steps 0–12 are done (toolchain, shell scaffold, design tokens,
+registry & routing, Fun Fact, portfolio content, microfrontend host, mascot and illustrated
+Home, responsive layout, i18n en + pt-BR, transitions & polish, Playwright E2E, CI). Next, a
+separate task updates the Architecture page; no backend work before it is planned and
+approved. **Deployment is postponed** until the Rails API, PostgreSQL and the frontend/backend
+integration are complete (Phases 2–3); do not add hosting, CD or production infrastructure
+before Phase 4. The roadmap, step list, acceptance criteria and recorded decisions live in
+**`docs/ROADMAP.md`** (version-controlled source of truth; keep it current).
 
 Phase 1 uses **static data only**. Do not add Rails, Python, PostgreSQL, Redis or Sidekiq until
 their phase.
@@ -57,11 +59,17 @@ their phase.
   plain-DOM fake app (`src/test/fakeSectionApp.ts`); **no real remote section exists yet**.
   The context carries `locale` and a language-specific `basePath`; `ctx.navigate` takes
   language-neutral paths; a language switch remounts the app (ADR-0002, ADR-0007).
-  Router URL synchronisation is a known open issue for Phase 3 (see ADR-0002).
+  Router URL synchronisation is a known open issue for Phase 5 (see ADR-0002).
 - **Backends** (Phase 2+): Rails API and FastAPI, each owning its own database and credentials
   on one PostgreSQL instance. Services never modify each other's tables; they talk via APIs.
-- **Hosting**: Phase 1 static (Cloudflare Pages recommended). Later a single VPS with Docker
-  Compose behind Caddy, path-routed same-origin. No Kubernetes in the MVP.
+- **Hosting**: not deployed yet (owner's decision). The first release is Phase 4, after the Rails
+  API and PostgreSQL are integrated (Phases 2–3); then a single VPS with Docker Compose behind
+  Caddy, path-routed same-origin, is the current plan. No Kubernetes in the MVP.
+- **CI** (ADR-0010, `.github/workflows/ci.yml`): on pushes to `main` and pull requests, two
+  parallel jobs: `quality` (`npm ci`, format, lint, typecheck, unit tests, `content:check`,
+  build) and `e2e` (Playwright + axe, HTML report artifact). Read-only token, actions pinned to
+  commit SHAs (update SHA and release comment together), no secrets. Keep CI calling root npm
+  scripts so it never drifts from local commands.
 
 ## Conventions
 
@@ -108,7 +116,7 @@ their phase.
   `apps/shell/public/Bruno_Guimaraes_Resume.pdf` (explicit `.gitignore` exception). Before
   replacing it, check the new PDF's text **and metadata** for a phone number.
 - **Placeholders:** unconfirmed copy is `todo('…')` (renders a "To confirm" chip, never a link).
-  `npm run content:todo` lists pending ones. Step 12 makes "no placeholders" a deploy gate.
+  `npm run content:todo` lists pending ones; CI fails on any (`npm run content:check`).
 - **Mascot** (ADR-0005, `apps/shell/src/mascot/`): decorative only (`aria-hidden`,
   `pointer-events: none`, never focusable, never covers content). A pure state machine
   (`machine.ts`) plus CSS transitions. **Two independent instances**, sharing only the art:
@@ -193,9 +201,9 @@ before the app uses its own router.
   the language switcher is reached through the Menu panel. Portuguese routes are tested with
   `renderRoute('/pt-br/...')`; test fixtures use `same()` (`src/test/localized.ts`). Layout is
   verified in Chromium in both languages (jsdom can't lay out).
-- Vue (Phase 3): Vitest + Vue Test Utils.
+- Vue (Phase 5): Vitest + Vue Test Utils.
 - Rails (Phase 2): RSpec + FactoryBot (model, request, job specs).
-- Python (Phase 4): Pytest + HTTPX.
+- Python (Phase 6): Pytest + HTTPX.
 - End-to-end (ADR-0009, `e2e/`): Playwright against the production build (`vite preview`),
   projects `desktop` (real scrollbars) and `mobile`, with `@axe-core/playwright` (any
   violation fails). Specs import languages, dictionaries and the registry from the shell, so
@@ -219,6 +227,7 @@ Run from the repository root (after `nvm use`):
 | `npm run format`                      | Format the whole repo with Prettier                   |
 | `npm run format:check`                | Check formatting (no writes)                          |
 | `npm run content:todo`                | List content placeholders still awaiting confirmation |
+| `npm run content:check`               | Fail if any content placeholder remains (CI gate)     |
 | `npm run illustrations -w apps/shell` | Rebuild WebP derivatives from `docs/assets/source/`   |
 | `npm run favicon -w apps/shell`       | Rebuild the favicons (mascot head crop) in `public/`  |
 | `npm run test:e2e`                    | Build, serve and run the Playwright E2E suite         |

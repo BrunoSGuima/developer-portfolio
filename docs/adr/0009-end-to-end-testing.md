@@ -18,7 +18,7 @@ transitions (ADR-0008). Accessibility must stay at zero axe violations (Step 10 
    its `webServer` builds the shell and serves it with `vite preview` (SPA fallback, like the
    production host). Two projects: `desktop` (Chromium, 1280×800, real scrollbars) and
    `mobile` (Pixel 7 emulation, touch). Chromium only for now; Firefox/WebKit can be added in
-   CI (Step 12).
+   CI (Step 12, ADR-0010).
 2. **`@axe-core/playwright`** for accessibility: WCAG 2.0–2.2 A/AA plus best practices, on every
    page and the 404 in both languages, desktop and mobile, plus the open mobile menu. **Any**
    violation fails (stricter than "serious/critical"). Text over the illustration, which axe

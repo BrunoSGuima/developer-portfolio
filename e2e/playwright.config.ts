@@ -15,7 +15,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: CI,
   retries: CI ? 2 : 0,
-  ...(CI ? { workers: 1 } : {}),
+  // GitHub's Linux runners have 4 vCPUs; two workers keep CI fast without contention.
+  ...(CI ? { workers: 2 } : {}),
   reporter: CI
     ? [['github'], ['html', { open: 'never' }]]
     : [['list'], ['html', { open: 'never' }]],

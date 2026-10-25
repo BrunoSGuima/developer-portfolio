@@ -20,7 +20,8 @@
     "test:e2e": "npm run e2e --workspace=e2e",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "content:todo": "npm run content:todo --workspace=apps/shell"
+    "content:todo": "npm run content:todo --workspace=apps/shell",
+    "content:check": "npm run content:check --workspace=apps/shell"
   },
   "devDependencies": {
     "prettier": "^3.9.10"

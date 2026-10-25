@@ -7,6 +7,34 @@ export async function open(page: Page, path: string) {
   await page.evaluate(() => document.fonts.ready.then(() => undefined));
 }
 
+/**
+ * Waits until the layout stops changing (late measurements such as the Home stage height, or a
+ * scrollbar appearing, can still move things for a few frames after the page has rendered).
+ * Pixel checks must start from a settled page.
+ */
+export async function waitForStableLayout(page: Page) {
+  const snapshot = () =>
+    page.evaluate(async () => {
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const main = document.querySelector('main')?.getBoundingClientRect();
+      return JSON.stringify([
+        document.documentElement.scrollHeight,
+        document.documentElement.clientWidth,
+        main?.top,
+        main?.height,
+      ]);
+    });
+  let previous = await snapshot();
+  await expect
+    .poll(async () => {
+      const current = await snapshot();
+      const stable = current === previous;
+      previous = current;
+      return stable;
+    })
+    .toBe(true);
+}
+
 /** The small-screen layout hides the nav links behind a Menu button. */
 export async function openMenuIfCollapsed(page: Page) {
   const menu = page.getByRole('button', { name: 'Menu' });

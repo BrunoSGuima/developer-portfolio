@@ -39,5 +39,6 @@ that acts as the application shell from day one:
 
 - One React app is the integration point; it must stay small and stable.
 - SPA SEO is weaker than server rendering; mitigated with per-route titles/meta and possibly
-  prerendering static routes in Phase 6.
+  prerendering static routes in the deployment phase (Phase 4; renumbered 2026-10-24, see
+  docs/ROADMAP.md).
 - Static hosting is cheap (free tiers available) and needs an SPA fallback rule.
