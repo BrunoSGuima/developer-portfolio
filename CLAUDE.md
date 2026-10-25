@@ -16,15 +16,15 @@ tokens, registry & routing, Fun Fact, portfolio content, microfrontend host, mas
 illustrated Home, responsive layout, i18n en + pt-BR, transitions & polish, Playwright E2E, CI;
 CI is green on GitHub; Architecture page updated). Phase 1 is **not** the MVP.
 
-**Phase 2 — Ruby on Rails API + PostgreSQL: in progress** (Step 2.0: terminology and ADRs).
+**Phase 2 — Ruby on Rails API + PostgreSQL: in progress** (Step 2.0 done; Step 2.1, the API
+toolchain and skeleton in `services/api`, ready for review).
 Phase 2 is complete when the API, persistence, endpoints, security and RSpec suite work on their
 own (no frontend required). **The MVP is complete only at the end of Phase 3** (integration and
 full-stack validation). **Deployment is postponed** to Phase 4; do not add hosting, CD or
 production infrastructure before it. The roadmap, step list, acceptance criteria and recorded
 decisions live in **`docs/ROADMAP.md`** (version-controlled source of truth; keep it current).
 
-Rails and PostgreSQL are added in Phase 2 from Step 2.1 (exact versions are chosen there, after
-verification). Do not add Python, Redis, Sidekiq or Vue until their phase. The shell keeps its
+The API runs Ruby 4.0.9, Rails 8.1.4 and PostgreSQL 18.6 (ADR-0011). Do not add Python, Redis, Sidekiq or Vue until their phase. The shell keeps its
 static data until Phase 3.
 
 ## Architecture
@@ -244,10 +244,25 @@ Run from the repository root (after `nvm use`):
 | `npm run test:e2e`                    | Build, serve and run the Playwright E2E suite         |
 | `npm run report -w e2e`               | Open the last E2E HTML report                         |
 
+The Rails API (`services/api`, Ruby from `.ruby-version` via asdf) is outside the npm
+workspaces; its setup and commands are in `services/api/README.md`:
+
+| Command                                             | Purpose                                          |
+| --------------------------------------------------- | ------------------------------------------------ |
+| `docker compose -f infra/compose.yaml up -d --wait` | Start PostgreSQL (from the root)                 |
+| `docker compose -f infra/compose.yaml down`         | Stop PostgreSQL, keeping its data                |
+| `bin/setup --skip-server`                           | Install gems, prepare development and test DBs   |
+| `bin/rails server`                                  | Start the API (http://localhost:3000, `/up`)     |
+| `bundle exec rspec`                                 | Run the API test suite                           |
+| `bin/ci`                                            | All API checks: RuboCop, audits, Brakeman, RSpec |
+
 Inside a workspace (e.g. `apps/shell`): `npm run test:watch` runs Vitest in watch mode.
 
 ### Tooling notes
 
+- The API's local secrets live in git-ignored `infra/.env` and `services/api/.env` (copies of the
+  committed `.env.example` files). Never commit them or `config/master.key`. Prettier ignores
+  `services/api/` except its README (RuboCop covers the Ruby code).
 - E2E browsers are a one-time setup: `npx playwright install chromium` and, on Linux/WSL,
   `sudo npx playwright install-deps chromium` (system libraries).
 

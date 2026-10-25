@@ -12,7 +12,8 @@ the real technology stack behind each section.
 > **Status:** Phase 1, the React frontend foundation, is done (shell, routing, Fun Fact,
 > content, microfrontend host, illustrated Home and mascot, responsive layout, English and
 > Brazilian Portuguese under `/pt-br`, page transitions, Playwright E2E, GitHub Actions CI).
-> Phase 2 (Ruby on Rails API + PostgreSQL) is in progress. The MVP is complete once the API is
+> Phase 2 (Ruby on Rails API + PostgreSQL) is in progress: the API skeleton lives in
+> [`services/api`](./services/api/README.md). The MVP is complete once the API is
 > integrated with the frontend and validated end to end (Phase 3); deployment follows. See
 > [`docs/ROADMAP.md`](./docs/ROADMAP.md).
 
@@ -33,16 +34,16 @@ the real technology stack behind each section.
 
 ```
 apps/        Frontend applications (React shell in Phase 1, Vue app in Phase 5)
-services/    Backend services (Rails API in Phase 2, FastAPI in Phase 6)
+services/    Backend services (Rails API in services/api since Phase 2, FastAPI in Phase 6)
 e2e/         Playwright end-to-end tests spanning all apps
-infra/       Docker Compose and reverse proxy configuration (Phase 2+)
+infra/       Docker Compose (PostgreSQL for development); reverse proxy in Phase 4
 .github/     GitHub Actions CI (lint, types, unit, build, E2E + axe)
 docs/adr/    Architecture Decision Records
 docs/assets/ Design references (mascot reference image)
 ```
 
-`apps/shell`, `e2e/`, `.github/` and `docs/` exist so far; the other directories are created by
-the step that needs them.
+The Rails API has its own toolchain (Ruby, Bundler, Docker for PostgreSQL); see
+[`services/api/README.md`](./services/api/README.md) for its setup and commands.
 
 ## Requirements
 

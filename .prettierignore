@@ -4,3 +4,8 @@ coverage
 playwright-report
 test-results
 package-lock.json
+
+# The Rails API has its own tooling (RuboCop); Prettier only checks its README. Its YAML
+# files contain ERB, which Prettier cannot parse.
+services/api/*
+!services/api/README.md

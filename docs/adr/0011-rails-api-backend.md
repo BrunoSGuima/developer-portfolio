@@ -1,6 +1,6 @@
 # ADR-0011: Rails API-only backend with PostgreSQL, tested on its own
 
-- **Status:** Accepted (Phase 2, Step 2.0; exact versions decided in Step 2.1)
+- **Status:** Accepted (Phase 2, Step 2.0; versions recorded in Step 2.1)
 - **Date:** 2026-10-25
 
 ## Context
@@ -21,14 +21,31 @@ Deployment is Phase 4.
   **PostgreSQL runs in Docker Compose** (`infra/compose.yaml`: PostgreSQL only, named volume,
   healthcheck). Credentials are local throwaway values from a git-ignored env file
   (`.env.example` committed); `config/master.key` is never committed. Phase 2 needs no secrets.
-- **Versions are not chosen yet.** Step 2.1 verifies current stable Ruby, Rails and PostgreSQL
-  releases from official sources, their mutual compatibility, and support in `ruby/setup-ruby`,
-  the official PostgreSQL Docker image and the gems below, then records them here.
+- **Versions** (verified in Step 2.1, 2026-10-25, from official release information):
+  - **Ruby 4.0.9** (`.ruby-version`). 4.0 and 3.4 are both in normal maintenance; 4.0 is
+    supported about a year longer (≈ March 2029). 4.0.9 / 3.4.12 / 3.3.13 fix four Onigmo
+    regexp CVEs, so only the newest patch is acceptable. Rails 8.1 requires Ruby ≥ 3.2; no
+    official Rails test matrix listing Ruby 4.0 was found, so 4.0.9 passed a **compatibility
+    gate**: the generated app installs, boots and passes RSpec, RuboCop, Brakeman and
+    bundler-audit with no deprecation warnings (`RUBYOPT=-W:deprecated`). Fallback: 3.4.12.
+    Both are available in ruby-build (asdf) and `ruby/setup-ruby`.
+  - **Rails 8.1.4**: the only line with security support into late 2027 (until 2027-10-10;
+    8.0 ends 2026-11-07). Its bug-fix window ended 2026-10-10, so an upgrade to the next Rails
+    line is planned for 2027.
+  - **PostgreSQL 18.6** (`postgres:18.6-trixie`, Debian rather than Alpine for glibc
+    collations): supported until 2030-11. The `pg` gem (1.7) ships precompiled Linux builds
+    with libpq, so no system PostgreSQL client libraries are needed.
+- **Configuration**: `infra/.env` (the container) and `services/api/.env` (the connection,
+  loaded by `dotenv` in development and test only) are git-ignored copies of committed
+  `.env.example` files, set up once with one random password. PostgreSQL is published on
+  `127.0.0.1` only. Rails' encrypted credentials infrastructure is kept (`master.key` ignored).
+  Action Mailer and Active Job are kept as standard components, with no delivery, workers or
+  queues configured.
 - **Same-origin under `/api`**: the Vite dev server and preview proxy `/api` to Rails (Phase 3),
   the reverse proxy does the same in production (Phase 4). No CORS configuration and no
   `rack-cors`. The API is stateless (no cookies or sessions), so there is no CSRF surface.
-- **Minimal gems**: `rspec-rails`, `factory_bot_rails`, `committee` (OpenAPI contract checks,
-  ADR-0012) and `bundler-audit`, all development/test only; plus what Rails generates
+- **Minimal gems**: `rspec-rails`, `factory_bot_rails`, `dotenv`, `committee` (OpenAPI
+  contract checks, ADR-0012, from Step 2.4) and `bundler-audit`, all development/test only; plus what Rails generates
   (RuboCop rails-omakase, Brakeman). Plain-Ruby serializers; no serializer, auth, admin, job or
   cache gems.
 - **Testing**: RSpec + FactoryBot with transactional tests (no DatabaseCleaner); model,

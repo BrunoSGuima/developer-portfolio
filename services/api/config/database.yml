@@ -1,0 +1,29 @@
+# PostgreSQL 18 (ADR-0011). In development and test the server runs in Docker Compose
+# (infra/compose.yaml) and the connection comes from the git-ignored .env (see .env.example),
+# loaded by dotenv. No credentials live in this file.
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  host: <%= ENV.fetch("DATABASE_HOST", "127.0.0.1") %>
+  port: <%= ENV.fetch("DATABASE_PORT", "5432") %>
+  username: <%= ENV["DATABASE_USERNAME"] %>
+  password: <%= ENV["DATABASE_PASSWORD"] %>
+  # For details on connection pooling, see Rails configuration guide
+  # https://guides.rubyonrails.org/configuring.html#database-pooling
+  max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  database: portfolio_api_development
+
+# Warning: The database defined as "test" will be erased and
+# re-generated from your development database when you run "rake".
+# Do not set this db to the same as development or production.
+test:
+  <<: *default
+  database: portfolio_api_test
+
+# Production is configured in Phase 4 (deployment), from the environment only.
+production:
+  <<: *default
+  url: <%= ENV["DATABASE_URL"] %>

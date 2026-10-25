@@ -1,0 +1,31 @@
+# Local development database (Phase 2, ADR-0011). PostgreSQL only: the Rails API runs natively.
+#
+#   docker compose -f infra/compose.yaml up -d --wait   # start (waits until healthy)
+#   docker compose -f infra/compose.yaml down           # stop; data stays in the volume
+#
+# Settings come from infra/.env (git-ignored; copy infra/.env.example). See services/api/README.md.
+name: developer-portfolio
+
+services:
+  postgres:
+    image: postgres:18.6-trixie
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-portfolio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in infra/.env (see infra/.env.example)}
+    ports:
+      # Published on the loopback interface only: the database is never reachable from the network.
+      - '127.0.0.1:${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      # PostgreSQL 18 images keep their data in a versioned subdirectory of /var/lib/postgresql,
+      # so the volume is mounted there (not at the pre-18 path /var/lib/postgresql/data).
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      # Over TCP, so the container isn't reported healthy while initdb runs (socket only).
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -U "$${POSTGRES_USER}" -d postgres']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  postgres-data:

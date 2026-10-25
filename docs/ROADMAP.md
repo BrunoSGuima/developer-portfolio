@@ -24,7 +24,7 @@ after Phase 1 were renumbered accordingly; the earlier plan had deployment as Ph
 **Phase 1 (React frontend foundation) is done:** CI ran green on GitHub for the Step 12 commit
 (`f15f91c`, 2026-10-25). The Architecture page update that followed is done too (`e0e22df`).
 
-**Phase 2 is in progress** (Step 2.0, planning and documentation; approved 2026-10-25).
+**Phase 2 is in progress:** Step 2.0 is done (`392f340`); Step 2.1 is ready for review.
 
 | Phase | Scope                                                                                                                                                                 | Status                        |
 | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
@@ -106,8 +106,8 @@ both come before polish and E2E so those cover the finished layout in both langu
 5. API documentation: a handwritten **OpenAPI** document with contract validation in the
    request specs (ADR-0012).
 6. Development: **native Ruby**, PostgreSQL in **Docker Compose** (ADR-0011).
-7. Versions: exact Ruby, Rails and PostgreSQL releases are **not decided yet**; Step 2.1 verifies
-   stable releases, compatibility and tooling support before choosing them.
+7. Versions: chosen only after verifying stable releases, compatibility and tooling support.
+   Step 2.1 chose **Ruby 4.0.9, Rails 8.1.4 and PostgreSQL 18.6** (rationale in ADR-0011).
 
 Also required: same-origin API (no CORS), the backend testable on its own, no unnecessary gems
 or premature abstractions, spam protection and privacy safeguards on the contact endpoint, the
@@ -115,15 +115,15 @@ rate limiter's limitations documented before deployment, and an explicit contrac
 document) instead of Rails tests reading TypeScript files. Redis, Sidekiq, Vue and FastAPI stay
 out of Phase 2.
 
-| #   | Step                       | Status      | Depends on |
-| --- | -------------------------- | ----------- | ---------- |
-| 2.0 | Terminology and ADRs       | In progress | —          |
-| 2.1 | Toolchain and API skeleton | Planned     | 2.0        |
-| 2.2 | CI `api` job               | Planned     | 2.1        |
-| 2.3 | Projects domain            | Planned     | 2.1        |
-| 2.4 | Projects API               | Planned     | 2.3        |
-| 2.5 | Contact messages           | Planned     | 2.4        |
-| 2.6 | Hardening and docs         | Planned     | 2.5        |
+| #   | Step                       | Status           | Depends on |
+| --- | -------------------------- | ---------------- | ---------- |
+| 2.0 | Terminology and ADRs       | Done             | —          |
+| 2.1 | Toolchain and API skeleton | Ready for review | 2.0        |
+| 2.2 | CI `api` job               | Planned          | 2.1        |
+| 2.3 | Projects domain            | Planned          | 2.1        |
+| 2.4 | Projects API               | Planned          | 2.3        |
+| 2.5 | Contact messages           | Planned          | 2.4        |
+| 2.6 | Hardening and docs         | Planned          | 2.5        |
 
 Each step follows the collaboration rules (plan → approval → implementation with tests →
 review); none starts automatically.
@@ -150,6 +150,15 @@ review); none starts automatically.
 - **Tests:** RSpec + FactoryBot installed; a request spec for `GET /up`.
 - **Acceptance:** `bin/rails db:prepare` against Compose; specs, RuboCop and Brakeman pass; the
   timeline's v2 stays "In progress"; setup documented.
+- **Delivered (ready for review):** Ruby 4.0.9 (passed the compatibility gate), Rails 8.1.4,
+  PostgreSQL 18.6 in Compose (loopback only, named volume, TCP healthcheck); dotenv,
+  rspec-rails, factory_bot_rails; adapted `bin/setup` (prepares the development and test
+  databases, with hints when PostgreSQL or `.env` is missing) and `bin/ci` (setup, RuboCop,
+  bundler-audit, Brakeman, RSpec); specs for `GET /up`, the environment (Ruby, Rails 8.1,
+  API-only, no CORS, FactoryBot) and the database (PostgreSQL 18, test database, transactional
+  isolation); `services/api/README.md` with setup and troubleshooting. Owner's decisions:
+  Rails' encrypted credentials kept (`master.key` ignored); Action Mailer and Active Job kept,
+  unconfigured.
 
 ### Step 2.2 — CI `api` job
 
