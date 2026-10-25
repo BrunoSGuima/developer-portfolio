@@ -11,8 +11,13 @@ that persist across sections — navigation, the mascot, the Fun Fact banner, la
 state and transitions — and that part must stay mounted while the active section changes, without
 full-page reloads.
 
-Phase 1 is a React-only MVP with static data, but it must evolve into a multi-application
-showcase without a rewrite.
+Phase 1 is a React-only frontend foundation with static data, but it must evolve into a
+multi-application showcase without a rewrite.
+
+> **Terminology note (2026-10-25):** this ADR originally called Phase 1 the "MVP". Phase 1 is
+> the React frontend foundation; the MVP is complete only when the Rails API, PostgreSQL and the
+> frontend/backend integration are validated end to end (end of Phase 3, `docs/ROADMAP.md`).
+> The decision itself is unchanged.
 
 ## Decision
 

@@ -11,18 +11,21 @@ but is powered by several independently developed applications. The site is in E
 
 ## Current phase
 
-**Phase 1 — React MVP: done** (Steps 0–12: toolchain, shell scaffold, design tokens, registry
-& routing, Fun Fact, portfolio content, microfrontend host, mascot and illustrated Home,
-responsive layout, i18n en + pt-BR, transitions & polish, Playwright E2E, CI; CI is green on
-GitHub). The Architecture page update is ready for review; no backend work before it is
-approved and the backend is planned and approved. **Deployment is postponed** until the Rails
-API, PostgreSQL and the frontend/backend integration are complete (Phases 2–3); do not add
-hosting, CD or production infrastructure before Phase 4. The roadmap, step list, acceptance
-criteria and recorded decisions live in **`docs/ROADMAP.md`** (version-controlled source of
-truth; keep it current).
+**Phase 1 — React frontend foundation: done** (Steps 0–12: toolchain, shell scaffold, design
+tokens, registry & routing, Fun Fact, portfolio content, microfrontend host, mascot and
+illustrated Home, responsive layout, i18n en + pt-BR, transitions & polish, Playwright E2E, CI;
+CI is green on GitHub; Architecture page updated). Phase 1 is **not** the MVP.
 
-Phase 1 uses **static data only**. Do not add Rails, Python, PostgreSQL, Redis or Sidekiq until
-their phase.
+**Phase 2 — Ruby on Rails API + PostgreSQL: in progress** (Step 2.0: terminology and ADRs).
+Phase 2 is complete when the API, persistence, endpoints, security and RSpec suite work on their
+own (no frontend required). **The MVP is complete only at the end of Phase 3** (integration and
+full-stack validation). **Deployment is postponed** to Phase 4; do not add hosting, CD or
+production infrastructure before it. The roadmap, step list, acceptance criteria and recorded
+decisions live in **`docs/ROADMAP.md`** (version-controlled source of truth; keep it current).
+
+Rails and PostgreSQL are added in Phase 2 from Step 2.1 (exact versions are chosen there, after
+verification). Do not add Python, Redis, Sidekiq or Vue until their phase. The shell keeps its
+static data until Phase 3.
 
 ## Architecture
 
@@ -63,6 +66,11 @@ their phase.
   Router URL synchronisation is a known open issue for Phase 5 (see ADR-0002).
 - **Backends** (Phase 2+): Rails API and FastAPI, each owning its own database and credentials
   on one PostgreSQL instance. Services never modify each other's tables; they talk via APIs.
+  The Rails API (ADR-0011) lives in `services/api` (API-only, native Ruby, PostgreSQL in Docker
+  Compose under `infra/`), is served same-origin under `/api` (no CORS) and is tested on its own.
+  Localised data is JSONB `{ "en", "pt-BR" }`; the handwritten OpenAPI document is the contract
+  between API and shell (ADR-0012). Contact messages follow ADR-0013 (privacy, abuse protection,
+  12-month retention).
 - **Hosting**: not deployed yet (owner's decision). The first release is Phase 4, after the Rails
   API and PostgreSQL are integrated (Phases 2–3); then a single VPS with Docker Compose behind
   Caddy, path-routed same-origin, is the current plan. No Kubernetes in the MVP.
@@ -203,7 +211,9 @@ before the app uses its own router.
   `renderRoute('/pt-br/...')`; test fixtures use `same()` (`src/test/localized.ts`). Layout is
   verified in Chromium in both languages (jsdom can't lay out).
 - Vue (Phase 5): Vitest + Vue Test Utils.
-- Rails (Phase 2): RSpec + FactoryBot (model, request, job specs).
+- Rails (Phase 2): RSpec + FactoryBot (model, constraint, request and rake task specs);
+  transactional isolation; request specs validate responses against the OpenAPI document. Rails
+  tests never read the shell's TypeScript files.
 - Python (Phase 6): Pytest + HTTPX.
 - End-to-end (ADR-0009, `e2e/`): Playwright against the production build (`vite preview`),
   projects `desktop` (real scrollbars) and `mobile`, with `@axe-core/playwright` (any

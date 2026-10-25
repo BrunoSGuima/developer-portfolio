@@ -21,25 +21,33 @@ after Phase 1 were renumbered accordingly; the earlier plan had deployment as Ph
 - Dependabot for the pinned GitHub Actions is deferred.
 - Branch protection for `main` is configured once the workflow is confirmed green on GitHub.
 
-**Phase 1 is done:** CI ran green on GitHub for the Step 12 commit (`f15f91c`, 2026-10-25).
+**Phase 1 (React frontend foundation) is done:** CI ran green on GitHub for the Step 12 commit
+(`f15f91c`, 2026-10-25). The Architecture page update that followed is done too (`e0e22df`).
 
-**Architecture page update (before the backend): Ready for review.** "How it's built today" lists
-only what is built (10 cards, including i18n, page transitions, responsive layout,
-accessibility, automated testing and CI); the timeline follows these phases, with v1 **Done**
-(a new status word: the site isn't deployed, so not "Live") and a note that the order after
-deployment is provisional; Key decisions list ADR-0001 to 0010; English and Portuguese. No
-backend work starts before it is approved and the backend is planned.
+**Phase 2 is in progress** (Step 2.0, planning and documentation; approved 2026-10-25).
 
-| Phase | Scope                                                                                                                                                                  | Status                        |
-| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| 1     | React + TypeScript MVP shell, static data, mascot, Fun Fact, responsive layout, en/pt-BR, unit + E2E tests, CI                                                         | Done                          |
-| 2     | Ruby on Rails API + PostgreSQL: models for the portfolio content, REST endpoints, RSpec + FactoryBot (model and request specs), its own CI job                         | Planned                       |
-| 3     | Frontend/backend integration and full-stack validation: the shell reads content from the API (route loaders, both languages), E2E against shell + API + database in CI | Planned                       |
-| 4     | Production deployment (first public release): host and reverse proxy, CD, monitoring, prerendering/SEO                                                                 | Planned (postponed until 2–3) |
-| 5     | Vue 3 microfrontend mounted by the React shell (order of 5–8 provisional)                                                                                              | Planned                       |
-| 6     | Python FastAPI service + interactive quiz                                                                                                                              | Planned                       |
-| 7     | Background jobs (Redis + Sidekiq)                                                                                                                                      | Planned                       |
-| 8     | AI Lab and future expansion                                                                                                                                            | Planned                       |
+| Phase | Scope                                                                                                                                                                 | Status                        |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| 1     | **React frontend foundation**: React + TypeScript shell, static data, mascot, Fun Fact, responsive layout, en/pt-BR, unit + E2E tests, CI                             | Done                          |
+| 2     | Ruby on Rails API + PostgreSQL: projects and contact messages, security, RSpec + FactoryBot, OpenAPI contract, its own CI job; works and is tested on its own         | In progress                   |
+| 3     | Frontend/backend integration, full-stack validation and **MVP completion**: the shell reads projects and sends contact messages through the API, full-stack E2E in CI | Planned                       |
+| 4     | Production deployment (first public release): host and reverse proxy, CD, monitoring, prerendering/SEO                                                                | Planned (postponed until 2–3) |
+| 5     | Vue 3 microfrontend mounted by the React shell (order of 5–8 provisional)                                                                                             | Planned                       |
+| 6     | Python FastAPI service + interactive quiz                                                                                                                             | Planned                       |
+| 7     | Background jobs (Redis + Sidekiq)                                                                                                                                     | Planned                       |
+| 8     | AI Lab and future expansion                                                                                                                                           | Planned                       |
+
+## MVP definition
+
+Phase 1 is the **React frontend foundation**, not the MVP. The **MVP is complete only at the end
+of Phase 3**: the frontend foundation, the Rails API with PostgreSQL, and their integration,
+validated end to end (decided 2026-10-25).
+
+- **Phase 2** is complete when the Rails API, PostgreSQL persistence, the endpoints, the security
+  measures and the RSpec suite work and pass **on their own**, locally and in CI. It never depends
+  on Phase 3.
+- **Phase 3** integrates the shell with the API, validates the full stack and completes the MVP.
+- **Phase 4** deploys it.
 
 ## Phase 1 steps
 
@@ -63,7 +71,7 @@ Steps 8 and 9 were added before the original Step 8; the original Steps 8–10 a
 Layout comes before i18n so Portuguese text expansion is checked against the final layout, and
 both come before polish and E2E so those cover the finished layout in both languages.
 
-## Phase 1 acceptance criteria
+## Phase 1 (frontend foundation) acceptance criteria
 
 1. A static production build that works with SPA fallback (verified by the E2E suite against
    `vite preview`; deployment is postponed to Phase 4).
@@ -82,6 +90,142 @@ both come before polish and E2E so those cover the finished layout in both langu
 9. `npm run lint`, `typecheck`, `test` and `test:e2e` pass locally and in CI (GitHub Actions).
 10. `CLAUDE.md`, `README.md`, this roadmap and the ADRs are current.
 11. Local Lighthouse Performance and Accessibility ≥ 90 on Home.
+
+## Phase 2 — Ruby on Rails API + PostgreSQL
+
+**Owner's decisions (2026-10-25):**
+
+1. Scope: a **Projects API** (read-only, bilingual) and **Contact messages** (validated,
+   persisted, protected against abuse). Profile, experience and the Architecture content stay
+   static.
+2. Localised text: **JSONB** `{ "en", "pt-BR" }` fields with model validations and database
+   check constraints (ADR-0012).
+3. Contact notifications: not in Phase 2 (messages are read with a rake task); a practical
+   notification or retrieval solution must be defined **before public deployment**.
+4. Retention of contact messages: **12 months**, reviewed before deployment (ADR-0013).
+5. API documentation: a handwritten **OpenAPI** document with contract validation in the
+   request specs (ADR-0012).
+6. Development: **native Ruby**, PostgreSQL in **Docker Compose** (ADR-0011).
+7. Versions: exact Ruby, Rails and PostgreSQL releases are **not decided yet**; Step 2.1 verifies
+   stable releases, compatibility and tooling support before choosing them.
+
+Also required: same-origin API (no CORS), the backend testable on its own, no unnecessary gems
+or premature abstractions, spam protection and privacy safeguards on the contact endpoint, the
+rate limiter's limitations documented before deployment, and an explicit contract (the OpenAPI
+document) instead of Rails tests reading TypeScript files. Redis, Sidekiq, Vue and FastAPI stay
+out of Phase 2.
+
+| #   | Step                       | Status      | Depends on |
+| --- | -------------------------- | ----------- | ---------- |
+| 2.0 | Terminology and ADRs       | In progress | —          |
+| 2.1 | Toolchain and API skeleton | Planned     | 2.0        |
+| 2.2 | CI `api` job               | Planned     | 2.1        |
+| 2.3 | Projects domain            | Planned     | 2.1        |
+| 2.4 | Projects API               | Planned     | 2.3        |
+| 2.5 | Contact messages           | Planned     | 2.4        |
+| 2.6 | Hardening and docs         | Planned     | 2.5        |
+
+Each step follows the collaboration rules (plan → approval → implementation with tests →
+review); none starts automatically.
+
+### Step 2.0 — Terminology and ADRs
+
+- **Goal:** correct the MVP terminology and record the Phase 2 architecture before any code.
+- **Files:** this roadmap, `CLAUDE.md`, `README.md`, ADR-0001 (terminology note), new
+  ADR-0011/0012/0013, the Architecture timeline (`content/architecture.ts`: v1 "React frontend
+  foundation", v2 in progress, v3 "Frontend/backend integration (MVP)") and its tests.
+- **Acceptance:** documents consistent; format, lint, typecheck, unit, content, build and E2E
+  pass. No backend code, Docker files or CI changes.
+
+### Step 2.1 — Toolchain and API skeleton
+
+- **Goal:** a runnable, empty Rails API next to the shell.
+- **Decisions:** verify and pin Ruby (`.ruby-version`), Rails and PostgreSQL versions (official
+  release notes, mutual compatibility, `ruby/setup-ruby` and Docker image support);
+  `rails new services/api --api --database=postgresql` without unused frameworks (Action
+  Mailbox/Text/Cable, Active Storage, Kamal, Minitest, Rails' own CI file); keep RuboCop
+  (rails-omakase) and Brakeman.
+- **Files:** `services/api/**`, `infra/compose.yaml` (PostgreSQL only: named volume,
+  healthcheck), `services/api/.env.example`, `.gitignore`.
+- **Tests:** RSpec + FactoryBot installed; a request spec for `GET /up`.
+- **Acceptance:** `bin/rails db:prepare` against Compose; specs, RuboCop and Brakeman pass; the
+  timeline's v2 stays "In progress"; setup documented.
+
+### Step 2.2 — CI `api` job
+
+- **Goal:** the API is checked on every push and pull request, independently of the shell.
+- **Decisions:** a third job in `ci.yml` with a PostgreSQL service container, `ruby/setup-ruby`
+  pinned by SHA (bundler cache), same security rules as ADR-0010; steps RuboCop → Brakeman →
+  bundler-audit → `db:prepare` → RSpec.
+- **Acceptance:** actionlint clean; clean-copy rehearsal; green on GitHub; ADR-0010 updated.
+
+### Step 2.3 — Projects domain
+
+- **Goal:** projects stored in PostgreSQL with bilingual text.
+- **Files:** migrations, `Project` and `ProjectLink` models, the localised-text validator,
+  factories, seeds with the current site's projects (en + pt-BR).
+- **Decisions:** JSONB localised fields with check constraints (both languages, non-blank);
+  unique `slug`; `status` limited to the site's status words; https-only links; technology ids
+  from an allowed list (documented as an OpenAPI enum).
+- **Tests:** model specs for validations and specs proving the database constraints reject bad
+  rows; seeds load.
+
+### Step 2.4 — Projects API
+
+- **Goal:** `GET /api/v1/projects` (published, ordered) and `GET /api/v1/projects/:slug`.
+- **Files:** a base API controller with consistent error handling, small plain-Ruby serializers,
+  `services/api/docs/openapi.yaml`, request specs.
+- **Decisions:** `{ "data": … }` responses, `{ "error": { code, message, details } }` errors,
+  snake_case keys; every response validated against OpenAPI with `committee`.
+- **Tests:** 200, 404, unpublished hidden, order, both languages present, contract validation.
+
+### Step 2.5 — Contact messages
+
+- **Goal:** `POST /api/v1/contact_messages` with validation, persistence and abuse protection.
+- **Decisions (ADR-0013):** minimal fields (name, email, message, locale); no IP stored;
+  personal fields filtered from logs; a honeypot (fake success, nothing stored); Rails
+  `rate_limit`; rake tasks to list messages and purge those older than 12 months.
+- **Tests:** 201, 422 with per-field details, 429, honeypot not stored, request-size limits,
+  model and task specs, contract validation.
+
+### Step 2.6 — Hardening and docs
+
+- **Goal:** close Phase 2.
+- **Work:** bundler-audit clean, parameter-filter review, the API README (setup, commands,
+  endpoints), ADRs completed (versions recorded in ADR-0011), the rate limiter's limitations
+  documented.
+
+### Phase 2 acceptance criteria
+
+Independent of Phase 3: the shell is not required.
+
+1. The API runs locally (native Ruby) against PostgreSQL in Docker Compose, from documented
+   setup steps.
+2. Projects and contact-message endpoints behave as specified in the OpenAPI document, and
+   every request spec validates against it.
+3. Model, constraint, request and task specs pass; RuboCop, Brakeman and bundler-audit are
+   clean; all of it in CI on GitHub.
+4. Contact endpoint: validation, rate limiting, honeypot, filtered logs, no IP stored,
+   retention task.
+5. ADR-0011 to 0013, this roadmap, `CLAUDE.md` and the API README are current.
+
+When they are met, the Architecture timeline's v2 becomes **Done**.
+
+## Phase 3 — Integration and MVP completion (summary)
+
+The shell reads projects through route loaders (loading and error states in both languages),
+`/api` is proxied same-origin (Vite dev server and preview), an accessible contact form with a
+privacy note, Fun Facts / registry `backend: 'rails'` / Architecture page updated truthfully,
+the frontend's types and fixtures checked against the OpenAPI document, and full-stack E2E in
+CI. Completing it completes the **MVP**. Detailed planning happens after Phase 2.
+
+## Before public deployment (Phase 4 gates)
+
+- A practical notification or message-retrieval solution for contact messages.
+- The 12-month retention period reviewed.
+- Rate limiting backed by a store shared by all API processes, with correct client IPs behind
+  the reverse proxy (ADR-0013 lists the current limitations).
+- The privacy note published with the contact form.
 
 ## Step 12 — CI & automated quality checks
 

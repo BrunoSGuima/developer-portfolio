@@ -122,28 +122,30 @@ export interface Milestone {
 }
 
 /**
- * In delivery order (docs/ROADMAP.md). Deployment comes after the backend integration; the order
- * of v5–v8 is provisional (the page says so).
+ * In delivery order (docs/ROADMAP.md). The MVP is complete only with the integration (v3);
+ * deployment comes after it; the order of v5–v8 is provisional (the page says so).
  */
 export const timeline: readonly Milestone[] = [
   {
-    id: 'react-mvp',
+    id: 'frontend-foundation',
     version: 'v1',
-    name: { en: 'React MVP', 'pt-BR': 'MVP em React' },
+    name: { en: 'React frontend foundation', 'pt-BR': 'Fundação do front-end em React' },
     status: 'done',
   },
   {
+    // In progress from Phase 2 planning (Step 2.0); done once Phase 2's acceptance criteria are
+    // met (docs/ROADMAP.md), independently of the integration.
     id: 'rails-api',
     version: 'v2',
     name: { en: 'Rails API + PostgreSQL + RSpec', 'pt-BR': 'API em Rails + PostgreSQL + RSpec' },
-    status: 'planned',
+    status: 'in-progress',
   },
   {
     id: 'integration',
     version: 'v3',
     name: {
-      en: 'Frontend/backend integration',
-      'pt-BR': 'Integração entre front-end e back-end',
+      en: 'Frontend/backend integration (MVP)',
+      'pt-BR': 'Integração entre front-end e back-end (MVP)',
     },
     status: 'planned',
   },

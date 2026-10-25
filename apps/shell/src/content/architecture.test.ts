@@ -30,9 +30,17 @@ describe('architecture truthfulness', () => {
     expect(finished('vue-microfrontend')).toBe(usesVue);
   });
 
-  it('only marks the Rails API milestone done if a section is backed by Rails', () => {
+  // The Rails API (Phase 2) is finished on its own acceptance criteria; the site only uses it
+  // once the integration (Phase 3) is done.
+  it('only marks the integration milestone done if a section is backed by Rails', () => {
     const usesRails = sections.some((section) => section.backend === 'rails');
-    expect(finished('rails-api')).toBe(usesRails);
+    expect(finished('integration')).toBe(usesRails);
+  });
+
+  it('never has a Rails-backed section before the Rails API milestone is done', () => {
+    if (sections.some((section) => section.backend === 'rails')) {
+      expect(finished('rails-api')).toBe(true);
+    }
   });
 
   it('only marks the FastAPI milestone done if a section is backed by FastAPI', () => {
@@ -90,5 +98,16 @@ describe('architecture timeline', () => {
     expect(at('rails-api')).toBeLessThan(at('integration'));
     expect(at('integration')).toBeLessThan(at('deployment'));
     expect(finished('deployment')).toBe(false);
+  });
+
+  it('places the MVP at the integration: no earlier milestone is called the MVP', () => {
+    const integration = timeline.indexOf(milestoneById('integration'));
+
+    for (const milestone of timeline.slice(0, integration)) {
+      for (const locale of LOCALES) expect(milestone.name[locale]).not.toMatch(/MVP/);
+    }
+    for (const locale of LOCALES) {
+      expect(milestoneById('integration').name[locale]).toMatch(/MVP/);
+    }
   });
 });
