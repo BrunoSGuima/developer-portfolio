@@ -23,6 +23,7 @@ export const en = {
     planned: 'planned',
   },
   status: {
+    done: 'Done',
     live: 'Live',
     'in-progress': 'In progress',
     planned: 'Planned',
@@ -66,6 +67,8 @@ export const en = {
     leadAfterStatus: "doesn't exist yet.",
     builtToday: "How it's built today",
     evolution: 'How it will evolve',
+    timelineNote:
+      'Deployment comes after the backend integration. The order of the later steps (v5–v8) is provisional.',
     decisions: 'Key decisions',
   },
   contact: {

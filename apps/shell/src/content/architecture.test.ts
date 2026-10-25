@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isPlaceholderArt } from '../mascot/assets.ts';
 import RemoteSection from '../microfrontends/RemoteSection.tsx';
+import { LOCALES } from '../i18n/locales.ts';
 import { remoteMount, sections } from '../sections/registry.ts';
 import { components, timeline } from './architecture.ts';
 
@@ -10,27 +11,43 @@ function componentById(id: string) {
   return component;
 }
 
-const statusOf = (id: string) => componentById(id).status;
+function milestoneById(id: string) {
+  const milestone = timeline.find((item) => item.id === id);
+  if (!milestone) throw new Error(`Unknown milestone: ${id}`);
+  return milestone;
+}
 
-// The Architecture page must not call something live that no section actually uses.
+const finished = (id: string) => milestoneById(id).status === 'done';
+
+// The Architecture page must not claim anything that isn't built.
 describe('architecture truthfulness', () => {
-  it('only shows the Vue.js microfrontend as live if a section is built with Vue', () => {
+  it('"How it\'s built today" lists only implemented (live) components', () => {
+    expect(components.every((component) => component.status === 'live')).toBe(true);
+  });
+
+  it('only marks the Vue.js milestone done if a section is built with Vue', () => {
     const usesVue = sections.some((section) => section.framework === 'vue');
-    expect(statusOf('vue-microfrontend') === 'live').toBe(usesVue);
+    expect(finished('vue-microfrontend')).toBe(usesVue);
   });
 
-  it('only shows the Rails API as live if a section is backed by Rails', () => {
+  it('only marks the Rails API milestone done if a section is backed by Rails', () => {
     const usesRails = sections.some((section) => section.backend === 'rails');
-    expect(statusOf('rails-api') === 'live').toBe(usesRails);
+    expect(finished('rails-api')).toBe(usesRails);
   });
 
-  it('only shows the FastAPI service as live if a section is backed by FastAPI', () => {
+  it('only marks the FastAPI milestone done if a section is backed by FastAPI', () => {
     const usesFastApi = sections.some((section) => section.backend === 'fastapi');
-    expect(statusOf('fastapi-service') === 'live').toBe(usesFastApi);
+    expect(finished('fastapi-service')).toBe(usesFastApi);
   });
 
-  it('only shows the microfrontend host as live if the host and remote mounts exist', () => {
-    if (statusOf('microfrontend-host') === 'live') {
+  it('only lists internationalisation while the site has more than one language', () => {
+    expect(components.some((component) => component.id === 'internationalisation')).toBe(
+      LOCALES.length > 1,
+    );
+  });
+
+  it('only shows the microfrontend host if the host and remote mounts exist', () => {
+    if (components.some((component) => component.id === 'microfrontend-host')) {
       expect(RemoteSection).toBeTypeOf('function');
       expect(remoteMount('/apps/example/entry.js').kind).toBe('remote');
     }
@@ -52,13 +69,26 @@ describe('architecture truthfulness', () => {
       expect(description['pt-BR']).toMatch(/navegação.*provisória/i);
     }
   });
+});
 
-  it('has exactly one milestone in progress, with nothing live after it', () => {
-    const current = timeline.findIndex((milestone) => milestone.status === 'in-progress');
+describe('architecture timeline', () => {
+  it('lists finished milestones first, then at most one in progress, then planned ones', () => {
+    const rank = { done: 0, live: 0, 'in-progress': 1, planned: 2 } as const;
+    const ranks = timeline.map((milestone) => rank[milestone.status]);
 
-    expect(timeline.filter((milestone) => milestone.status === 'in-progress')).toHaveLength(1);
-    expect(timeline.slice(current + 1).some((milestone) => milestone.status === 'live')).toBe(
-      false,
+    expect(ranks).toEqual([...ranks].sort((a, b) => a - b));
+    expect(timeline.filter((milestone) => milestone.status === 'in-progress').length).toBeLessThan(
+      2,
     );
+    // A finished milestone is "done", never "live": the site isn't deployed yet (roadmap Phase 4).
+    expect(timeline.some((milestone) => milestone.status === 'live')).toBe(false);
+  });
+
+  it('deploys only after the Rails API and the frontend/backend integration', () => {
+    const at = (id: string) => timeline.indexOf(milestoneById(id));
+
+    expect(at('rails-api')).toBeLessThan(at('integration'));
+    expect(at('integration')).toBeLessThan(at('deployment'));
+    expect(finished('deployment')).toBe(false);
   });
 });

@@ -21,7 +21,10 @@ function ArchitecturePage() {
         </>
       }
       column={
-        <section className={page.section} aria-labelledby="built-today">
+        <section
+          className={`${page.section} ${styles.builtTodaySection}`}
+          aria-labelledby="built-today"
+        >
           <h2 id="built-today">{messages.architecture.builtToday}</h2>
           <ul className={`${page.cardGridFit} ${styles.builtToday}`}>
             {components.map((component) => (
@@ -41,13 +44,14 @@ function ArchitecturePage() {
         <h2 id="evolution">{messages.architecture.evolution}</h2>
         <ol className={`${page.cardGridFit} ${styles.timeline}`}>
           {timeline.map((milestone) => (
-            <li key={milestone.version}>
+            <li key={milestone.id}>
               <span className={styles.version}>{milestone.version}</span>
               <span className={styles.milestone}>{pick(milestone.name, locale)}</span>
               <StatusTag status={milestone.status} />
             </li>
           ))}
         </ol>
+        <p className={page.note}>{messages.architecture.timelineNote}</p>
       </section>
 
       <section className={page.section} aria-labelledby="decisions">

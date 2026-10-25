@@ -11,14 +11,15 @@ but is powered by several independently developed applications. The site is in E
 
 ## Current phase
 
-**Phase 1 — React MVP.** Steps 0–12 are done (toolchain, shell scaffold, design tokens,
-registry & routing, Fun Fact, portfolio content, microfrontend host, mascot and illustrated
-Home, responsive layout, i18n en + pt-BR, transitions & polish, Playwright E2E, CI). Next, a
-separate task updates the Architecture page; no backend work before it is planned and
-approved. **Deployment is postponed** until the Rails API, PostgreSQL and the frontend/backend
-integration are complete (Phases 2–3); do not add hosting, CD or production infrastructure
-before Phase 4. The roadmap, step list, acceptance criteria and recorded decisions live in
-**`docs/ROADMAP.md`** (version-controlled source of truth; keep it current).
+**Phase 1 — React MVP: done** (Steps 0–12: toolchain, shell scaffold, design tokens, registry
+& routing, Fun Fact, portfolio content, microfrontend host, mascot and illustrated Home,
+responsive layout, i18n en + pt-BR, transitions & polish, Playwright E2E, CI; CI is green on
+GitHub). The Architecture page update is ready for review; no backend work before it is
+approved and the backend is planned and approved. **Deployment is postponed** until the Rails
+API, PostgreSQL and the frontend/backend integration are complete (Phases 2–3); do not add
+hosting, CD or production infrastructure before Phase 4. The roadmap, step list, acceptance
+criteria and recorded decisions live in **`docs/ROADMAP.md`** (version-controlled source of
+truth; keep it current).
 
 Phase 1 uses **static data only**. Do not add Rails, Python, PostgreSQL, Redis or Sidekiq until
 their phase.

@@ -20,6 +20,7 @@ export const ptBR: Messages = {
     planned: 'planejado',
   },
   status: {
+    done: 'Concluído',
     live: 'No ar',
     'in-progress': 'Em andamento',
     planned: 'Planejado',
@@ -62,6 +63,8 @@ export const ptBR: Messages = {
     leadAfterStatus: 'ainda não existe.',
     builtToday: 'Como ele é construído hoje',
     evolution: 'Como ele vai evoluir',
+    timelineNote:
+      'O deploy vem depois da integração com o back-end. A ordem das etapas seguintes (v5–v8) é provisória.',
     decisions: 'Principais decisões',
   },
   contact: {

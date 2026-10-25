@@ -21,20 +21,25 @@ after Phase 1 were renumbered accordingly; the earlier plan had deployment as Ph
 - Dependabot for the pinned GitHub Actions is deferred.
 - Branch protection for `main` is configured once the workflow is confirmed green on GitHub.
 
-**Next, before the backend:** a separate task updates the Architecture page (Steps 8–12 work:
-i18n, page transitions, accessibility, responsive layout, E2E testing and CI; the timeline's
-new phase order; ADRs 0005–0010). No backend work starts before it is planned and approved.
+**Phase 1 is done:** CI ran green on GitHub for the Step 12 commit (`f15f91c`, 2026-10-25).
 
-| Phase | Scope                                                                                                                                                                  | Status                                            |
-| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| 1     | React + TypeScript MVP shell, static data, mascot, Fun Fact, responsive layout, en/pt-BR, unit + E2E tests, CI                                                         | Steps done; awaiting first green CI run on GitHub |
-| 2     | Ruby on Rails API + PostgreSQL: models for the portfolio content, REST endpoints, RSpec + FactoryBot (model and request specs), its own CI job                         | Planned                                           |
-| 3     | Frontend/backend integration and full-stack validation: the shell reads content from the API (route loaders, both languages), E2E against shell + API + database in CI | Planned                                           |
-| 4     | Production deployment (first public release): host and reverse proxy, CD, monitoring, prerendering/SEO                                                                 | Planned (postponed until 2–3)                     |
-| 5     | Vue 3 microfrontend mounted by the React shell (order of 5–8 provisional)                                                                                              | Planned                                           |
-| 6     | Python FastAPI service + interactive quiz                                                                                                                              | Planned                                           |
-| 7     | Background jobs (Redis + Sidekiq)                                                                                                                                      | Planned                                           |
-| 8     | AI Lab and future expansion                                                                                                                                            | Planned                                           |
+**Architecture page update (before the backend): Ready for review.** "How it's built today" lists
+only what is built (10 cards, including i18n, page transitions, responsive layout,
+accessibility, automated testing and CI); the timeline follows these phases, with v1 **Done**
+(a new status word: the site isn't deployed, so not "Live") and a note that the order after
+deployment is provisional; Key decisions list ADR-0001 to 0010; English and Portuguese. No
+backend work starts before it is approved and the backend is planned.
+
+| Phase | Scope                                                                                                                                                                  | Status                        |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| 1     | React + TypeScript MVP shell, static data, mascot, Fun Fact, responsive layout, en/pt-BR, unit + E2E tests, CI                                                         | Done                          |
+| 2     | Ruby on Rails API + PostgreSQL: models for the portfolio content, REST endpoints, RSpec + FactoryBot (model and request specs), its own CI job                         | Planned                       |
+| 3     | Frontend/backend integration and full-stack validation: the shell reads content from the API (route loaders, both languages), E2E against shell + API + database in CI | Planned                       |
+| 4     | Production deployment (first public release): host and reverse proxy, CD, monitoring, prerendering/SEO                                                                 | Planned (postponed until 2–3) |
+| 5     | Vue 3 microfrontend mounted by the React shell (order of 5–8 provisional)                                                                                              | Planned                       |
+| 6     | Python FastAPI service + interactive quiz                                                                                                                              | Planned                       |
+| 7     | Background jobs (Redis + Sidekiq)                                                                                                                                      | Planned                       |
+| 8     | AI Lab and future expansion                                                                                                                                            | Planned                       |
 
 ## Phase 1 steps
 

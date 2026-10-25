@@ -8,6 +8,7 @@
   white-space: nowrap;
 }
 
+.tag[data-status='done'],
 .tag[data-status='live'] {
   background: var(--badge-green-bg);
   color: var(--badge-green-fg);

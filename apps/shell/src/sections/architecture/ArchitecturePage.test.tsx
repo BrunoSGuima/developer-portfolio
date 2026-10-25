@@ -7,7 +7,7 @@ import archCss from './ArchitecturePage.module.css?raw';
 import styles from './ArchitecturePage.module.css';
 import ArchitecturePage from './ArchitecturePage.tsx';
 
-const STATUS_WORD = /^(Live|In progress|Planned)$/;
+const STATUS_WORD = /^(Done|Live|In progress|Planned)$/;
 
 describe('ArchitecturePage', () => {
   it('lists every component with a visible status word', () => {
@@ -21,21 +21,25 @@ describe('ArchitecturePage', () => {
     }
   });
 
-  it('orders the built components so cards side by side have similar heights', () => {
+  it('lists the built components in a technical reading order', () => {
     renderPage(ArchitecturePage);
 
     const region = screen.getByRole('region', { name: "How it's built today" });
     const names = within(region)
       .getAllByRole('heading', { level: 3 })
-      .slice(0, 6)
       .map((heading) => heading.textContent);
+    // Foundations, then cross-cutting features, then quality.
     expect(names).toEqual([
       'React shell',
       'Section registry',
-      'Mascot guide',
+      'Routing and page transitions',
       'Microfrontend host',
-      'Static hosting',
-      'Client-side routing',
+      'Internationalisation',
+      'Responsive layout',
+      'Accessibility',
+      'Mascot guide',
+      'Automated testing',
+      'Continuous integration',
     ]);
   });
 
@@ -58,7 +62,15 @@ describe('ArchitecturePage', () => {
       expect(item).toHaveTextContent(timeline[index]!.name.en);
       expect(within(item).getByText(STATUS_WORD)).toBeInTheDocument();
     });
-    expect(items[0]).toHaveTextContent('In progress');
+    expect(items[0]).toHaveTextContent('Done');
+  });
+
+  it('says that deployment follows the backend and the later order is provisional', () => {
+    renderPage(ArchitecturePage);
+
+    const region = screen.getByRole('region', { name: 'How it will evolve' });
+    expect(region).toHaveTextContent(/Deployment comes after the backend integration/);
+    expect(region).toHaveTextContent(/provisional/);
   });
 
   it('keeps "How it\'s built today" in the intro column; later sections are full width', () => {
@@ -87,10 +99,25 @@ describe('ArchitecturePage', () => {
     expect(archCss).toMatch(/\.decisions\s*\{[^}]*--grid-max:\s*var\(--measure\)/);
   });
 
+  it('lets a last card alone on a three-column row span it (container query, not viewport)', () => {
+    renderPage(ArchitecturePage);
+
+    const region = screen.getByRole('region', { name: "How it's built today" });
+    expect(region).toHaveClass(styles.builtTodaySection!);
+    expect(archCss).toMatch(/\.builtTodaySection\s*\{\s*container-type:\s*inline-size;/);
+    expect(archCss).toMatch(
+      /@container \(min-width: 62rem\)\s*\{\s*\.builtToday > li:last-child:nth-child\(3n \+ 1\)\s*\{\s*grid-column:\s*1 \/ -1;/,
+    );
+  });
+
   it('lists the key architecture decisions', () => {
     renderPage(ArchitecturePage);
 
     const region = screen.getByRole('region', { name: 'Key decisions' });
-    expect(within(region).getAllByRole('listitem')).toHaveLength(4);
+    const items = within(region).getAllByRole('listitem');
+    expect(items).toHaveLength(10);
+    items.forEach((item, index) =>
+      expect(item).toHaveTextContent(`ADR-${String(index + 1).padStart(4, '0')}`),
+    );
   });
 });

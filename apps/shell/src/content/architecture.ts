@@ -11,7 +11,8 @@ export interface ArchitectureComponent {
   status: Status;
 }
 
-// Order matters on the page: neighbours in the two-column grid have similar amounts of text.
+// "How it's built today" lists only what is implemented (all live); planned work lives in the
+// timeline. Reading order: architecture foundations, then cross-cutting features, then quality.
 export const components: readonly ArchitectureComponent[] = [
   {
     id: 'react-shell',
@@ -32,12 +33,12 @@ export const components: readonly ArchitectureComponent[] = [
     status: 'live',
   },
   {
-    id: 'mascot',
-    name: { en: 'Mascot guide', 'pt-BR': 'Mascote guia' },
+    id: 'routing',
+    name: { en: 'Routing and page transitions', 'pt-BR': 'Roteamento e transições de página' },
     description: {
-      en: 'The Home and Fun Fact mascot uses the final illustrations; the walking navigation mascot still uses placeholder art until its final frames are ready.',
+      en: 'React Router loads each section on demand; page changes crossfade with View Transitions, instantly with reduced motion.',
       'pt-BR':
-        'O mascote da página inicial e da Curiosidade usa as ilustrações finais; o mascote que caminha pela navegação ainda usa uma arte provisória até que seus quadros finais fiquem prontos.',
+        'O React Router carrega cada seção sob demanda; as trocas de página usam um fade suave com View Transitions, instantâneo com movimento reduzido.',
     },
     status: 'live',
   },
@@ -52,101 +53,127 @@ export const components: readonly ArchitectureComponent[] = [
     status: 'live',
   },
   {
-    id: 'static-hosting',
-    name: { en: 'Static hosting', 'pt-BR': 'Hospedagem estática' },
+    id: 'internationalisation',
+    name: { en: 'Internationalisation', 'pt-BR': 'Internacionalização' },
     description: {
-      en: 'Served as static files; deployment not set up yet.',
-      'pt-BR': 'Servido como arquivos estáticos; o deploy ainda não foi configurado.',
-    },
-    status: 'planned',
-  },
-  {
-    id: 'routing',
-    name: { en: 'Client-side routing', 'pt-BR': 'Roteamento no navegador' },
-    description: {
-      en: 'React Router; each section loads on demand.',
-      'pt-BR': 'React Router; cada seção é carregada sob demanda.',
+      en: 'English and Brazilian Portuguese, each with its own URLs (/pt-br). The language switcher keeps you on the same page.',
+      'pt-BR':
+        'Inglês e português do Brasil, cada um com suas próprias URLs (/pt-br). O seletor de idioma mantém você na mesma página.',
     },
     status: 'live',
   },
   {
-    id: 'vue-microfrontend',
-    name: { en: 'Vue.js microfrontend', 'pt-BR': 'Microfrontend em Vue.js' },
+    id: 'responsive-layout',
+    name: { en: 'Responsive layout', 'pt-BR': 'Layout responsivo' },
     description: {
-      en: 'An independently built section mounted by the React shell.',
-      'pt-BR': 'Uma seção construída de forma independente e montada pelo shell em React.',
+      en: 'From 320px phones to ultrawide screens: a fluid container and card grids that adapt to the space they have.',
+      'pt-BR':
+        'De celulares de 320px a telas ultrawide: um container fluido e grades de cards que se adaptam ao espaço disponível.',
     },
-    status: 'planned',
+    status: 'live',
   },
   {
-    id: 'rails-api',
-    name: 'Ruby on Rails API + PostgreSQL',
+    id: 'accessibility',
+    name: { en: 'Accessibility', 'pt-BR': 'Acessibilidade' },
     description: {
-      en: 'Profile, projects and career data.',
-      'pt-BR': 'Dados de perfil, projetos e carreira.',
+      en: 'Built to WCAG 2.2 AA: landmarks, a skip link, keyboard navigation with visible focus, reduced motion and high-contrast support.',
+      'pt-BR':
+        'Feito seguindo a WCAG 2.2 AA: landmarks, link para pular ao conteúdo, navegação por teclado com foco visível, suporte a movimento reduzido e alto contraste.',
     },
-    status: 'planned',
+    status: 'live',
   },
   {
-    id: 'fastapi-service',
-    name: { en: 'Python FastAPI service', 'pt-BR': 'Serviço em Python FastAPI' },
+    id: 'mascot',
+    name: { en: 'Mascot guide', 'pt-BR': 'Mascote guia' },
     description: {
-      en: 'Quizzes, experiments and future AI features.',
-      'pt-BR': 'Quizzes, experimentos e futuros recursos de IA.',
+      en: 'The Home and Fun Fact mascot uses the final illustrations; the walking navigation mascot still uses placeholder art until its final frames are ready.',
+      'pt-BR':
+        'O mascote da página inicial e da Curiosidade usa as ilustrações finais; o mascote que caminha pela navegação ainda usa uma arte provisória até que seus quadros finais fiquem prontos.',
     },
-    status: 'planned',
+    status: 'live',
   },
   {
-    id: 'background-jobs',
-    name: 'Redis + Sidekiq',
+    id: 'automated-testing',
+    name: { en: 'Automated testing', 'pt-BR': 'Testes automatizados' },
     description: {
-      en: 'Background jobs with retries and status tracking.',
-      'pt-BR': 'Jobs em segundo plano com novas tentativas e acompanhamento de status.',
+      en: 'Vitest and React Testing Library for components; Playwright with axe-core for end-to-end and accessibility checks, in both languages.',
+      'pt-BR':
+        'Vitest e React Testing Library para os componentes; Playwright com axe-core para testes ponta a ponta e de acessibilidade, nos dois idiomas.',
     },
-    status: 'planned',
+    status: 'live',
   },
   {
-    id: 'ci-cd',
-    name: 'CI/CD (GitHub Actions)',
+    id: 'continuous-integration',
+    name: { en: 'Continuous integration', 'pt-BR': 'Integração contínua' },
     description: {
-      en: 'Automated checks and deployment.',
-      'pt-BR': 'Verificações automatizadas e deploy.',
+      en: 'On every push and pull request, GitHub Actions checks formatting, lint, types, tests, content and the build, and runs the end-to-end suite.',
+      'pt-BR':
+        'A cada push e pull request, o GitHub Actions verifica formatação, lint, tipos, testes, conteúdo e o build, e roda a suíte ponta a ponta.',
     },
-    status: 'planned',
+    status: 'live',
   },
 ];
 
 export interface Milestone {
+  id: string;
   version: string;
   name: Localized<string>;
   status: Status;
 }
 
-/** In delivery order. */
+/**
+ * In delivery order (docs/ROADMAP.md). Deployment comes after the backend integration; the order
+ * of v5–v8 is provisional (the page says so).
+ */
 export const timeline: readonly Milestone[] = [
-  { version: 'v1', name: { en: 'React MVP', 'pt-BR': 'MVP em React' }, status: 'in-progress' },
   {
+    id: 'react-mvp',
+    version: 'v1',
+    name: { en: 'React MVP', 'pt-BR': 'MVP em React' },
+    status: 'done',
+  },
+  {
+    id: 'rails-api',
     version: 'v2',
-    name: { en: 'Rails API + PostgreSQL', 'pt-BR': 'API em Rails + PostgreSQL' },
+    name: { en: 'Rails API + PostgreSQL + RSpec', 'pt-BR': 'API em Rails + PostgreSQL + RSpec' },
     status: 'planned',
   },
   {
+    id: 'integration',
     version: 'v3',
+    name: {
+      en: 'Frontend/backend integration',
+      'pt-BR': 'Integração entre front-end e back-end',
+    },
+    status: 'planned',
+  },
+  {
+    id: 'deployment',
+    version: 'v4',
+    name: { en: 'Production deployment', 'pt-BR': 'Deploy em produção' },
+    status: 'planned',
+  },
+  {
+    id: 'vue-microfrontend',
+    version: 'v5',
     name: { en: 'Vue microfrontend', 'pt-BR': 'Microfrontend em Vue' },
     status: 'planned',
   },
   {
-    version: 'v4',
+    id: 'fastapi-service',
+    version: 'v6',
     name: { en: 'Python FastAPI', 'pt-BR': 'Python FastAPI' },
     status: 'planned',
   },
   {
-    version: 'v5',
+    id: 'background-jobs',
+    version: 'v7',
     name: { en: 'Background processing', 'pt-BR': 'Processamento em segundo plano' },
     status: 'planned',
   },
   {
-    version: 'v6',
+    id: 'ai-lab',
+    version: 'v8',
     name: { en: 'AI engineering experiments', 'pt-BR': 'Experimentos de engenharia de IA' },
     status: 'planned',
   },
@@ -158,7 +185,7 @@ export interface Decision {
   summary: Localized<string>;
 }
 
-/** Accepted Architecture Decision Records (docs/adr). */
+/** Accepted Architecture Decision Records (docs/adr), in order. */
 export const decisions: readonly Decision[] = [
   {
     id: 'ADR-0001',
@@ -203,6 +230,75 @@ export const decisions: readonly Decision[] = [
       en: 'React Router routes, navigation and Fun Facts all come from a single list of sections.',
       'pt-BR':
         'As rotas do React Router, a navegação e as Curiosidades vêm todas de uma única lista de seções.',
+    },
+  },
+  {
+    id: 'ADR-0005',
+    title: {
+      en: 'Decorative mascot driven by a state machine',
+      'pt-BR': 'Mascote decorativo guiado por uma máquina de estados',
+    },
+    summary: {
+      en: 'Two decorative mascots animated by a small state machine and CSS; they never block content and respect reduced motion.',
+      'pt-BR':
+        'Dois mascotes decorativos animados por uma pequena máquina de estados e CSS; nunca bloqueiam o conteúdo e respeitam o movimento reduzido.',
+    },
+  },
+  {
+    id: 'ADR-0006',
+    title: { en: 'Responsive layout strategy', 'pt-BR': 'Estratégia de layout responsivo' },
+    summary: {
+      en: 'A fluid container up to 1536px and card grids sized by their own space: wider screens get more columns, not longer lines.',
+      'pt-BR':
+        'Um container fluido de até 1536px e grades de cards dimensionadas pelo próprio espaço: telas maiores ganham mais colunas, não linhas mais longas.',
+    },
+  },
+  {
+    id: 'ADR-0007',
+    title: {
+      en: 'Internationalisation with language URLs',
+      'pt-BR': 'Internacionalização com URLs por idioma',
+    },
+    summary: {
+      en: 'English and Brazilian Portuguese with the language in the URL and typed translations, without an i18n library.',
+      'pt-BR':
+        'Inglês e português do Brasil com o idioma na URL e traduções tipadas, sem biblioteca de i18n.',
+    },
+  },
+  {
+    id: 'ADR-0008',
+    title: {
+      en: 'Page transitions with View Transitions',
+      'pt-BR': 'Transições de página com View Transitions',
+    },
+    summary: {
+      en: 'React Router crossfades the page between header and footer; instant with reduced motion or in older browsers.',
+      'pt-BR':
+        'O React Router faz um fade suave da página entre o cabeçalho e o rodapé; instantâneo com movimento reduzido ou em navegadores mais antigos.',
+    },
+  },
+  {
+    id: 'ADR-0009',
+    title: {
+      en: 'End-to-end testing with Playwright and axe',
+      'pt-BR': 'Testes ponta a ponta com Playwright e axe',
+    },
+    summary: {
+      en: 'The production build is tested in both languages, on desktop and mobile, including automated accessibility scans.',
+      'pt-BR':
+        'O build de produção é testado nos dois idiomas, no desktop e no celular, incluindo verificações automáticas de acessibilidade.',
+    },
+  },
+  {
+    id: 'ADR-0010',
+    title: {
+      en: 'Continuous integration with GitHub Actions',
+      'pt-BR': 'Integração contínua com GitHub Actions',
+    },
+    summary: {
+      en: 'Every push and pull request runs all checks; deployment waits until the backend is integrated.',
+      'pt-BR':
+        'Cada push e pull request executa todas as verificações; o deploy espera a integração com o back-end.',
     },
   },
 ];

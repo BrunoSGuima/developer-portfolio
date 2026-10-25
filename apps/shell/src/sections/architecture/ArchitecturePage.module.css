@@ -17,6 +17,19 @@
   --grid-cols: 3;
 }
 
+/* The grid's own width decides its columns, so the rule below queries it (not the viewport). */
+.builtTodaySection {
+  container-type: inline-size;
+}
+
+/* With three columns (3 × 20rem + 2 gaps = 62rem), a last card alone on its row spans the row
+   instead of leaving two empty slots; its text keeps the reading measure (p max-width). */
+@container (min-width: 62rem) {
+  .builtToday > li:last-child:nth-child(3n + 1) {
+    grid-column: 1 / -1;
+  }
+}
+
 /* With page.cardGridFit: milestones in up to three columns on wide screens, in order. */
 .timeline {
   --grid-min: 18rem;
