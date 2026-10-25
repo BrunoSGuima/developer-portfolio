@@ -96,9 +96,17 @@
   }
 
   .columns[data-context='intro'] .contextRow {
+    /* Above <main>: its subgrid spans this (otherwise empty) cell and would take the pointer. */
+    z-index: 2;
     grid-row: 1;
     grid-column: 2;
     padding-block-start: var(--page-top-space);
+  }
+
+  /* Home: the illustrated stage (with the Fun Fact) is positioned over <main>'s hero grid, so it
+     stacks above <main> too (nothing else changes: it is already absolutely positioned). */
+  .contextRow:has([data-composition='hero']) {
+    z-index: 2;
   }
 
   .columns[data-context='intro'] [data-slot='page-intro'] {

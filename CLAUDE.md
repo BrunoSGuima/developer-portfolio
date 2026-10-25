@@ -196,7 +196,12 @@ before the app uses its own router.
 - Vue (Phase 3): Vitest + Vue Test Utils.
 - Rails (Phase 2): RSpec + FactoryBot (model, request, job specs).
 - Python (Phase 4): Pytest + HTTPX.
-- End-to-end: Playwright against the production build, with axe accessibility scans.
+- End-to-end (ADR-0009, `e2e/`): Playwright against the production build (`vite preview`),
+  projects `desktop` (real scrollbars) and `mobile`, with `@axe-core/playwright` (any
+  violation fails). Specs import languages, dictionaries and the registry from the shell, so
+  expectations follow the app; reduced motion by default; geometric assertions, no screenshot
+  comparisons. A test exposing an unfixed app bug is marked `test.fail()` with the reason.
+  New features get an E2E check when they affect layout, navigation, language or motion.
 - Every completed feature ships with meaningful tests. Prefer test-first when practical.
 
 ## Commands
@@ -216,11 +221,15 @@ Run from the repository root (after `nvm use`):
 | `npm run content:todo`                | List content placeholders still awaiting confirmation |
 | `npm run illustrations -w apps/shell` | Rebuild WebP derivatives from `docs/assets/source/`   |
 | `npm run favicon -w apps/shell`       | Rebuild the favicons (mascot head crop) in `public/`  |
-| `npm run test:e2e`                    | Playwright end-to-end tests (from Step 11)            |
+| `npm run test:e2e`                    | Build, serve and run the Playwright E2E suite         |
+| `npm run report -w e2e`               | Open the last E2E HTML report                         |
 
 Inside a workspace (e.g. `apps/shell`): `npm run test:watch` runs Vitest in watch mode.
 
 ### Tooling notes
+
+- E2E browsers are a one-time setup: `npx playwright install chromium` and, on Linux/WSL,
+  `sudo npx playwright install-deps chromium` (system libraries).
 
 - `apps/shell` was scaffolded with `create-vite` (react-ts template); the template's oxlint
   setup was replaced with ESLint as decided in the plan.

@@ -104,4 +104,14 @@ describe('AppLayout', () => {
       /grid-row:\s*2;\s*grid-column:\s*1 \/ -1;/,
     );
   });
+
+  it('stacks the Fun Fact above <main> where they overlap (intro layout, Home stage)', () => {
+    expect(layoutCss).toMatch(
+      /\.columns\[data-context='intro'\] \.contextRow\s*\{[^}]*z-index:\s*2;/,
+    );
+    // Home: only the stacking changes (the stage is already absolutely positioned).
+    expect(layoutCss).toMatch(
+      /\.contextRow:has\(\[data-composition='hero'\]\)\s*\{\s*z-index:\s*2;\s*\}/,
+    );
+  });
 });

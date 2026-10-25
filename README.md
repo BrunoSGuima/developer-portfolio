@@ -58,7 +58,12 @@ npm test            # Vitest + React Testing Library
 npm run build       # production build to apps/shell/dist
 ```
 
-Root scripts delegate to npm workspaces. `npm run test:e2e` becomes available in Step 11.
+```bash
+npm run test:e2e    # Playwright E2E + axe against the production build (both languages)
+```
+
+The E2E suite needs a browser once: `npx playwright install chromium` (on Linux/WSL also
+`sudo npx playwright install-deps chromium`). Root scripts delegate to npm workspaces.
 
 ## Documentation
 

@@ -18,21 +18,21 @@ approval → implement with tests → report → the owner reviews and commits.
 
 ## Phase 1 steps
 
-| #   | Step                                          | Status      | Deliverables                                                                                                                                          |
-| --- | --------------------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0   | Toolchain & docs skeleton                     | Done        | Node 22 (`.nvmrc`), npm workspaces, `CLAUDE.md`, `README.md`, ADR-0001/0002                                                                           |
-| 1   | Scaffold shell                                | Done        | Vite react-ts, strict TypeScript, ESLint + Prettier, Vitest + RTL                                                                                     |
-| 2   | Design tokens & layout                        | Done        | `tokens.css`, header/main/footer, skip link, responsive nav (ADR-0003)                                                                                |
-| 3   | Section registry & routing                    | Done        | `registry.ts`, generated lazy routes, 404, `aria-current`, focus management (ADR-0004)                                                                |
-| 4   | Fun Fact + TechBadge                          | Done        | Registry-driven Fun Fact, truthfulness tests                                                                                                          |
-| 5   | Portfolio content                             | Done        | Home, About, Projects, Architecture, Contact from the résumé                                                                                          |
-| 6   | Microfrontend host                            | Done        | `SectionApp` contract, `RemoteSection`, lifecycle tests (ADR-0002)                                                                                    |
-| 7   | Mascot v0 + illustrated Home                  | Done        | State machine, approved raster art, Fun Fact stage, per-page Fun Fact placements (ADR-0005)                                                           |
-| 8   | Responsive layout & screen-space optimisation | Done        | Fluid container up to 96rem, container-sized card grids, per-page layout strategies, Home composition kept intact on wide screens (ADR-0006)          |
-| 9   | Internationalisation (en + pt-BR)             | Done        | Typed translations, accessible language switcher, language-specific URLs, localized metadata (ADR-0007)                                               |
-| 10  | Transitions & polish                          | In progress | View Transitions for section changes (with fallback), visual polish, accessibility pass                                                               |
-| 11  | Playwright E2E                                | Planned     | `e2e/` workspace against `vite preview`, core journeys, axe scans, both languages and the language switcher, layout at key widths (320px → ultrawide) |
-| 12  | Production build & CI                         | Planned     | Build verification, `ci.yml` (lint, typecheck, unit, build, e2e), "no placeholders" gate; no deploy step until a host is chosen                       |
+| #   | Step                                          | Status           | Deliverables                                                                                                                                          |
+| --- | --------------------------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0   | Toolchain & docs skeleton                     | Done             | Node 22 (`.nvmrc`), npm workspaces, `CLAUDE.md`, `README.md`, ADR-0001/0002                                                                           |
+| 1   | Scaffold shell                                | Done             | Vite react-ts, strict TypeScript, ESLint + Prettier, Vitest + RTL                                                                                     |
+| 2   | Design tokens & layout                        | Done             | `tokens.css`, header/main/footer, skip link, responsive nav (ADR-0003)                                                                                |
+| 3   | Section registry & routing                    | Done             | `registry.ts`, generated lazy routes, 404, `aria-current`, focus management (ADR-0004)                                                                |
+| 4   | Fun Fact + TechBadge                          | Done             | Registry-driven Fun Fact, truthfulness tests                                                                                                          |
+| 5   | Portfolio content                             | Done             | Home, About, Projects, Architecture, Contact from the résumé                                                                                          |
+| 6   | Microfrontend host                            | Done             | `SectionApp` contract, `RemoteSection`, lifecycle tests (ADR-0002)                                                                                    |
+| 7   | Mascot v0 + illustrated Home                  | Done             | State machine, approved raster art, Fun Fact stage, per-page Fun Fact placements (ADR-0005)                                                           |
+| 8   | Responsive layout & screen-space optimisation | Done             | Fluid container up to 96rem, container-sized card grids, per-page layout strategies, Home composition kept intact on wide screens (ADR-0006)          |
+| 9   | Internationalisation (en + pt-BR)             | Done             | Typed translations, accessible language switcher, language-specific URLs, localized metadata (ADR-0007)                                               |
+| 10  | Transitions & polish                          | Done             | View Transitions for section changes (with fallback), visual polish, accessibility pass                                                               |
+| 11  | Playwright E2E                                | Ready for review | `e2e/` workspace against `vite preview`, core journeys, axe scans, both languages and the language switcher, layout at key widths (320px → ultrawide) |
+| 12  | Production build & CI                         | Planned          | Build verification, `ci.yml` (lint, typecheck, unit, build, e2e), "no placeholders" gate; no deploy step until a host is chosen                       |
 
 Steps 8 and 9 were added before the original Step 8; the original Steps 8–10 are now 10–12.
 Layout comes before i18n so Portuguese text expansion is checked against the final layout, and
@@ -72,6 +72,21 @@ animations, content and mobile layouts are preserved.
 - Completion requires the owner's visual review at 320 / 375 / 768 / 1024 / 1280 / 1440 / 1600 /
   1920 / 2560px; passing automated checks alone does not complete the step.
 
+## Step 11 — Playwright E2E
+
+- `e2e/` workspace (ADR-0009): Playwright + `@axe-core/playwright` against the production build,
+  `desktop` and `mobile` projects, both languages.
+- Specs: every page and the 404 with metadata and SPA fallback; navigation without reloads;
+  language switching (equivalent page, history, URL authority); mobile menu; keyboard and focus;
+  the mascots (walk, snap, reduced motion, never covering content, Home fingertip); layout at
+  320–2560px; view transitions (crossfade, reduced motion, fallback); axe on every page; static
+  files.
+- Found and fixed by the suite: at desktop widths `<main>` overlaid the Fun Fact card on
+  Projects and Architecture (the intro layout's subgrid) and on Home (the illustrated stage), so
+  its text couldn't be selected. The Fun Fact's row now stacks above `<main>` there (z-index
+  only; layouts unchanged, verified in Chromium).
+- Completion requires the owner's review of the report.
+
 ## Step 10 — Transitions & polish
 
 - **Page transitions** (ADR-0008): React Router's `viewTransition` on every internal navigation
@@ -85,7 +100,7 @@ animations, content and mobile layouts are preserved.
 - **Accessibility pass:** axe-core (WCAG 2.0–2.2 A/AA + best practices) on every page in both
   languages at 375/768/1280px (incl. the open menu), keyboard walkthroughs, forced colours,
   reduced motion, text spacing (WCAG 1.4.12) and reflow; Lighthouse on Home.
-- Completion requires the owner's review of the recordings, screenshots and results.
+- Completed after the owner's review of the recordings, screenshots and results.
 
 ## Step 9 — Internationalisation (en + pt-BR)
 
