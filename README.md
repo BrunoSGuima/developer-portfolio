@@ -64,6 +64,8 @@ npm run lint        # ESLint (type-aware + accessibility rules)
 npm run typecheck   # TypeScript strict type-check
 npm test            # Vitest + React Testing Library
 npm run build       # production build to apps/shell/dist
+npm run api:types   # regenerate the shell's API types from the OpenAPI contract
+                    # (first: npm run api:types:install; CI checks them with api:types:check)
 ```
 
 ```bash

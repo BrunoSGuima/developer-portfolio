@@ -27,9 +27,12 @@ after Phase 1 were renumbered accordingly; the earlier plan had deployment as Ph
 **Phase 2 (Ruby on Rails API + PostgreSQL) is done:** every acceptance criterion below is met,
 and GitHub Actions ran green on the final Step 2.6 commit (`5f9eb59`, 2026-10-26).
 
-**Phase 3 (integration and MVP completion) is in progress:** Step 3.0 (`84b4e4c`) is done; Step
-3.1 (same-origin proxies and full-stack E2E) is ready for review. The Rails API is built and
-tested, but the React pages don't use it yet; Steps 3.3–3.4 connect them.
+**Phase 3 (integration and MVP completion) is in progress:** Steps 3.0 (`84b4e4c`) and 3.1
+(`c922ddc`) are done; Step 3.2 (the typed API client) is ready for review. The Rails API is built
+and tested, but the React pages don't use it yet; Steps 3.3–3.4 connect them. **Long-term
+requirement (2026-10-26):** the same codebase builds a **full-stack** site (React + Rails API +
+PostgreSQL) or a **static** site (local data, no backend), so the portfolio can stay public
+after the paid backend is shut down (see "Two modes" below).
 
 | Phase | Scope                                                                                                                                                                 | Status                        |
 | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
@@ -120,15 +123,15 @@ rate limiter's limitations documented before deployment, and an explicit contrac
 document) instead of Rails tests reading TypeScript files. Redis, Sidekiq, Vue and FastAPI stay
 out of Phase 2.
 
-| #   | Step                       | Status           | Depends on |
-| --- | -------------------------- | ---------------- | ---------- |
-| 2.0 | Terminology and ADRs       | Done             | —          |
-| 2.1 | Toolchain and API skeleton | Done             | 2.0        |
-| 2.2 | CI `api` job               | Done             | 2.1        |
-| 2.3 | Projects domain            | Done             | 2.1        |
-| 2.4 | Projects API               | Done             | 2.3        |
-| 2.5 | Contact messages           | Done             | 2.4        |
-| 2.6 | Hardening and docs         | Ready for review | 2.5        |
+| #   | Step                       | Status | Depends on |
+| --- | -------------------------- | ------ | ---------- |
+| 2.0 | Terminology and ADRs       | Done   | —          |
+| 2.1 | Toolchain and API skeleton | Done   | 2.0        |
+| 2.2 | CI `api` job               | Done   | 2.1        |
+| 2.3 | Projects domain            | Done   | 2.1        |
+| 2.4 | Projects API               | Done   | 2.3        |
+| 2.5 | Contact messages           | Done   | 2.4        |
+| 2.6 | Hardening and docs         | Done   | 2.5        |
 
 Each step follows the collaboration rules (plan → approval → implementation with tests →
 review); none starts automatically.
@@ -258,7 +261,7 @@ review); none starts automatically.
 - **Work:** bundler-audit clean, parameter-filter review, the API README (setup, commands,
   endpoints), ADRs completed (versions recorded in ADR-0011), the rate limiter's limitations
   documented.
-- **Delivered (ready for review), owner's decisions 2026-10-26:**
+- **Delivered, owner's decisions 2026-10-26:**
   - **Rate-limit key hardened:** Rails' `request.remote_ip` believes forged `X-Forwarded-For` /
     `Client-IP` headers from any peer, so a client reaching the API directly could rotate a
     header to escape both contact limits. The key now uses forwarded headers only when the
@@ -293,13 +296,13 @@ Independent of Phase 3: the shell is not required.
 
 **Evidence (Step 2.6, 2026-10-26):**
 
-| #   | Status                      | Evidence                                                                                                                                                                                                                                                           |
-| --- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1   | Met                         | The README's one-time setup followed in a fresh clone (isolated Compose project and port): Ruby from `.ruby-version`, one shared password, PostgreSQL healthy, `bin/setup` created and seeded the databases, `/up` 200, the seeded project served, `bin/ci` green. |
-| 2   | Met                         | 253 RSpec examples; every request spec asserts the OpenAPI contract; drift and enum/route parity specs; committee coverage fails a complete run if any documented response is never exercised.                                                                     |
-| 3   | Met locally; GitHub pending | `bin/ci`: 253 examples, 0 failures; RuboCop 60 files, no offenses; Brakeman 0 warnings; bundler-audit clean; clean-copy CI rehearsal green. GitHub Actions green through Step 2.5 (`ad889d3`); the Step 2.6 run follows the owner's push.                          |
-| 4   | Met                         | Validation, two rate limits (spoof-resistant key), honeypot, filtered logs (request, SQL binds, errors), no IP stored, `purge` task: covered by specs and mutation checks.                                                                                         |
-| 5   | Met                         | This roadmap, `CLAUDE.md`, both READMEs and ADR-0011/0012/0013 updated in Step 2.6.                                                                                                                                                                                |
+| #   | Status | Evidence                                                                                                                                                                                                                                                           |
+| --- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Met    | The README's one-time setup followed in a fresh clone (isolated Compose project and port): Ruby from `.ruby-version`, one shared password, PostgreSQL healthy, `bin/setup` created and seeded the databases, `/up` 200, the seeded project served, `bin/ci` green. |
+| 2   | Met    | 253 RSpec examples; every request spec asserts the OpenAPI contract; drift and enum/route parity specs; committee coverage fails a complete run if any documented response is never exercised.                                                                     |
+| 3   | Met    | `bin/ci`: 253 examples, 0 failures; RuboCop 60 files, no offenses; Brakeman 0 warnings; bundler-audit clean; clean-copy CI rehearsal green. GitHub Actions green on every Phase 2 commit, including the final one (`5f9eb59`).                                     |
+| 4   | Met    | Validation, two rate limits (spoof-resistant key), honeypot, filtered logs (request, SQL binds, errors), no IP stored, `purge` task: covered by specs and mutation checks.                                                                                         |
+| 5   | Met    | This roadmap, `CLAUDE.md`, both READMEs and ADR-0011/0012/0013 updated in Step 2.6.                                                                                                                                                                                |
 
 When they are met, the Architecture timeline's v2 becomes **Done**. The frontend is unchanged
 during Phase 2, so this one-line content change is **scheduled as the first task of Phase 3**
@@ -315,11 +318,34 @@ runtime dependency; no deployment or Phase 4 infrastructure.
 | #   | Step                                                   | Status           | Depends on |
 | --- | ------------------------------------------------------ | ---------------- | ---------- |
 | 3.0 | Architecture page and Phase 3 documentation            | Done             | —          |
-| 3.1 | Same-origin development setup and full-stack E2E setup | Ready for review | —          |
-| 3.2 | Typed API client                                       | Planned          | —          |
-| 3.3 | Projects from the API                                  | Planned          | 3.1, 3.2   |
-| 3.4 | Contact form                                           | Planned          | 3.1–3.3    |
-| 3.5 | Full-stack validation, docs and MVP completion         | Planned          | 3.0–3.4    |
+| 3.1 | Same-origin development setup and full-stack E2E setup | Done             | —          |
+| 3.2 | Typed API client                                       | Ready for review | —          |
+| 3.3 | Mode selection and Projects data                       | Planned          | 3.1, 3.2   |
+| 3.4 | Contact form (full-stack mode only)                    | Planned          | 3.1–3.3    |
+| 3.5 | Both modes validated, docs and MVP completion          | Planned          | 3.0–3.4    |
+
+### Two modes: static and full-stack (owner's requirement, 2026-10-26)
+
+One React codebase on one branch builds either mode; there are never two versions of the app.
+
+- **Full-stack mode:** the shell reads projects from, and sends contact messages to, the Rails
+  API (PostgreSQL), same-origin under `/api`.
+- **Static mode:** the shell uses its local, typed data and works fully with no Rails API and no
+  PostgreSQL (deployable as plain files); it makes no `/api` request and doesn't load the API
+  client. Contact keeps the external channels (email, LinkedIn, GitHub); there is no form.
+- **The mode is chosen at build time**, explicitly, by one setting read in one module (its name
+  and default are decided in Step 3.3). Nothing is detected at runtime.
+- **No silent fallback:** in full-stack mode an API failure shows an accessible error state with
+  a retry; it never switches to static data.
+- **One view model, two sources:** `apps/shell/src/projects/model.ts` (`Project`) is independent
+  of both sources; the static source is `content/projects.ts` (**kept permanently**), the API
+  source is `api/projects.ts` (mapping API responses to the model). Presentation components
+  receive the model only and can't import the API layer (lint-enforced).
+- **Truthfulness per mode:** Fun Facts, registry backends and the Architecture page describe the
+  mode that was built.
+- **Equivalent content:** the static data and the API's seeds hold the same projects, checked by
+  comparing both **after normalising them to the `Project` model** (static data as-is, API
+  responses through `toProject`), never their raw representations.
 
 ### Step 3.0 — Architecture page and Phase 3 documentation
 
@@ -376,6 +402,10 @@ runtime dependency; no deployment or Phase 4 infrastructure.
 
 ### Step 3.2 — Typed API client
 
+- **Two-mode additions:** the `Project` view model moves to the neutral
+  `apps/shell/src/projects/model.ts`; the API mapping produces that model; an ESLint rule keeps
+  `src/components/` and `src/sections/` from importing `src/api/`; the static data stays. No
+  mode switch and no page change in this step.
 - **Scope (decision A1):** types generated from `services/api/docs/openapi.yaml` by an
   **isolated, lockfile-pinned generator package** `tools/openapi-types/` (exact
   `openapi-typescript@7.13.0` and its supported peer `typescript@5.9.3`; committed
@@ -389,45 +419,59 @@ runtime dependency; no deployment or Phase 4 infrastructure.
   compile-time parity: the API's `Technology` ⊆ the shell's `TechId`, `Status` and `Locale`
   equal. ADR-0014 (frontend data access).
 - **Acceptance:** the drift check is green in CI; no `any`; no UI change.
+- **Delivered (ready for review):** see the "Step 3.2 delivery" notes below.
 
-### Step 3.3 — Projects from the API
+### Step 3.3 — Mode selection and Projects data
 
-- **Scope (decision A3):** the Projects route's lazy module provides a `loader` that returns a
-  deferred promise (verified with React Router 8.4.0: navigation completes while it is pending,
-  and the loader runs again on every visit); the page renders its intro and Fun Fact at once and
-  the cards through `<Suspense>` + `<Await>` with accessible, localised loading, empty and error
-  (Retry) states. A cache inside the loader keeps the list for **5 minutes**, never caches
-  failures, is bypassed by Retry, and only stores a response if no newer request has started
-  (a slow, older request can't overwrite newer data). `content/projects.ts` is retired; the
-  seeds become the content source (the seeded description gets owner-approved text); the
-  Projects Fun Fact and registry `backend: 'rails'` (plus a PostgreSQL badge) are updated.
-- **Acceptance:** the loaded page looks identical (visual comparison); every state is
-  accessible in both languages; unit and E2E tests (real API, plus a stubbed error) pass.
+- **Mode:** the build-time mode setting (name and default decided in this step), one module
+  that reads it, and two builds from the same branch.
+- **Sources:** static mode renders `content/projects.ts` at once and never loads the API client;
+  full-stack mode uses the Projects route's lazy `loader`, returning a deferred promise (verified
+  with React Router 8.4.0: navigation completes while it is pending, and the loader runs again on
+  every visit), rendered with `<Suspense>` + `<Await>` and accessible, localised loading, empty
+  and error (Retry) states (decision A3). A cache inside the loader keeps the list for **5
+  minutes**, never caches failures, is bypassed by Retry, and only stores a response if no newer
+  request has started. **An API failure shows the error state, never static data.**
+- **Truthfulness:** registry `backend`, the Projects and Home Fun Facts per mode (Rails and
+  PostgreSQL badges in full-stack mode only); the seeded description and the static data updated
+  together with owner-approved text.
+- **Tests:** unit tests in both modes; E2E of the Projects page in both modes; the content
+  parity check: static data and API projects compared after normalising both to `Project`.
+- **Acceptance:** the loaded page looks identical in both modes (visual comparison); every state
+  is accessible in both languages.
 
-### Step 3.4 — Contact form
+### Step 3.4 — Contact form (full-stack mode only)
 
 - **Scope:** an accessible form below the existing channels (a route action plus
-  `useFetcher`): name, email and message with client-side checks that mirror the contract, the
-  page language, the hidden honeypot, localised field errors from the validation codes, the
-  pending, success, rate-limited and generic error states, and the privacy note
-  (owner-approved text). The Contact Fun Fact and registry `backend: 'rails'` are updated.
-- **E2E (decision A2):** real-API submissions run serially on the desktop project and reset
-  the file-based rate-limit store before each test (including a genuine 429 after five
-  accepted messages); language, mobile and error variants use `page.route` stubs.
-- **Acceptance:** WCAG 2.2 AA (axe, keyboard, focus management), both languages, the owner's
-  visual review.
+  `useFetcher`), **rendered only in full-stack mode**: name, email and message with client-side
+  checks that mirror the contract, the page language, the hidden honeypot, localised field
+  errors from the validation codes, the pending, success, rate-limited and generic error states,
+  and the privacy note (owner-approved text). The Contact Fun Fact and registry `backend` follow
+  the mode. **Static mode keeps today's page:** the external channels, no form, no `/api`
+  request.
+- **E2E (decision A2):** in full-stack mode, real-API submissions run serially on the desktop
+  project and reset the file-based rate-limit store before each test (including a genuine 429
+  after five accepted messages); language, mobile and error variants use `page.route` stubs. In
+  static mode, the channels work and no form exists.
+- **Acceptance:** WCAG 2.2 AA (axe, keyboard, focus management), both languages, both modes,
+  the owner's visual review.
 
-### Step 3.5 — Full-stack validation, docs and MVP completion
+### Step 3.5 — Both modes validated, docs and MVP completion
 
-- **Scope:** the Architecture timeline's v3 becomes Done (now allowed: sections use Rails) and the
-  testing/CI or a new Rails card describes the integrated site; a clean-copy full-stack
-  rehearsal; READMEs, `CLAUDE.md`, ADR-0004, 0009, 0010, 0012 and 0014; the acceptance evidence
-  below. The MVP is complete once GitHub CI is green on this step.
+- **CI:** builds and E2E for **both modes**: full-stack is the existing `e2e` job; static runs
+  the suite against `vite preview` with no API and asserts that no `/api` request is made.
+- **Architecture page per mode:** in full-stack mode the timeline's v3 becomes Done and the
+  cards describe the integration; in static mode the page still lists what the project has
+  built, and says this deployment serves static data.
+- **Docs:** how to build and run each mode (READMEs), `CLAUDE.md`, ADR-0004, 0009, 0010, 0012
+  and 0014, a note on running the static mode after the backend is shut down, and the
+  acceptance evidence below. The MVP is complete once GitHub CI is green on this step.
 
 ### Phase 3 acceptance criteria
 
-1. The Projects page shows API data in English and Portuguese, with accessible loading, empty and
-   error states; no static project data remains.
+1. In full-stack mode, the Projects page shows API data in English and Portuguese, with
+   accessible loading, empty and error states; in static mode it shows the local data with no
+   API.
 2. The Contact page sends messages through the API, with accessible validation, localised
    errors, the honeypot, rate-limit messaging and the privacy note.
 3. API requests are same-origin through the Vite dev and preview proxies; no CORS.
@@ -438,6 +482,25 @@ runtime dependency; no deployment or Phase 4 infrastructure.
 6. Fun Facts, registry backends and the Architecture page are truthful; the docs and ADRs are
    current.
 7. The design, responsive behaviour and bilingual routing are unchanged (owner's visual review).
+8. **Both modes from one branch:** the static build works with no API process, makes no `/api`
+   request and keeps the external contact channels; the full-stack build uses the API for
+   Projects and Contact; both are tested in CI.
+9. **No silent fallback:** in full-stack mode, API failures show accessible error states (tested).
+10. Fun Facts, registry backends and the Architecture page describe the built mode.
+
+### Step 3.2 delivery (ready for review)
+
+- `tools/openapi-types/`: the isolated generator (`openapi-typescript@7.13.0`,
+  `typescript@5.9.3`, its own lockfile with sha512 integrity, matching the npm registry);
+  `npm run api:types:install`, `api:types` and `api:types:check` (in the CI `quality` job).
+  Generation is deterministic, and the generated `apps/shell/src/api/schema.ts` compiles under
+  the shell's TypeScript 6.0.3 strict settings and passes ESLint (no ignore needed).
+- `apps/shell/src/api/`: `client.ts` (same-origin `getJson`/`postJson`, `ApiError`), `types.ts`,
+  `projects.ts` (`fetchProjects`, `toProject`), `contract.ts` (type-only parity), `fixtures.ts`
+  (typed with `satisfies`), with unit tests.
+- `apps/shell/src/projects/model.ts`: the neutral `Project` view model; `content/projects.ts`
+  (kept) and `ProjectCard` import it. ESLint forbids `src/api/*` in components and sections.
+- ADR-0014 (frontend data access and the two modes); no page uses the API yet.
 
 ### Phase 3 decisions (owner, 2026-10-26)
 
@@ -452,6 +515,9 @@ runtime dependency; no deployment or Phase 4 infrastructure.
 - **Fun Facts:** a PostgreSQL badge; the privacy note and the seeded description are drafted in
   their steps for the owner's approval; the contact form goes below the channels.
 - **Architecture page:** the testing and CI cards are updated instead of adding an eleventh card.
+- **Two modes:** one codebase, a build-time mode, a neutral `Project` model fed by the static
+  data (kept) or the API mapping, no silent fallback, the contact form in full-stack mode only,
+  and content parity checked after normalising both sources to `Project`.
 
 ### Summary and readiness (recorded at the end of Phase 2)
 

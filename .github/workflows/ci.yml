@@ -32,9 +32,20 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            tools/openapi-types/package-lock.json
 
       - name: Install dependencies
         run: npm ci
+
+      # The isolated, lockfile-pinned generator (ADR-0014): npm ci from its own lockfile, no
+      # install scripts.
+      - name: Install the OpenAPI type generator
+        run: npm run api:types:install
+
+      - name: Generated API types are up to date
+        run: npm run api:types:check
 
       - name: Formatting
         run: npm run format:check

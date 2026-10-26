@@ -52,6 +52,11 @@ that read TypeScript files.
 
 ## Implemented (Step 2.4, 2026-10-26)
 
+- **Shell side (Step 3.2):** the shell's types for this contract are generated from the
+  document (`apps/shell/src/api/schema.ts`, by the locked generator in `tools/openapi-types`,
+  checked for freshness in CI), and type-only assertions keep `Technology`, `Status` and `Locale`
+  aligned with the shell's own vocabularies (ADR-0014).
+
 - `GET /api/v1/projects` (published, ordered by position then slug) and
   `GET /api/v1/projects/{slug}`; nothing else is writable. Unknown, unpublished and badly
   formed slugs all get the same 404; other `/api` paths get the JSON 404; write methods on the

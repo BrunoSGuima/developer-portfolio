@@ -17,17 +17,29 @@ illustrated Home, responsive layout, i18n en + pt-BR, transitions & polish, Play
 CI is green on GitHub; Architecture page updated). Phase 1 is **not** the MVP.
 
 **Phase 2 — Ruby on Rails API + PostgreSQL: done** (Steps 2.0–2.6; GitHub Actions green on
-`5f9eb59`). **Phase 3 — Frontend/backend integration and MVP completion: in progress** (Step 3.0,
-Architecture page and Phase 3 docs, ready for review). The API is built and tested, but the React
-pages don't use it yet (Steps 3.1–3.5; plan, decisions and acceptance criteria in
-`docs/ROADMAP.md`). Phase 3 rules: API calls are same-origin `/api` through the Vite proxies
-(no CORS); from Step 3.2 the shell's API types are generated from `services/api/docs/openapi.yaml`
-(never edited by hand); keep the design, responsiveness and bilingual routing unchanged.
-Phase 2 is complete when the API, persistence, endpoints, security and RSpec suite work on their
-own (no frontend required). **The MVP is complete only at the end of Phase 3** (integration and
-full-stack validation). **Deployment is postponed** to Phase 4; do not add hosting, CD or
-production infrastructure before it. The roadmap, step list, acceptance criteria and recorded
-decisions live in **`docs/ROADMAP.md`** (version-controlled source of truth; keep it current).
+`5f9eb59`). **Phase 3 — Frontend/backend integration and MVP completion: in progress** (Steps
+3.0–3.1 done; Step 3.2, the typed API client, ready for review). The API is built and tested, but
+the React pages don't use it yet (plan, decisions and acceptance criteria in `docs/ROADMAP.md`).
+**Long-term requirement:** one codebase builds a **full-stack** site (Rails API + PostgreSQL) or a
+**static** site (local data, no backend), chosen at build time (from Step 3.3; ADR-0014). Phase 3
+rules:
+
+- API calls are same-origin `/api` through the Vite proxies (no CORS).
+- The shell's API types (`apps/shell/src/api/schema.ts`) are generated from
+  `services/api/docs/openapi.yaml`: never edit them; change the contract, then run
+  `npm run api:types` (`npm run api:types:install` once).
+- Pages and components render the shell's own models (e.g. `Project` in
+  `apps/shell/src/projects/model.ts`), fed by the static data or by the API mapping in
+  `apps/shell/src/api/`; `src/components/` and `src/sections/` never import `src/api/`
+  (ESLint-enforced). The static data (`content/projects.ts`) stays for static mode.
+- In full-stack mode an API failure is shown as an error, never replaced by static data; the
+  contact form exists only in full-stack mode.
+- Keep the design, responsiveness and bilingual routing unchanged.
+  Phase 2 is complete when the API, persistence, endpoints, security and RSpec suite work on their
+  own (no frontend required). **The MVP is complete only at the end of Phase 3** (integration and
+  full-stack validation). **Deployment is postponed** to Phase 4; do not add hosting, CD or
+  production infrastructure before it. The roadmap, step list, acceptance criteria and recorded
+  decisions live in **`docs/ROADMAP.md`** (version-controlled source of truth; keep it current).
 
 The API runs Ruby 4.0.9, Rails 8.1.4 and PostgreSQL 18.6 (ADR-0011). Do not add Python, Redis, Sidekiq or Vue until their phase. The shell keeps its
 static project data until Step 3.3 retires it.
@@ -258,6 +270,9 @@ Run from the repository root (after `nvm use`):
 | `npm run format:check`                | Check formatting (no writes)                          |
 | `npm run content:todo`                | List content placeholders still awaiting confirmation |
 | `npm run content:check`               | Fail if any content placeholder remains (CI gate)     |
+| `npm run api:types:install`           | Install the locked OpenAPI type generator (once)      |
+| `npm run api:types`                   | Regenerate `apps/shell/src/api/schema.ts`             |
+| `npm run api:types:check`             | Fail if the generated API types are stale (CI gate)   |
 | `npm run illustrations -w apps/shell` | Rebuild WebP derivatives from `docs/assets/source/`   |
 | `npm run favicon -w apps/shell`       | Rebuild the favicons (mascot head crop) in `public/`  |
 | `npm run test:e2e`                    | Start the e2e API and the preview, run Playwright     |

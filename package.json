@@ -21,7 +21,10 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "content:todo": "npm run content:todo --workspace=apps/shell",
-    "content:check": "npm run content:check --workspace=apps/shell"
+    "content:check": "npm run content:check --workspace=apps/shell",
+    "api:types:install": "npm ci --prefix tools/openapi-types --ignore-scripts --no-audit --no-fund",
+    "api:types": "node tools/openapi-types/generate.mjs",
+    "api:types:check": "node tools/openapi-types/generate.mjs --check"
   },
   "devDependencies": {
     "prettier": "^3.9.10"

@@ -1,5 +1,5 @@
 import { isPlaceholder } from '../../content/placeholder.ts';
-import type { Project } from '../../content/projects.ts';
+import type { Project } from '../../projects/model.ts';
 import { useLocale, useMessages } from '../../i18n/context.ts';
 import { pick } from '../../i18n/localized.ts';
 import { Placeholder } from '../Placeholder/Placeholder.tsx';

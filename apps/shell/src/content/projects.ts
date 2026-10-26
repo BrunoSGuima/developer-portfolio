@@ -1,24 +1,11 @@
-import type { Localized } from '../i18n/localized.ts';
-import type { TechId } from '../sections/technologies.ts';
-import type { Content } from './placeholder.ts';
-import type { Status } from './status.ts';
+import type { Project } from '../projects/model.ts';
 
 // Only public work belongs here: professional work in private client codebases is not a
 // portfolio project.
-
-export interface ProjectLink {
-  label: Localized<string>;
-  href: Content;
-}
-
-export interface Project {
-  id: string;
-  name: Localized<string>;
-  status: Status;
-  description: Localized<string>;
-  tech: readonly TechId[];
-  links: readonly ProjectLink[];
-}
+//
+// This is the static data source (static mode, ADR-0014): kept permanently, so the site works
+// without the Rails API. Full-stack mode reads the same projects from the API, whose seeds
+// (services/api/db/seeds.rb) must stay equivalent; update both together.
 
 export const projects: readonly Project[] = [
   {

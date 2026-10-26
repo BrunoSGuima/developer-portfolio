@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { todo } from '../../content/placeholder.ts';
-import type { Project } from '../../content/projects.ts';
+import type { Project } from '../../projects/model.ts';
 import { same } from '../../test/localized.ts';
 import ProjectCard from './ProjectCard.tsx';
 

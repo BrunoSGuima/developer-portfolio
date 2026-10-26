@@ -27,6 +27,25 @@ export default defineConfig([
     },
   },
   {
+    // Presentation never depends on the API layer (ADR-0014): pages and components render the
+    // shell's own models; only data-loading code may import src/api.
+    files: ['src/components/**', 'src/sections/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/api/*'],
+              message:
+                'Components and sections must not import the API layer: render the shell models (e.g. projects/model.ts) and load data outside presentation code (ADR-0014).',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     // Config files are plain JS outside the TS projects: lint without type information.
     files: ['**/*.js'],
     extends: [js.configs.recommended],
