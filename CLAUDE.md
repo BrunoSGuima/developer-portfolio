@@ -16,8 +16,9 @@ tokens, registry & routing, Fun Fact, portfolio content, microfrontend host, mas
 illustrated Home, responsive layout, i18n en + pt-BR, transitions & polish, Playwright E2E, CI;
 CI is green on GitHub; Architecture page updated). Phase 1 is **not** the MVP.
 
-**Phase 2 — Ruby on Rails API + PostgreSQL: in progress** (Steps 2.0–2.1 done: ADRs, the API
-toolchain and skeleton in `services/api`; Step 2.2, the CI `api` job, ready for review).
+**Phase 2 — Ruby on Rails API + PostgreSQL: in progress** (Steps 2.0–2.2 done: ADRs, the API
+toolchain and skeleton in `services/api`, the CI `api` job; Step 2.3, the Projects domain, ready
+for review).
 Phase 2 is complete when the API, persistence, endpoints, security and RSpec suite work on their
 own (no frontend required). **The MVP is complete only at the end of Phase 3** (integration and
 full-stack validation). **Deployment is postponed** to Phase 4; do not add hosting, CD or

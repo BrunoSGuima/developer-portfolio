@@ -22,6 +22,9 @@ development:
 test:
   <<: *default
   database: portfolio_api_test
+  # db:prepare loads db/seeds.rb whenever it creates a database (CI creates the test database on
+  # every run); tests build their own data with FactoryBot instead.
+  seeds: false
 
 # Production is configured in Phase 4 (deployment), from the environment only.
 production:

@@ -6,8 +6,9 @@ is tested on its own. Public endpoints will live under `/api/v1` (ADR-0012), ser
 with the shell through a proxy (Phase 3 Vite proxy, Phase 4 reverse proxy), so there is no CORS
 configuration.
 
-**Status (Step 2.1):** skeleton only: the toolchain, the database, the test setup and Rails'
-`GET /up` health check. No domain models or endpoints yet.
+**Status (Step 2.3):** the toolchain, the database, the test setup, Rails' `GET /up` health
+check and the **Projects domain** (models, constraints, seeds). No public endpoints yet: the
+Projects API is Step 2.4.
 
 | Component    | Version                                          | Pinned in                                      |
 | ------------ | ------------------------------------------------ | ---------------------------------------------- |
@@ -61,7 +62,7 @@ Commands run from the **repository root** unless noted.
    ```bash
    docker compose -f infra/compose.yaml up -d --wait
    cd services/api
-   bin/setup --skip-server        # bundle install, creates the development and test databases
+   bin/setup --skip-server        # bundle install, creates (and seeds) the dev DB, creates the test DB
    ```
 
 ## Daily use
@@ -96,6 +97,36 @@ Only use it on purpose.
 - Action Mailer and Active Job are available but not configured: no email delivery, workers
   or queues yet.
 
+## Domain
+
+- **`Project`** (`projects`): `slug` (unique, lowercase-hyphenated, read-only once created),
+  localised `name` (≤ 120) and `description` (≤ 1000), `status` (`done`, `live`, `in-progress`,
+  `planned`, the site's words), ordered `technologies` ids (`Project::TECHNOLOGIES`, the shell's
+  badge ids; may be empty), `position` (display order, ties broken by slug) and `published`
+  (default **false**). Scopes: `published`, `ordered`.
+- **`ProjectLink`** (`project_links`): localised `label` (≤ 60), `url`, `position`; deleted with
+  its project; a URL appears once per project.
+- **Localised text** is JSONB `{ "en": "…", "pt-BR": "…" }` (ADR-0012), validated by
+  `LocalizedTextValidator` and normalised by `LocalizedText` (string keys, trimmed text).
+- **Every rule is enforced twice**: by the model and by a database check constraint, unique
+  index or foreign key, so bad rows are rejected even when the models are bypassed. One
+  difference, by design: link URLs. The model parses the URL (https scheme, a valid host, no
+  credentials); the database only checks its shape (starts with `https://`, a non-empty host
+  part without `user@`, no whitespace, ≤ 2048 characters). Both reject `http:`, `javascript:`
+  and credential-bearing links; only the model rejects e.g. an invalid host name.
+
+### Seeds
+
+`db/seeds.rb` holds the site's projects, copied from the shell's
+`apps/shell/src/content/projects.ts` (update both together until Phase 3 switches the shell to
+the API). It is idempotent and transactional: projects are matched by slug, their links are
+replaced by the seeded list, and a failure rolls everything back. Projects not in the file are
+left alone. The test database is never seeded (`seeds: false` in `config/database.yml`).
+
+```bash
+bin/rails db:migrate db:seed     # after pulling new migrations or seed changes
+```
+
 ## Tests
 
 - RSpec with FactoryBot (`spec/factories`, `create`/`build` without prefix). Every example runs
@@ -103,6 +134,11 @@ Only use it on purpose.
 - `spec/requests/`: request specs (`GET /up`). `spec/setup/`: guards for the environment (Ruby
   version, Rails 8.1, API-only, no CORS middleware, FactoryBot) and the database (PostgreSQL 18,
   the test database, transactional isolation).
+- `spec/models/` and `spec/validators/`: validations, normalisation, scopes and associations.
+  `spec/db/constraints_spec.rb` writes bad rows past the models (`insert_all!`,
+  `update_columns`) and expects the database to reject them; each write runs in a savepoint so
+  a PostgreSQL error doesn't abort the example's transaction. `spec/db/seeds_spec.rb`: seeds
+  create valid records, are idempotent and roll back completely on failure.
 - The suite needs PostgreSQL running and nothing else (no Node, no shell).
 
 ## Continuous integration

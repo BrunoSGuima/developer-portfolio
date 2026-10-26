@@ -24,8 +24,8 @@ after Phase 1 were renumbered accordingly; the earlier plan had deployment as Ph
 **Phase 1 (React frontend foundation) is done:** CI ran green on GitHub for the Step 12 commit
 (`f15f91c`, 2026-10-25). The Architecture page update that followed is done too (`e0e22df`).
 
-**Phase 2 is in progress:** Steps 2.0 (`392f340`) and 2.1 (`6ccc0a1`) are done; Step 2.2 is
-ready for review.
+**Phase 2 is in progress:** Steps 2.0 (`392f340`), 2.1 (`6ccc0a1`) and 2.2 (`22b0bf0`) are done;
+Step 2.3 is ready for review.
 
 | Phase | Scope                                                                                                                                                                 | Status                        |
 | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
@@ -120,8 +120,8 @@ out of Phase 2.
 | --- | -------------------------- | ---------------- | ---------- |
 | 2.0 | Terminology and ADRs       | Done             | —          |
 | 2.1 | Toolchain and API skeleton | Done             | 2.0        |
-| 2.2 | CI `api` job               | Ready for review | 2.1        |
-| 2.3 | Projects domain            | Planned          | 2.1        |
+| 2.2 | CI `api` job               | Done             | 2.1        |
+| 2.3 | Projects domain            | Ready for review | 2.1        |
 | 2.4 | Projects API               | Planned          | 2.3        |
 | 2.5 | Contact messages           | Planned          | 2.4        |
 | 2.6 | Hardening and docs         | Planned          | 2.5        |
@@ -168,7 +168,7 @@ review); none starts automatically.
   pinned by SHA (bundler cache), same security rules as ADR-0010; steps RuboCop → Brakeman →
   bundler-audit → `db:prepare` → RSpec.
 - **Acceptance:** actionlint clean; clean-copy rehearsal; green on GitHub; ADR-0010 updated.
-- **Delivered (ready for review):** the `api` job in `ci.yml`: Ruby from `.ruby-version`
+- **Delivered:** the `api` job in `ci.yml`: Ruby from `.ruby-version`
   (`ruby/setup-ruby` v1.335.0, Bundler cache, frozen lockfile), a `postgres:18.6-trixie` service
   container with a health check, the connection through `DATABASE_*` variables (a documented
   throwaway password, no repository secrets) and a single step running **`bin/ci`** (setup with
@@ -188,6 +188,19 @@ review); none starts automatically.
   from an allowed list (documented as an OpenAPI enum).
 - **Tests:** model specs for validations and specs proving the database constraints reject bad
   rows; seeds load.
+- **Delivered (ready for review):** migrations for `projects` and `project_links` with named
+  check constraints (localised JSONB with both languages, non-blank and bounded; slug format;
+  status words; non-negative positions; no NULL technology; https-shaped URLs), a unique slug,
+  a unique URL per project and a cascading foreign key; `Project` (read-only slug, technology
+  allowlist `Project::TECHNOLOGIES`, `published` defaulting to false, `published` and `ordered`
+  scopes) and `ProjectLink` (strict https URL parsing); `LocalizedTextValidator` and
+  `LocalizedText` normalisation; factories; idempotent, transactional seeds with the site's
+  current project (the test database is never seeded). Owner's decisions (2026-10-25): ids-only
+  technologies with the allowlist in the model, no tags, string status with a check, seeds in
+  Ruby copied verbatim from the shell (to update together in Phase 3), the defaults and limits
+  above, immutable slugs; the model parses URLs while the database checks their shape
+  (documented in the API README). Tests: model, validator, database-constraint and seed specs
+  (idempotence, link replacement, full rollback on failure). No endpoints yet (Step 2.4).
 
 ### Step 2.4 — Projects API
 

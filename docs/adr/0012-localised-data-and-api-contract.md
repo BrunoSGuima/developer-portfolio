@@ -30,7 +30,9 @@ that read TypeScript files.
   fixtures against **the same document**. Neither side's tests import the other's source;
   the document is the only coupling.
 - Closed vocabularies shared with the shell (technology ids, status words) are **enums in the
-  OpenAPI document**.
+  OpenAPI document**. In the API they live in `Project::TECHNOLOGIES` and `Project::STATUSES`
+  (Step 2.3); the status words are also a database check, the technology ids only a model
+  validation (adding one needs no migration).
 
 ## Alternatives considered
 
