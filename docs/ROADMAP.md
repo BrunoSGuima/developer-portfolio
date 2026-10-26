@@ -24,8 +24,8 @@ after Phase 1 were renumbered accordingly; the earlier plan had deployment as Ph
 **Phase 1 (React frontend foundation) is done:** CI ran green on GitHub for the Step 12 commit
 (`f15f91c`, 2026-10-25). The Architecture page update that followed is done too (`e0e22df`).
 
-**Phase 2 is in progress:** Steps 2.0 (`392f340`), 2.1 (`6ccc0a1`) and 2.2 (`22b0bf0`) are done;
-Step 2.3 is ready for review.
+**Phase 2 is in progress:** Steps 2.0 (`392f340`), 2.1 (`6ccc0a1`), 2.2 (`22b0bf0`) and 2.3
+(`725103c`) are done; Step 2.4 is ready for review.
 
 | Phase | Scope                                                                                                                                                                 | Status                        |
 | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
@@ -121,8 +121,8 @@ out of Phase 2.
 | 2.0 | Terminology and ADRs       | Done             | —          |
 | 2.1 | Toolchain and API skeleton | Done             | 2.0        |
 | 2.2 | CI `api` job               | Done             | 2.1        |
-| 2.3 | Projects domain            | Ready for review | 2.1        |
-| 2.4 | Projects API               | Planned          | 2.3        |
+| 2.3 | Projects domain            | Done             | 2.1        |
+| 2.4 | Projects API               | Ready for review | 2.3        |
 | 2.5 | Contact messages           | Planned          | 2.4        |
 | 2.6 | Hardening and docs         | Planned          | 2.5        |
 
@@ -188,7 +188,7 @@ review); none starts automatically.
   from an allowed list (documented as an OpenAPI enum).
 - **Tests:** model specs for validations and specs proving the database constraints reject bad
   rows; seeds load.
-- **Delivered (ready for review):** migrations for `projects` and `project_links` with named
+- **Delivered:** migrations for `projects` and `project_links` with named
   check constraints (localised JSONB with both languages, non-blank and bounded; slug format;
   status words; non-negative positions; no NULL technology; https-shaped URLs), a unique slug,
   a unique URL per project and a cascading foreign key; `Project` (read-only slug, technology
@@ -210,6 +210,17 @@ review); none starts automatically.
 - **Decisions:** `{ "data": … }` responses, `{ "error": { code, message, details } }` errors,
   snake_case keys; every response validated against OpenAPI with `committee`.
 - **Tests:** 200, 404, unpublished hidden, order, both languages present, contract validation.
+- **Delivered (ready for review):** read-only routes under `/api/v1` (index and show by slug),
+  `Api::BaseController` (the error envelope), `ProjectSerializer` (explicit field allowlist: no
+  id, position, published or timestamps), `Api::ErrorsController` as `config.exceptions_app`,
+  and `services/api/docs/openapi.yaml`. Owner's adjustments (2026-10-25/26): **405** with
+  `Allow: GET, HEAD` for write methods on the project resources (404 for unknown paths and for
+  unknown, unpublished or badly formed slugs); unexpected errors keep Rails' detailed responses
+  in development and render a generic envelope in production; the document is **OpenAPI
+  3.0.3** because the released committee doesn't support 3.1 yet (ADR-0012). Tests: request
+  specs with contract validation on every response (errors included), drift specs, enum and
+  route parity with the document, a production-mode 500 without exception details, a 2-query
+  index.
 
 ### Step 2.5 — Contact messages
 

@@ -6,9 +6,8 @@ is tested on its own. Public endpoints will live under `/api/v1` (ADR-0012), ser
 with the shell through a proxy (Phase 3 Vite proxy, Phase 4 reverse proxy), so there is no CORS
 configuration.
 
-**Status (Step 2.3):** the toolchain, the database, the test setup, Rails' `GET /up` health
-check and the **Projects domain** (models, constraints, seeds). No public endpoints yet: the
-Projects API is Step 2.4.
+**Status (Step 2.4):** the toolchain, the database, the test setup, Rails' `GET /up` health
+check, the **Projects domain** (models, constraints, seeds) and the read-only **Projects API**.
 
 | Component    | Version                                          | Pinned in                                      |
 | ------------ | ------------------------------------------------ | ---------------------------------------------- |
@@ -97,6 +96,35 @@ Only use it on purpose.
 - Action Mailer and Active Job are available but not configured: no email delivery, workers
   or queues yet.
 
+## Endpoints
+
+Read-only, JSON, under `/api/v1`. **The contract is [`docs/openapi.yaml`](docs/openapi.yaml)**
+(OpenAPI 3.0.3, ADR-0012): change it first; every request spec validates against it.
+
+| Request                       | Response                                                                                      |
+| ----------------------------- | --------------------------------------------------------------------------------------------- |
+| `GET /api/v1/projects`        | 200 `{ "data": [Project] }`: published projects, ordered by position then slug                |
+| `GET /api/v1/projects/{slug}` | 200 `{ "data": Project }`; **404** for unknown, unpublished or badly formed slugs (same body) |
+| Other methods on those paths  | **405** with `Allow: GET, HEAD`                                                               |
+| Any other path under `/api`   | **404**                                                                                       |
+
+There are no format suffixes: `/api/v1/projects/valid-slug.json` or `/api/v1/projects/a.b` is a
+404 (the whole segment is treated as the slug), never the project before the dot.
+
+A project is `slug`, `name` and `description` (both languages), `status`, `technologies` (ids,
+badge order) and `links` (`label` in both languages, `url`), in display order. Errors are
+always `{ "error": { "code", "message", "details" } }`.
+
+```bash
+curl -s localhost:3000/api/v1/projects
+curl -s localhost:3000/api/v1/projects/developer-portfolio
+```
+
+**Unexpected errors:** in **development** Rails shows its detailed error response (exception and
+backtrace) to help debugging. In **production** `config.exceptions_app` (`Api::ErrorsController`)
+renders the same error envelope with a generic message (`Internal Server Error`): exception
+messages and backtraces never reach the client. The full error is always in the log.
+
 ## Domain
 
 - **`Project`** (`projects`): `slug` (unique, lowercase-hyphenated, read-only once created),
@@ -139,6 +167,11 @@ bin/rails db:migrate db:seed     # after pulling new migrations or seed changes
   `update_columns`) and expects the database to reject them; each write runs in a savepoint so
   a PostgreSQL error doesn't abort the example's transaction. `spec/db/seeds_spec.rb`: seeds
   create valid records, are idempotent and roll back completely on failure.
+- `spec/requests/api/`: the endpoints and error responses. Every response is validated against
+  `docs/openapi.yaml` with `assert_schema_conform(status)` (`spec/support/committee.rb`);
+  drift specs prove an undocumented or missing field fails. `spec/docs/openapi_spec.rb` keeps
+  the document's enums and paths equal to the model constants and routes. Production error
+  handling is tested by switching the request to production-style exception rendering.
 - The suite needs PostgreSQL running and nothing else (no Node, no shell).
 
 ## Continuous integration

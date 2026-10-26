@@ -1,0 +1,229 @@
+openapi: 3.0.3
+info:
+  title: Developer Portfolio API
+  version: 1.0.0
+  description: |
+    Read-only API of the developer portfolio (ADR-0011, ADR-0012). It is served same-origin with
+    the React shell under /api (no CORS). Localised text always contains every supported
+    language ("en", "pt-BR"); the client picks one. Every response body is either
+    `{ "data": … }` or `{ "error": { "code", "message", "details" } }`.
+
+    This document is the contract between the API and the shell: the Rails request specs
+    validate every request and response against it (committee), and the shell checks its
+    types and fixtures against it in Phase 3. Change it first when the API changes.
+paths:
+  /api/v1/projects:
+    get:
+      operationId: listProjects
+      summary: List the published projects
+      description: Published projects only, ordered for display (position, then slug). No pagination.
+      responses:
+        "200":
+          description: The published projects, in display order (possibly empty).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectList"
+              example:
+                data:
+                  - slug: developer-portfolio
+                    name:
+                      en: Developer Portfolio (this site)
+                      pt-BR: Portfólio de Desenvolvedor (este site)
+                    description:
+                      en: An interactive portfolio built as a set of independent applications.
+                      pt-BR: Um portfólio interativo construído como um conjunto de aplicações independentes.
+                    status: in-progress
+                    technologies: [react, typescript, vite, react-router]
+                    links:
+                      - label:
+                          en: GitHub profile
+                          pt-BR: Perfil no GitHub
+                        url: https://github.com/BrunoSGuima
+        "500":
+          $ref: "#/components/responses/InternalError"
+    # Write methods are listed only to document their 405 (the API is read-only).
+    post: { summary: Not supported, responses: { "405": { $ref: "#/components/responses/MethodNotAllowed" } } }
+    put: { summary: Not supported, responses: { "405": { $ref: "#/components/responses/MethodNotAllowed" } } }
+    patch: { summary: Not supported, responses: { "405": { $ref: "#/components/responses/MethodNotAllowed" } } }
+    delete: { summary: Not supported, responses: { "405": { $ref: "#/components/responses/MethodNotAllowed" } } }
+  /api/v1/projects/{slug}:
+    parameters:
+      - $ref: "#/components/parameters/Slug"
+    get:
+      operationId: getProject
+      summary: Get a published project by its slug
+      responses:
+        "200":
+          description: The project.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectResponse"
+        "404":
+          description: >-
+            No published project has this slug. Unknown, unpublished and badly formed slugs get
+            the same response, so unpublished projects can't be discovered.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  code: not_found
+                  message: Project not found
+                  details: {}
+        "500":
+          $ref: "#/components/responses/InternalError"
+    # Write methods are listed only to document their 405 (the API is read-only).
+    post: { summary: Not supported, responses: { "405": { $ref: "#/components/responses/MethodNotAllowed" } } }
+    put: { summary: Not supported, responses: { "405": { $ref: "#/components/responses/MethodNotAllowed" } } }
+    patch: { summary: Not supported, responses: { "405": { $ref: "#/components/responses/MethodNotAllowed" } } }
+    delete: { summary: Not supported, responses: { "405": { $ref: "#/components/responses/MethodNotAllowed" } } }
+components:
+  parameters:
+    Slug:
+      name: slug
+      in: path
+      required: true
+      description: >-
+        The project's public identifier. Any string is accepted in the path; only lowercase
+        hyphenated slugs can match a project, anything else is a 404.
+      schema:
+        type: string
+  responses:
+    InternalError:
+      description: >-
+        An unexpected error. The message is generic: exception details are never returned
+        (production behaviour; development shows Rails' detailed error response instead).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              code: internal_error
+              message: Internal Server Error
+              details: {}
+    MethodNotAllowed:
+      description: The API is read-only. The Allow header lists the supported methods.
+      headers:
+        Allow:
+          required: true
+          schema:
+            type: string
+            enum: ["GET, HEAD"]
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              code: method_not_allowed
+              message: Method not allowed
+              details: {}
+  schemas:
+    ProjectList:
+      type: object
+      required: [data]
+      additionalProperties: false
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Project"
+    ProjectResponse:
+      type: object
+      required: [data]
+      additionalProperties: false
+      properties:
+        data:
+          $ref: "#/components/schemas/Project"
+    Project:
+      type: object
+      required: [slug, name, description, status, technologies, links]
+      additionalProperties: false
+      properties:
+        slug:
+          type: string
+          pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+          maxLength: 64
+        name:
+          $ref: "#/components/schemas/LocalizedText120"
+        description:
+          $ref: "#/components/schemas/LocalizedText1000"
+        status:
+          $ref: "#/components/schemas/Status"
+        technologies:
+          description: Technology ids in badge order (labels and colours belong to the client).
+          type: array
+          items:
+            $ref: "#/components/schemas/Technology"
+        links:
+          description: In display order.
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectLink"
+    ProjectLink:
+      type: object
+      required: [label, url]
+      additionalProperties: false
+      properties:
+        label:
+          $ref: "#/components/schemas/LocalizedText60"
+        url:
+          type: string
+          pattern: "^https://"
+          maxLength: 2048
+    Status:
+      description: Delivery status, shown as words (the shell's content/status.ts).
+      type: string
+      enum: [done, live, in-progress, planned]
+    Technology:
+      description: Technology ids (the shell's sections/technologies.ts).
+      type: string
+      enum: [react, typescript, vite, react-router, vue, rails]
+    LocalizedText120:
+      type: object
+      required: [en, pt-BR]
+      additionalProperties: false
+      properties:
+        en: { type: string, minLength: 1, maxLength: 120 }
+        pt-BR: { type: string, minLength: 1, maxLength: 120 }
+    LocalizedText1000:
+      type: object
+      required: [en, pt-BR]
+      additionalProperties: false
+      properties:
+        en: { type: string, minLength: 1, maxLength: 1000 }
+        pt-BR: { type: string, minLength: 1, maxLength: 1000 }
+    LocalizedText60:
+      type: object
+      required: [en, pt-BR]
+      additionalProperties: false
+      properties:
+        en: { type: string, minLength: 1, maxLength: 60 }
+        pt-BR: { type: string, minLength: 1, maxLength: 60 }
+    Error:
+      type: object
+      required: [error]
+      additionalProperties: false
+      properties:
+        error:
+          type: object
+          required: [code, message, details]
+          additionalProperties: false
+          properties:
+            code:
+              type: string
+              enum:
+                - bad_request
+                - not_found
+                - method_not_allowed
+                - validation_failed
+                - rate_limited
+                - internal_error
+            message:
+              type: string
+            details:
+              type: object

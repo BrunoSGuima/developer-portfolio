@@ -22,9 +22,11 @@ that read TypeScript files.
 - **REST conventions**: versioned under `/api/v1`; resources addressed by slug; snake_case
   keys; successful responses wrapped in `{ "data": … }`; errors always
   `{ "error": { "code": "…", "message": "…", "details": { … } } }` with codes such as
-  `not_found` (404), `validation_failed` (422, per-field details), `rate_limited` (429),
-  `bad_request` (400) and `internal_error` (500), handled in one base controller.
-- **The contract is a handwritten OpenAPI 3.1 document** (`services/api/docs/openapi.yaml`).
+  `not_found` (404), `method_not_allowed` (405, with an `Allow` header), `validation_failed`
+  (422, per-field details), `rate_limited` (429), `bad_request` (400) and `internal_error`
+  (500), handled in one base controller (and, for exceptions, Rails' `exceptions_app`).
+- **The contract is a handwritten OpenAPI document** (`services/api/docs/openapi.yaml`;
+  **3.0.3**, see "Implemented" below).
   Rails request specs validate every request and response against it (`committee`), so it
   cannot drift from the implementation. In Phase 3 the shell checks its types and test
   fixtures against **the same document**. Neither side's tests import the other's source;
@@ -44,6 +46,25 @@ that read TypeScript files.
 | `?locale=` returning one language           | Extra requests on every switch; a second source of language state.                          |
 | rswag (docs generated from specs)           | Ties the contract to RSpec DSL; a handwritten document is easier to review as the contract. |
 | Rails tests reading `content/*.ts` or types | Couples the backend to frontend implementation files; the owner rejected it.                |
+
+## Implemented (Step 2.4, 2026-10-26)
+
+- `GET /api/v1/projects` (published, ordered by position then slug) and
+  `GET /api/v1/projects/{slug}`; nothing else is writable. Unknown, unpublished and badly
+  formed slugs all get the same 404; other `/api` paths get the JSON 404; write methods on the
+  project resources get **405** with `Allow: GET, HEAD`.
+- **OpenAPI 3.0.3, not 3.1:** committee 5.6.4, the latest release, refuses 3.1 documents (its
+  3.1 support was merged on 2026-10-20 but not yet released). The document uses nothing that
+  differs between 3.0 and 3.1 (no nullable, type arrays or `const`), so moving to 3.1 later is
+  a one-line change once committee releases it (owner's decision, 2026-10-26).
+- committee (test group) validates every request spec, error responses included
+  (`validate_success_only: false`); specs prove that an undocumented field, a missing required
+  field or an undocumented error code fails validation, and that the document's enums equal
+  `Project::STATUSES` / `Project::TECHNOLOGIES` and its paths equal the `/api/v1` routes.
+- Unexpected exceptions: **production** renders the envelope through `config.exceptions_app`
+  (`Api::ErrorsController`) with the generic HTTP reason phrase, never the exception message or
+  a backtrace; **development** keeps Rails' detailed error responses
+  (`consider_all_requests_local`); the full error is always logged.
 
 ## Consequences
 

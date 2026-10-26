@@ -16,9 +16,9 @@ tokens, registry & routing, Fun Fact, portfolio content, microfrontend host, mas
 illustrated Home, responsive layout, i18n en + pt-BR, transitions & polish, Playwright E2E, CI;
 CI is green on GitHub; Architecture page updated). Phase 1 is **not** the MVP.
 
-**Phase 2 — Ruby on Rails API + PostgreSQL: in progress** (Steps 2.0–2.2 done: ADRs, the API
-toolchain and skeleton in `services/api`, the CI `api` job; Step 2.3, the Projects domain, ready
-for review).
+**Phase 2 — Ruby on Rails API + PostgreSQL: in progress** (Steps 2.0–2.3 done: ADRs, the API
+toolchain and skeleton in `services/api`, the CI `api` job, the Projects domain; Step 2.4, the
+read-only Projects API, ready for review).
 Phase 2 is complete when the API, persistence, endpoints, security and RSpec suite work on their
 own (no frontend required). **The MVP is complete only at the end of Phase 3** (integration and
 full-stack validation). **Deployment is postponed** to Phase 4; do not add hosting, CD or
@@ -69,8 +69,9 @@ static data until Phase 3.
   on one PostgreSQL instance. Services never modify each other's tables; they talk via APIs.
   The Rails API (ADR-0011) lives in `services/api` (API-only, native Ruby, PostgreSQL in Docker
   Compose under `infra/`), is served same-origin under `/api` (no CORS) and is tested on its own.
-  Localised data is JSONB `{ "en", "pt-BR" }`; the handwritten OpenAPI document is the contract
-  between API and shell (ADR-0012). Contact messages follow ADR-0013 (privacy, abuse protection,
+  Localised data is JSONB `{ "en", "pt-BR" }`; the handwritten OpenAPI document
+  (`services/api/docs/openapi.yaml`, 3.0.3) is the contract between API and shell (ADR-0012):
+  change it first, and every request spec validates against it (committee). Contact messages follow ADR-0013 (privacy, abuse protection,
   12-month retention).
 - **Hosting**: not deployed yet (owner's decision). The first release is Phase 4, after the Rails
   API and PostgreSQL are integrated (Phases 2–3); then a single VPS with Docker Compose behind

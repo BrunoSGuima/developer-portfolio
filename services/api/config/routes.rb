@@ -5,6 +5,25 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
-  # Public endpoints live under /api/v1 (ADR-0012) and are served same-origin with the shell
-  # through a proxy, so there is no CORS configuration (ADR-0011). None exist yet.
+  # Public, read-only endpoints (ADR-0012), served same-origin with the shell through a proxy, so
+  # there is no CORS configuration (ADR-0011). Contract: docs/openapi.yaml.
+  namespace :api, defaults: { format: :json } do
+    namespace :v1 do
+      # No format suffix (format: false): a dot is never split off as a format, so
+      # "valid-slug.json" or "a.b" can't resolve to the project "valid-slug" or "a". The whole
+      # segment (dots included) is the slug, and the controller only accepts canonical slugs: any
+      # other segment is a "Project not found" 404 for GET, and a 405 for other methods.
+      scope format: false, constraints: { slug: %r{[^/]+} } do
+        resources :projects, only: %i[index show], param: :slug
+
+        # Other methods on existing resources: 405 with an Allow header (GET also answers HEAD).
+        match "projects", to: "/api/base#method_not_allowed", via: :all, allow: "GET, HEAD"
+        match "projects/:slug", to: "/api/base#method_not_allowed", via: :all, allow: "GET, HEAD"
+      end
+    end
+
+    # Any other path under /api, /api itself included: the JSON 404 of ADR-0012 (not Rails'
+    # routing error).
+    match "(*unmatched)", to: "base#route_not_found", via: :all
+  end
 end

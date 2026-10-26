@@ -40,5 +40,10 @@ module Api
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+
+    # Errors Rails renders itself (production, and rescuable ones in tests) use the API's JSON
+    # error envelope (ADR-0012) instead of Rails' default body. Development keeps Rails' detailed
+    # error responses (consider_all_requests_local).
+    config.exceptions_app = ->(env) { Api::ErrorsController.action(:show).call(env) }
   end
 end
