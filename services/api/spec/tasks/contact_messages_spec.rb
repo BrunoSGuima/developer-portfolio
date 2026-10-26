@@ -49,6 +49,25 @@ RSpec.describe "contact_messages rake tasks" do
       expect(run("contact_messages:list", "LIMIT" => "3").scan(/<ada\d+@example\.com>/).size).to eq(3)
     end
 
+    {
+      { "LIMIT" => "abc" } => "LIMIT must be a whole number from 1 to 500.",
+      { "LIMIT" => "0" } => "LIMIT must be a whole number from 1 to 500.",
+      { "LIMIT" => "501" } => "LIMIT must be a whole number from 1 to 500.",
+      { "SINCE" => "yesterday" } => "SINCE must be a date like 2026-10-01."
+    }.each do |env, message|
+      it "stops with a clear message for #{env.to_a.flatten.join('=')}, without a backtrace" do
+        create(:contact_message)
+        stderr = StringIO.new
+        previous = $stderr
+        $stderr = stderr
+
+        expect { run("contact_messages:list", env) }.to raise_error(SystemExit) { |exit| expect(exit.status).to eq(1) }
+        expect(stderr.string).to eq("#{message}\n")
+      ensure
+        $stderr = previous
+      end
+    end
+
     it "filters with SINCE" do
       create(:contact_message, name: "Before", created_at: Time.zone.parse("2026-01-01 12:00"))
       create(:contact_message, name: "After", created_at: Time.zone.parse("2026-03-01 12:00"))

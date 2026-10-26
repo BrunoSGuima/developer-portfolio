@@ -1,6 +1,6 @@
 # ADR-0011: Rails API-only backend with PostgreSQL, tested on its own
 
-- **Status:** Accepted (Phase 2, Step 2.0; versions recorded in Step 2.1)
+- **Status:** Accepted (Phase 2, Step 2.0; versions recorded in Step 2.1; Phase 2 completed in Step 2.6)
 - **Date:** 2026-10-25
 
 ## Context
@@ -68,4 +68,9 @@ Deployment is Phase 4.
 - Two ecosystems in one repository, with clear boundaries: `services/api` has its own tooling,
   README and CI job.
 - Contributors need the pinned Ruby (build libraries on Linux/WSL) and Docker.
-- The API can be developed, tested and accepted (Phase 2) before the shell uses it.
+- The API can be developed, tested and accepted (Phase 2) before the shell uses it. This held:
+  Phase 2 was completed and verified (Step 2.6) with the shell unchanged; the README's setup
+  was rehearsed in a fresh clone.
+- Rails 8.1's bug-fix window ended on 2026-10-10 (security fixes until 2027-10-10): plan the
+  upgrade to the next Rails line in 2027. The contract stays OpenAPI 3.0.3 until committee
+  releases its 3.1 support (ADR-0012).

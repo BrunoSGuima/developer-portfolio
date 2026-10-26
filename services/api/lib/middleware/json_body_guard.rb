@@ -73,8 +73,10 @@ class JsonBodyGuard
     false
   end
 
+  # These responses bypass Rails, so they set the security header Rails adds to all others.
   def error(status, code, message)
     body = JSON.generate(Api::ErrorBody.build(code, message))
-    [ status, { "content-type" => "application/json; charset=utf-8" }, [ body ] ]
+    headers = { "content-type" => "application/json; charset=utf-8", "x-content-type-options" => "nosniff" }
+    [ status, headers, [ body ] ]
   end
 end

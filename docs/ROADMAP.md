@@ -24,13 +24,17 @@ after Phase 1 were renumbered accordingly; the earlier plan had deployment as Ph
 **Phase 1 (React frontend foundation) is done:** CI ran green on GitHub for the Step 12 commit
 (`f15f91c`, 2026-10-25). The Architecture page update that followed is done too (`e0e22df`).
 
-**Phase 2 is in progress:** Steps 2.0 (`392f340`), 2.1 (`6ccc0a1`), 2.2 (`22b0bf0`), 2.3
-(`725103c`) and 2.4 (`fa01741`) are done; Step 2.5 is ready for review.
+**Phase 2 (Ruby on Rails API + PostgreSQL) is complete locally** (Step 2.6, 2026-10-26): every
+acceptance criterion below is met and verified on a developer machine and in clean-copy
+rehearsals. Steps 2.0 (`392f340`), 2.1 (`6ccc0a1`), 2.2 (`22b0bf0`), 2.3 (`725103c`), 2.4
+(`fa01741`) and 2.5 (`ad889d3`) are committed with green GitHub CI. **Pending:** the green GitHub
+Actions run on the Step 2.6 commit (after the owner commits and pushes), which finalises Phase 2.
+Next: Phase 3, starting with the Architecture page update (v2 Done).
 
 | Phase | Scope                                                                                                                                                                 | Status                        |
 | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
 | 1     | **React frontend foundation**: React + TypeScript shell, static data, mascot, Fun Fact, responsive layout, en/pt-BR, unit + E2E tests, CI                             | Done                          |
-| 2     | Ruby on Rails API + PostgreSQL: projects and contact messages, security, RSpec + FactoryBot, OpenAPI contract, its own CI job; works and is tested on its own         | In progress                   |
+| 2     | Ruby on Rails API + PostgreSQL: projects and contact messages, security, RSpec + FactoryBot, OpenAPI contract, its own CI job; works and is tested on its own         | Done (GitHub CI pending)      |
 | 3     | Frontend/backend integration, full-stack validation and **MVP completion**: the shell reads projects and sends contact messages through the API, full-stack E2E in CI | Planned                       |
 | 4     | Production deployment (first public release): host and reverse proxy, CD, monitoring, prerendering/SEO                                                                | Planned (postponed until 2–3) |
 | 5     | Vue 3 microfrontend mounted by the React shell (order of 5–8 provisional)                                                                                             | Planned                       |
@@ -123,8 +127,8 @@ out of Phase 2.
 | 2.2 | CI `api` job               | Done             | 2.1        |
 | 2.3 | Projects domain            | Done             | 2.1        |
 | 2.4 | Projects API               | Done             | 2.3        |
-| 2.5 | Contact messages           | Ready for review | 2.4        |
-| 2.6 | Hardening and docs         | Planned          | 2.5        |
+| 2.5 | Contact messages           | Done             | 2.4        |
+| 2.6 | Hardening and docs         | Ready for review | 2.5        |
 
 Each step follows the collaboration rules (plan → approval → implementation with tests →
 review); none starts automatically.
@@ -230,7 +234,7 @@ review); none starts automatically.
   `rate_limit`; rake tasks to list messages and purge those older than 12 months.
 - **Tests:** 201, 422 with per-field details, 429, honeypot not stored, request-size limits,
   model and task specs, contract validation.
-- **Delivered (ready for review):** `contact_messages` (name, email, message, locale; no IP or
+- **Delivered:** `contact_messages` (name, email, message, locale; no IP or
   user agent) with check constraints mirroring the model (lengths, no control characters, NUL
   rejected with a 422); `POST /api/v1/contact_messages` answering **202** without an id
   (identical for the honeypot `website`), 422 with validation codes per field, 400/413/415 from
@@ -254,6 +258,24 @@ review); none starts automatically.
 - **Work:** bundler-audit clean, parameter-filter review, the API README (setup, commands,
   endpoints), ADRs completed (versions recorded in ADR-0011), the rate limiter's limitations
   documented.
+- **Delivered (ready for review), owner's decisions 2026-10-26:**
+  - **Rate-limit key hardened:** Rails' `request.remote_ip` believes forged `X-Forwarded-For` /
+    `Client-IP` headers from any peer, so a client reaching the API directly could rotate a
+    header to escape both contact limits. The key now uses forwarded headers only when the
+    direct peer is a trusted proxy (Rails' defaults: loopback and private networks), otherwise
+    the peer address (`ContactMessagesController#client_ip`). Rails' IP-spoofing check is off:
+    it raised on contradictory headers inside the request logger, outside Rails' error
+    handling, so any client could crash a request. Production proxy settings stay in Phase 4.
+  - `JsonBodyGuard` error responses (400, 413, 415) carry `X-Content-Type-Options: nosniff`.
+  - **Contract coverage:** committee's `SchemaCoverage` fails a complete run when a documented
+    response is never asserted by a request spec (HEAD is not a documented operation; the
+    documented 500s are exercised with controlled failures rendered as in production).
+  - The 405 and catch-all routes have no path helpers (`as: nil`); `config/bundler-audit.yml`
+    has an empty ignore list; `contact_messages:list` rejects an invalid `LIMIT` (1–500) or
+    `SINCE` with a one-line message.
+  - New specs: forged forwarding headers, the middleware on its own (chunked bodies, the 32 KB
+    boundary, trailing slash, discarded bodies, nosniff), international text, task inputs.
+  - Documentation finalised (README files, `CLAUDE.md`, this roadmap, ADR-0011/0012/0013).
 
 ### Phase 2 acceptance criteria
 
@@ -269,7 +291,19 @@ Independent of Phase 3: the shell is not required.
    retention task.
 5. ADR-0011 to 0013, this roadmap, `CLAUDE.md` and the API README are current.
 
-When they are met, the Architecture timeline's v2 becomes **Done**.
+**Evidence (Step 2.6, 2026-10-26):**
+
+| #   | Status                      | Evidence                                                                                                                                                                                                                                                           |
+| --- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Met                         | The README's one-time setup followed in a fresh clone (isolated Compose project and port): Ruby from `.ruby-version`, one shared password, PostgreSQL healthy, `bin/setup` created and seeded the databases, `/up` 200, the seeded project served, `bin/ci` green. |
+| 2   | Met                         | 253 RSpec examples; every request spec asserts the OpenAPI contract; drift and enum/route parity specs; committee coverage fails a complete run if any documented response is never exercised.                                                                     |
+| 3   | Met locally; GitHub pending | `bin/ci`: 253 examples, 0 failures; RuboCop 60 files, no offenses; Brakeman 0 warnings; bundler-audit clean; clean-copy CI rehearsal green. GitHub Actions green through Step 2.5 (`ad889d3`); the Step 2.6 run follows the owner's push.                          |
+| 4   | Met                         | Validation, two rate limits (spoof-resistant key), honeypot, filtered logs (request, SQL binds, errors), no IP stored, `purge` task: covered by specs and mutation checks.                                                                                         |
+| 5   | Met                         | This roadmap, `CLAUDE.md`, both READMEs and ADR-0011/0012/0013 updated in Step 2.6.                                                                                                                                                                                |
+
+When they are met, the Architecture timeline's v2 becomes **Done**. The frontend is unchanged
+during Phase 2, so this one-line content change is **scheduled as the first task of Phase 3**
+(owner's decision, 2026-10-26).
 
 ## Phase 3 — Integration and MVP completion (summary)
 
@@ -279,6 +313,30 @@ privacy note, Fun Facts / registry `backend: 'rails'` / Architecture page update
 the frontend's types and fixtures checked against the OpenAPI document, and full-stack E2E in
 CI. Completing it completes the **MVP**. Detailed planning happens after Phase 2.
 
+**Readiness (recorded at the end of Phase 2):**
+
+- **First task:** the Architecture timeline's v2 becomes Done (deferred from Phase 2).
+- **Contract:** `services/api/docs/openapi.yaml` (OpenAPI 3.0.3; the source for the shell's
+  types and fixtures). The shell needs `GET /api/v1/projects` (`{ data: Project[] }`, both
+  languages, published, ordered) and `POST /api/v1/contact_messages` (flat JSON `name`,
+  `email`, `message`, `locale`, `website`; 202, or 400/413/415/422/429/500 with the error
+  envelope; 422 `details` are validation codes per field to translate in the shell; 429 has
+  `Retry-After`). `GET /api/v1/projects/{slug}` exists but no page needs it yet.
+- **Development:** `vite.config.ts` gets `server.proxy` and `preview.proxy` for `/api` →
+  `http://127.0.0.1:3000` (same-origin, no CORS); Rails runs alongside (`bin/rails server`,
+  PostgreSQL via Compose). Locally the proxy is a trusted peer, so the rate limits follow the
+  forwarded address.
+- **Shell:** a Projects route loader with loading/error states in both languages; mapping
+  `technologies` → `tech` and `url` → `href` (or adopting the API's names); types checked
+  against the document (`openapi-typescript` or handwritten types with a fixture test, to
+  decide); a test that the shell knows every `Technology`, `Status` and `Locale` value; the
+  contact form (hidden `website` field, `locale` from the URL, localised validation messages,
+  a 429 message, the privacy note); `content/projects.ts` retired; the seeded project
+  description updated with the shell's text; the Contact Fun Fact, registry `backend: 'rails'`
+  and the Architecture page updated truthfully.
+- **CI:** a full-stack E2E job (PostgreSQL service, the Rails server, the shell preview with the
+  proxy) and axe on the form.
+
 ## Before public deployment (Phase 4 gates)
 
 - A practical notification or message-retrieval solution for contact messages.
@@ -286,6 +344,18 @@ CI. Completing it completes the **MVP**. Detailed planning happens after Phase 2
 - Rate limiting backed by a store shared by all API processes, with correct client IPs behind
   the reverse proxy (ADR-0013 lists the current limitations).
 - The privacy note published with the contact form.
+- **Reverse proxy and client IPs:** the API is never reachable directly, only through the proxy
+  (Caddy); the proxy overwrites `X-Forwarded-For` with the real client address and drops
+  `Client-IP`; `config.action_dispatch.trusted_proxies` matches the deployment (the rate-limit
+  key believes forwarded headers only from trusted peers); the application server sees the
+  proxy as a real IP peer (not a Unix socket, which would put every visitor under the shared
+  `unknown` key). A request-body limit at the proxy.
+- **Rails production settings:** `config.hosts`, secrets (`SECRET_KEY_BASE` or the master key)
+  and `DATABASE_URL` from the environment, one database role per service.
+- **Logging:** retention, and whether to keep client IPs in request logs ("Started … for
+  <ip>"); error reporting.
+- **Operations:** scheduled retention purge, backups, `/up` monitoring, the production image
+  (with YJIT).
 
 ## Step 12 — CI & automated quality checks
 

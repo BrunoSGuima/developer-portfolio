@@ -16,9 +16,11 @@ tokens, registry & routing, Fun Fact, portfolio content, microfrontend host, mas
 illustrated Home, responsive layout, i18n en + pt-BR, transitions & polish, Playwright E2E, CI;
 CI is green on GitHub; Architecture page updated). Phase 1 is **not** the MVP.
 
-**Phase 2 — Ruby on Rails API + PostgreSQL: in progress** (Steps 2.0–2.4 done: ADRs, the API
+**Phase 2 — Ruby on Rails API + PostgreSQL: complete locally** (Steps 2.0–2.6: ADRs, the API
 toolchain and skeleton in `services/api`, the CI `api` job, the Projects domain, the read-only
-Projects API; Step 2.5, contact messages, ready for review).
+Projects API, contact messages, hardening and docs). The green GitHub Actions run on the Step 2.6
+commit finalises it. **Phase 3 is next** (not started): its first task is the Architecture
+page's v2 → Done; its readiness notes are in `docs/ROADMAP.md`.
 Phase 2 is complete when the API, persistence, endpoints, security and RSpec suite work on their
 own (no frontend required). **The MVP is complete only at the end of Phase 3** (integration and
 full-stack validation). **Deployment is postponed** to Phase 4; do not add hosting, CD or
@@ -74,6 +76,9 @@ static data until Phase 3.
   change it first, and every request spec validates against it (committee). Contact messages follow ADR-0013 (privacy, abuse protection,
   12-month retention): never log their values (keep them in `filter_parameters`, keep SQL query
   log tags off, never log a database error's message) and never add an endpoint that reads them.
+  Rate limits key on `client_ip`, which ignores forwarded headers from untrusted peers. Every
+  response documented in `openapi.yaml` must be asserted by a request spec (a complete RSpec
+  run fails otherwise).
 - **Hosting**: not deployed yet (owner's decision). The first release is Phase 4, after the Rails
   API and PostgreSQL are integrated (Phases 2–3); then a single VPS with Docker Compose behind
   Caddy, path-routed same-origin, is the current plan. No Kubernetes in the MVP.

@@ -47,6 +47,12 @@ module Api
     # error responses (consider_all_requests_local).
     config.exceptions_app = ->(env) { Api::ErrorsController.action(:show).call(env) }
 
+    # Rails' IP-spoofing check raises when X-Forwarded-For and Client-IP disagree, and it runs in
+    # the request logger, outside Rails' error handling: any client could crash a request with
+    # two forged headers. The API doesn't rely on forwarded headers from untrusted peers (see
+    # Api::V1::ContactMessagesController#client_ip), so the check only did harm.
+    config.action_dispatch.ip_spoofing_check = false
+
     # Request bodies sent to /api are handled before Rails parses them: checked (JSON, size, valid
     # object) for the routes that take one, discarded for every other route.
     config.middleware.use JsonBodyGuard

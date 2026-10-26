@@ -6,9 +6,10 @@ is tested on its own. Public endpoints will live under `/api/v1` (ADR-0012), ser
 with the shell through a proxy (Phase 3 Vite proxy, Phase 4 reverse proxy), so there is no CORS
 configuration.
 
-**Status (Step 2.5):** the toolchain, the database, the test setup, Rails' `GET /up` health
-check, the **Projects domain** (models, constraints, seeds), the read-only **Projects API** and
-**contact messages** (`POST` only, with abuse protection and privacy safeguards).
+**Status (Phase 2 complete, Step 2.6):** the toolchain, the database, the test setup, Rails'
+`GET /up` health check, the **Projects domain** (models, constraints, seeds), the read-only
+**Projects API** and **contact messages** (`POST` only, with abuse protection and privacy
+safeguards). The React shell starts using it in Phase 3.
 
 | Component    | Version                                          | Pinned in                                      |
 | ------------ | ------------------------------------------------ | ---------------------------------------------- |
@@ -141,8 +142,14 @@ the form hides from people. Responses never contain an id or any submitted value
 - **Two rate limits per client IP:** every request counts toward 20 per hour (Rails'
   `rate_limit`); only accepted messages (honeypot hits included) count toward 5 per hour, so a
   visitor who makes a few mistakes isn't locked out. The counters live in an in-memory store
-  (`config.x.rate_limit_store`): per process and reset on restart, fine for now; Phase 4 must
-  replace it with a shared store and configure trusted proxies (ADR-0013).
+  (`config.x.rate_limit_store`): per process and **reset when the server restarts** (handy in
+  development); Phase 4 must replace it with a shared store and configure trusted proxies
+  (ADR-0013).
+- **The rate-limit key resists forged headers:** forwarded headers (`X-Forwarded-For`,
+  `Client-IP`) are believed only from a trusted peer (Rails' defaults: loopback and private
+  networks, where a local reverse proxy sits); otherwise the direct peer address is the key.
+  Rails' own IP-spoofing check is off because it crashed requests with contradictory headers
+  outside Rails' error handling.
 - **Bodies are handled before Rails parses them** (`lib/middleware/json_body_guard.rb`): the
   contact endpoint's body is checked as above; any other `/api` request's body is discarded
   unread, so unsupported methods still get 405 with `Allow` whatever the body. Rails logs the
@@ -203,6 +210,10 @@ bin/rails db:migrate db:seed     # after pulling new migrations or seed changes
 
 ## Tests
 
+- **Contract coverage:** a complete run (`bundle exec rspec`, `bin/ci`) fails if any response
+  documented in `docs/openapi.yaml` is never asserted by a request spec. Partial runs (one file,
+  `-e`) skip this check.
+- `spec/middleware/`: `JsonBodyGuard` on its own (body limits, discarded bodies, headers).
 - RSpec with FactoryBot (`spec/factories`, `create`/`build` without prefix). Every example runs
   in a transaction that is rolled back, so examples never share data.
 - `spec/requests/`: request specs (`GET /up`). `spec/setup/`: guards for the environment (Ruby

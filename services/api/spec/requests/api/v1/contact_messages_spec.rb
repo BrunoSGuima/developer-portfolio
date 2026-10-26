@@ -30,6 +30,15 @@ RSpec.describe "Contact messages API" do
       assert_schema_conform(202)
     end
 
+    it "accepts Portuguese text and emoji" do
+      send_message(valid.merge(name: "João Conceição", message: "Olá! Gostaria de conversar sobre uma vaga 🎉"))
+
+      expect(response).to have_http_status(:accepted)
+      expect(ContactMessage.last).to have_attributes(name: "João Conceição",
+                                                     message: "Olá! Gostaria de conversar sobre uma vaga 🎉")
+      assert_schema_conform(202)
+    end
+
     it "ignores fields it doesn't know (no mass assignment)" do
       send_message(valid.merge(id: 999, created_at: "2000-01-01T00:00:00Z", ip: "1.2.3.4"))
 
@@ -168,6 +177,110 @@ RSpec.describe "Contact messages API" do
       expect(response).to have_http_status(:accepted)
     end
 
+    describe "with forged forwarding headers" do
+      # 203.0.113.0/24 is a public documentation range: a genuinely untrusted direct peer.
+      def send_forged(headers, ip: "203.0.113.10")
+        post path, params: valid, as: :json, env: { "REMOTE_ADDR" => ip }, headers:
+      end
+
+      it "can't escape the limit by rotating X-Forwarded-For or Client-IP" do
+        5.times { |n| send_forged({ "X-Forwarded-For" => "198.51.100.#{n}" }) }
+
+        send_forged({ "Client-IP" => "198.51.100.99" })
+
+        expect(response).to have_http_status(:too_many_requests)
+        expect(ContactMessage.count).to eq(5)
+      end
+
+      it "can't spend another client's quota by forging that client's address" do
+        5.times { send_forged({ "X-Forwarded-For" => "203.0.113.20" }, ip: "203.0.113.30") }
+
+        send_message(ip: "203.0.113.20")
+
+        expect(response).to have_http_status(:accepted)
+      end
+
+      it "can't escape the attempts limit either" do
+        20.times { |n| post path, params: valid.merge(email: "typo"), as: :json,
+                                  env: { "REMOTE_ADDR" => "203.0.113.10" },
+                                  headers: { "X-Forwarded-For" => "198.51.100.#{n}" } }
+
+        send_forged({ "X-Forwarded-For" => "198.51.100.200" })
+
+        expect(response).to have_http_status(:too_many_requests)
+      end
+
+      it "still uses the forwarded address behind a local reverse proxy (a trusted peer)" do
+        5.times { send_forged({ "X-Forwarded-For" => "198.51.100.1" }, ip: "127.0.0.1") }
+
+        send_forged({ "X-Forwarded-For" => "198.51.100.2" }, ip: "127.0.0.1")
+
+        expect(response).to have_http_status(:accepted)
+      end
+
+      # Rails' IP-spoofing check would raise on contradictory headers in the request logger,
+      # outside Rails' error handling; it is off (config/application.rb).
+      [ "203.0.113.10", "127.0.0.1" ].each do |peer|
+        it "handles contradictory forwarded headers from #{peer} normally (no crash)" do
+          send_forged({ "X-Forwarded-For" => "198.51.100.1", "Client-IP" => "198.51.100.2" }, ip: peer)
+
+          expect(response).to have_http_status(:accepted)
+        end
+      end
+    end
+
+    # REMOTE_ADDR is set by the server, not the client, but a misconfigured server (e.g. a Unix
+    # socket) can produce one that isn't a single IP. It must neither raise nor be trusted.
+    describe "with a missing or unusable peer address" do
+      unusable_peers = [ nil, "", "unix:/tmp/puma.sock", "10.1.2.3, 198.51.100.4", "not-an-ip", "203.0.113.0/24" ].freeze
+
+      unusable_peers.each do |peer|
+        it "accepts a message from #{peer.inspect} (no error, no 500)" do
+          post path, params: valid, as: :json, env: { "REMOTE_ADDR" => peer }
+
+          expect(response).to have_http_status(:accepted)
+          assert_schema_conform(202)
+        end
+      end
+
+      it "puts all of them under one key, so the accepted-messages limit still applies" do
+        unusable_peers.first(5).each { |peer| post path, params: valid, as: :json, env: { "REMOTE_ADDR" => peer } }
+
+        post path, params: valid, as: :json, env: { "REMOTE_ADDR" => unusable_peers.last }
+
+        expect(response).to have_http_status(:too_many_requests)
+        expect(ContactMessage.count).to eq(5)
+      end
+
+      it "ignores forged forwarding headers, which can't escape the shared key" do
+        5.times do |n|
+          post path, params: valid, as: :json, env: { "REMOTE_ADDR" => "unix:/tmp/puma.sock" },
+                     headers: { "X-Forwarded-For" => "198.51.100.#{n}", "Client-IP" => "198.51.100.#{n + 50}" }
+        end
+
+        post path, params: valid, as: :json, env: { "REMOTE_ADDR" => "" },
+                   headers: { "X-Forwarded-For" => "198.51.100.200" }
+
+        expect(response).to have_http_status(:too_many_requests)
+      end
+
+      it "applies the attempts limit to the shared key too" do
+        20.times { post path, params: valid.merge(email: "typo"), as: :json, env: { "REMOTE_ADDR" => "" } }
+
+        post path, params: valid, as: :json, env: { "REMOTE_ADDR" => "not-an-ip" }
+
+        expect(response).to have_http_status(:too_many_requests)
+      end
+
+      it "doesn't affect clients with a valid address" do
+        5.times { post path, params: valid, as: :json, env: { "REMOTE_ADDR" => "" } }
+
+        send_message(ip: "203.0.113.40")
+
+        expect(response).to have_http_status(:accepted)
+      end
+    end
+
     it "reset after the window" do
       5.times { send_message }
 
@@ -252,6 +365,7 @@ RSpec.describe "Contact messages API" do
       expect(log).to include("Contact message not stored: ActiveRecord::CheckViolation")
       expect_no_personal_data(log)
       expect_no_personal_data(response.body)
+      assert_response_schema_confirm(500)
     end
 
     context "with an unexpected exception, rendered as in production" do
@@ -275,6 +389,7 @@ RSpec.describe "Contact messages API" do
         expect(log).to include("RuntimeError")
         expect_no_personal_data(log)
         expect_no_personal_data(response.body)
+        assert_response_schema_confirm(500)
       end
     end
   end

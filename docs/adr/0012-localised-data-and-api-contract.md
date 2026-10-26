@@ -1,6 +1,6 @@
 # ADR-0012: Localised data in JSONB and an OpenAPI contract
 
-- **Status:** Accepted (Phase 2, Step 2.0)
+- **Status:** Accepted (Phase 2, Step 2.0; implemented in Steps 2.4–2.6)
 - **Date:** 2026-10-25
 
 ## Context
@@ -64,6 +64,10 @@ that read TypeScript files.
   (`validate_success_only: false`); specs prove that an undocumented field, a missing required
   field or an undocumented error code fails validation, and that the document's enums equal
   `Project::STATUSES` / `Project::TECHNOLOGIES` and its paths equal the `/api/v1` routes.
+- **Coverage (Step 2.6):** committee's `SchemaCoverage` records every documented response a
+  request spec asserts; a complete RSpec run fails if any is missing, so the document can't
+  describe behaviour nothing verifies. HEAD isn't a documented operation (Rails answers it like
+  GET); documented 500s are exercised with controlled failures rendered as in production.
 - Unexpected exceptions: **production** renders the envelope through `config.exceptions_app`
   (`Api::ErrorsController`) with the generic HTTP reason phrase, never the exception message or
   a backtrace; **development** keeps Rails' detailed error responses

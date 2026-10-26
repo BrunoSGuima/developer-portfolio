@@ -107,6 +107,28 @@ RSpec.describe ContactMessage do
     end
   end
 
+  describe "international text" do
+    it "keeps accents, other scripts and emoji intact" do
+      contact_message.assign_attributes(
+        name: "João Conceição", locale: "pt-BR",
+        message: "Olá! Ação, atenção e coração ✓ 🎉 — こんにちは, Ελληνικά."
+      )
+
+      contact_message.save!
+
+      expect(contact_message.reload).to have_attributes(
+        name: "João Conceição", message: "Olá! Ação, atenção e coração ✓ 🎉 — こんにちは, Ελληνικά."
+      )
+    end
+
+    it "counts characters, not bytes, for the limits" do
+      contact_message.name = "ç" * 100
+      contact_message.message = "🎉" * 5000
+
+      expect(contact_message).to be_valid
+    end
+  end
+
   describe "scopes" do
     it ".newest_first and .older_than" do
       old = create(:contact_message, created_at: 13.months.ago)

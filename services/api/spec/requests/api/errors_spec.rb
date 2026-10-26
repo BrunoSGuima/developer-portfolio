@@ -115,12 +115,30 @@ RSpec.describe "API errors" do
       assert_schema_conform(500)
     end
 
+    it "answers 500 the same way for a single project" do
+      allow(Project).to receive(:published).and_raise(RuntimeError, "secret internal detail")
+
+      get "/api/v1/projects/portfolio"
+
+      expect(response).to have_http_status(:internal_server_error)
+      expect(json.dig("error", "code")).to eq("internal_error")
+      expect(response.body).not_to include("secret internal detail")
+      assert_schema_conform(500)
+    end
+
     it "answers unknown paths outside /api with the same JSON envelope" do
       get "/no-such-page"
 
       expect(response).to have_http_status(:not_found)
       expect(json).to eq("error" => { "code" => "not_found", "message" => "Not Found", "details" => {} })
     end
+  end
+
+  it "answers contradictory forged forwarding headers normally, not with a crash" do
+    get "/api/v1/projects", headers: { "X-Forwarded-For" => "198.51.100.1", "Client-IP" => "198.51.100.2" },
+                            env: { "REMOTE_ADDR" => "203.0.113.10" }
+
+    expect(response).to have_http_status(:ok)
   end
 
   it "leaves the health check alone" do

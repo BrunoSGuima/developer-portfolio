@@ -1,6 +1,6 @@
 # ADR-0013: Contact messages: privacy and abuse protection
 
-- **Status:** Accepted (Phase 2, Step 2.0; implemented in Step 2.5)
+- **Status:** Accepted (Phase 2, Step 2.0; implemented in Step 2.5; hardened in Step 2.6)
 - **Date:** 2026-10-25
 
 ## Context
@@ -57,12 +57,40 @@ deployment. No Redis, no email infrastructure and no secrets in Phase 2.
   personal-data warning; only when invoked) and `contact_messages:purge` (older than 12 months,
   `DRY_RUN`), run by hand until Phase 4 schedules it.
 
+**Hardening (Step 2.6):** Rails' `request.remote_ip` believes `X-Forwarded-For` and
+`Client-IP` from any peer, so a client reaching the API directly could rotate a forged header to
+escape both limits, or spend another client's quota. The key is now `client_ip`: the forwarded
+address only when the direct peer is a trusted proxy (Rails' defaults: loopback and private
+networks), otherwise the peer's own address. Rails' IP-spoofing check is turned off: it raised on
+contradictory headers inside the request logger, outside Rails' error handling, so any client
+could crash a request, and the key no longer relies on those headers. Specs cover rotation,
+impersonation, both limits and the local-proxy case.
+
+Turning that check off adds no risk of its own: the result only differs where Rails would have
+raised, and there a proxy-set `X-Forwarded-For` still wins over a forged `Client-IP`. Only the
+rate limits use client addresses. Rails' request log line ("Started … for <ip>") still uses
+`remote_ip`, so addresses in the logs can be forged by public clients: treat them as
+informational, never as evidence.
+
+A peer address (`REMOTE_ADDR`) that is **missing or not a single IP** (empty, a Unix-socket path,
+a comma-separated list, a CIDR range) is treated as untrusted: forwarded headers are ignored and
+all such requests share the fixed key `unknown`, so they can't raise, return a 500 or escape the
+limits by varying a header. Clients can't set `REMOTE_ADDR` (the server does), so this only
+matters for a misconfigured server; the shared key means such a setup throttles everyone behind
+it together.
+
 ## Rate limiting: known limitations (to resolve before deployment)
 
 - Rails' `rate_limit` counts in the cache store. The default store is **per process and in
   memory**: counts reset on restart and aren't shared between processes or servers.
-- It is keyed by client IP. Behind a reverse proxy the API must be configured to trust it, or
-  every visitor shares the proxy's IP.
+- It is keyed by client IP. Behind a reverse proxy the proxy must be a trusted peer (it is when
+  it runs on the same host or private network) and must overwrite `X-Forwarded-For` with the
+  real client address and drop `Client-IP`; the API must never be reachable directly. Otherwise
+  every visitor shares the proxy's IP, or clients behind it can forge their address.
+- **The application server must present the proxy as a real IP peer** (for example Puma on a
+  TCP port bound to the private network, not a Unix socket that yields a non-IP `REMOTE_ADDR`),
+  and that address must be in `config.action_dispatch.trusted_proxies`. Otherwise every request
+  falls back to the shared `unknown` key and all visitors share one limit.
 - Visitors behind one shared IP (offices, mobile carriers) share a limit; rotating IPs bypass it.
 - The honeypot only stops simple bots.
 - Rails' request log still records each request's IP address ("Started POST … for <ip>"); the

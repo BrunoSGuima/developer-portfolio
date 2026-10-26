@@ -15,11 +15,12 @@ module Api
       ACCEPTED = 5
       WINDOW = 1.hour
       FIELDS = %i[name email message locale].freeze
+      UNKNOWN_PEER = "unknown"
 
       # The body is a flat JSON object, not wrapped in "contact_message".
       wrap_parameters false
 
-      rate_limit to: ATTEMPTS, within: WINDOW, only: :create, name: "attempts",
+      rate_limit to: ATTEMPTS, within: WINDOW, only: :create, name: "attempts", by: -> { client_ip },
                  store: Rails.configuration.x.rate_limit_store, with: -> { too_many_requests }
 
       def create
@@ -73,7 +74,33 @@ module Api
       end
 
       def accepted_key
-        "contact-messages:accepted:#{request.remote_ip}"
+        "contact-messages:accepted:#{client_ip}"
+      end
+
+      # The rate-limit key. Rails' remote_ip reads X-Forwarded-For / Client-IP from any peer, so
+      # a client talking to the API directly could rotate a forged header to escape the limits.
+      # Forwarded headers are only believed when the direct peer is a trusted proxy (Rails'
+      # defaults: loopback and private networks, where a local reverse proxy sits); otherwise
+      # the peer's own address is the key. A peer address that is missing or isn't a single IP
+      # (e.g. a Unix-socket path) is untrusted and shares one fixed key, so it can neither raise
+      # nor be varied to escape the limits. Phase 4 sets the production proxy configuration.
+      def client_ip
+        peer = peer_address
+        return UNKNOWN_PEER unless peer
+
+        trusted = Rails.application.config.action_dispatch.trusted_proxies ||
+                  ActionDispatch::RemoteIp::TRUSTED_PROXIES
+        trusted.any? { |proxy| proxy === peer } ? request.remote_ip : peer.to_s
+      end
+
+      # REMOTE_ADDR as an IPAddr, or nil when it is missing or not a single IP address.
+      def peer_address
+        address = request.remote_addr.to_s
+        return if address.empty? || address.include?("/")
+
+        IPAddr.new(address)
+      rescue IPAddr::InvalidAddressError
+        nil
       end
 
       def rate_limit_store

@@ -3,9 +3,18 @@
 namespace :contact_messages do
   desc "Show recent contact messages, newest first (PERSONAL DATA). LIMIT=20, SINCE=YYYY-MM-DD"
   task list: :environment do
-    limit = Integer(ENV.fetch("LIMIT", "20"))
+    limit = Integer(ENV.fetch("LIMIT", "20"), exception: false)
+    abort "LIMIT must be a whole number from 1 to 500." unless limit&.between?(1, 500)
+
     messages = ContactMessage.newest_first.limit(limit)
-    messages = messages.where(created_at: Date.iso8601(ENV["SINCE"]).beginning_of_day..) if ENV["SINCE"]
+    if ENV["SINCE"]
+      since = begin
+        Date.iso8601(ENV["SINCE"])
+      rescue Date::Error
+        abort "SINCE must be a date like 2026-10-01."
+      end
+      messages = messages.where(created_at: since.beginning_of_day..)
+    end
 
     puts "Contact messages contain personal data (names, email addresses, messages)."
     puts "Don't copy or share this output; messages are deleted after 12 months.\n\n"
