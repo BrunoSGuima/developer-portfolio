@@ -1,4 +1,5 @@
 require_relative "boot"
+require_relative "../lib/middleware/json_body_guard"
 
 require "rails"
 # Pick the frameworks you want:
@@ -26,7 +27,7 @@ module Api
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
-    config.autoload_lib(ignore: %w[assets tasks])
+    config.autoload_lib(ignore: %w[assets tasks middleware])
 
     # Configuration for the application, engines, and railties goes here.
     #
@@ -45,5 +46,13 @@ module Api
     # error envelope (ADR-0012) instead of Rails' default body. Development keeps Rails' detailed
     # error responses (consider_all_requests_local).
     config.exceptions_app = ->(env) { Api::ErrorsController.action(:show).call(env) }
+
+    # Request bodies sent to /api are handled before Rails parses them: checked (JSON, size, valid
+    # object) for the routes that take one, discarded for every other route.
+    config.middleware.use JsonBodyGuard
+
+    # Counters for rate limits (Api::V1::ContactMessagesController). In memory and per process:
+    # fine for Phase 2; Phase 4 replaces it with a store shared by all API processes (ADR-0013).
+    config.x.rate_limit_store = ActiveSupport::Cache::MemoryStore.new
   end
 end

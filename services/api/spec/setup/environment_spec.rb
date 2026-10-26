@@ -20,6 +20,15 @@ RSpec.describe "Environment" do
     expect(middleware.grep(/Cors/i)).to be_empty
   end
 
+  # With query log tags Rails turns off prepared statements and writes bind values into the logged
+  # SQL, bypassing filter_parameters: contact messages would reach the logs (ADR-0013).
+  it "never enables SQL query log tags, in any environment" do
+    Rails.root.glob("config/environments/*.rb").each do |file|
+      expect(file.read).not_to match(/query_log_tags_enabled\s*=\s*true/), "#{file.basename} enables query log tags"
+    end
+    expect(ActiveRecord::Base.connection.prepared_statements?).to be(true)
+  end
+
   it "has FactoryBot loaded with valid factories" do
     expect { FactoryBot.lint }.not_to raise_error
   end

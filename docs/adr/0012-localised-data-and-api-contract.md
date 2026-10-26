@@ -23,8 +23,11 @@ that read TypeScript files.
   keys; successful responses wrapped in `{ "data": … }`; errors always
   `{ "error": { "code": "…", "message": "…", "details": { … } } }` with codes such as
   `not_found` (404), `method_not_allowed` (405, with an `Allow` header), `validation_failed`
-  (422, per-field details), `rate_limited` (429), `bad_request` (400) and `internal_error`
-  (500), handled in one base controller (and, for exceptions, Rails' `exceptions_app`).
+  (422, per-field details), `rate_limited` (429), `bad_request` (400), `payload_too_large`
+  (413), `unsupported_media_type` (415) and `internal_error` (500), handled in one base
+  controller (and, for exceptions, Rails' `exceptions_app`; for the contact endpoint's request
+  body, the `JsonBodyGuard` middleware, which discards bodies sent anywhere else so a 405
+  stays a 405).
 - **The contract is a handwritten OpenAPI document** (`services/api/docs/openapi.yaml`;
   **3.0.3**, see "Implemented" below).
   Rails request specs validate every request and response against it (`committee`), so it

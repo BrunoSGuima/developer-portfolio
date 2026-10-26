@@ -10,9 +10,23 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_25_220937) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_26_121949) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "contact_messages", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "email", null: false
+    t.text "message", null: false
+    t.string "locale", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_contact_messages_on_created_at"
+    t.check_constraint "char_length(message) >= 10 AND char_length(message) <= 5000 AND message ~ '\\S'::text AND message !~ '[\\x01-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F]'::text", name: "contact_messages_message_valid"
+    t.check_constraint "email::text ~ '^[^@[:space:]]+@[^@[:space:]]+$'::text AND char_length(email::text) <= 254", name: "contact_messages_email_shape"
+    t.check_constraint "locale::text = ANY (ARRAY['en'::character varying, 'pt-BR'::character varying]::text[])", name: "contact_messages_locale_allowed"
+    t.check_constraint "name::text ~ '\\S'::text AND char_length(name::text) <= 100 AND name::text !~ '[[:cntrl:]]'::text", name: "contact_messages_name_valid"
+  end
 
   create_table "project_links", force: :cascade do |t|
     t.bigint "project_id", null: false

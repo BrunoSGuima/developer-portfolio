@@ -23,6 +23,41 @@ RSpec.describe "API errors" do
       end
     end
 
+    # Bodies are never a reason to answer differently: the method contract holds for any body.
+    {
+      "a form body" => [ "name=x", "application/x-www-form-urlencoded" ],
+      "a text/plain body" => [ "plain text", "text/plain" ],
+      "malformed JSON" => [ "{\"name\": ", "application/json" ],
+      "a body over 32 KB" => [ "a" * 40_000, "text/plain" ]
+    }.each do |kind, (body, type)|
+      %w[/api/v1/projects /api/v1/projects/portfolio].each do |path|
+        %i[post put patch delete].each do |verb|
+          it "answers #{verb.upcase} #{path} with #{kind} with 405 and Allow" do
+            project = create(:project, slug: "portfolio")
+
+            expect { process(verb, path, params: body, headers: { "CONTENT_TYPE" => type }) }
+              .not_to change { [ Project.count, project.reload.attributes ] }
+
+            expect(response).to have_http_status(:method_not_allowed)
+            expect(response.headers["Allow"]).to eq("GET, HEAD")
+            expect(json.dig("error", "code")).to eq("method_not_allowed")
+            assert_response_schema_confirm(405)
+          end
+        end
+      end
+    end
+
+    it "never parses or logs a body sent to a route that takes none" do
+      personal = "Zelda Privatename zelda.private@example.com My private message text"
+
+      log = captured_log do
+        put "/api/v1/projects", params: "{\"message\": \"#{personal}\"", headers: { "CONTENT_TYPE" => "application/json" }
+      end
+
+      expect(response).to have_http_status(:method_not_allowed)
+      expect(log).not_to include("Zelda Privatename", "zelda.private@example.com", "My private message text")
+    end
+
     it "still answers HEAD like GET" do
       head "/api/v1/projects"
 
@@ -44,6 +79,13 @@ RSpec.describe "API errors" do
       delete "/api/v1/unknown"
 
       expect(response).to have_http_status(:not_found)
+    end
+
+    it "answers 404 whatever the body" do
+      post "/api/v1/unknown", params: "plain text", headers: { "CONTENT_TYPE" => "text/plain" }
+
+      expect(response).to have_http_status(:not_found)
+      expect(json.dig("error", "code")).to eq("not_found")
     end
   end
 

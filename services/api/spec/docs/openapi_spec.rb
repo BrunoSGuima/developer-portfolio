@@ -14,6 +14,20 @@ RSpec.describe "OpenAPI document" do
     expect(schemas.dig("Technology", "enum")).to eq(Project::TECHNOLOGIES)
   end
 
+  it "lists the site's languages as the Locale enum" do
+    expect(schemas.dig("Locale", "enum")).to eq(LocalizedText::LOCALES)
+  end
+
+  it "documents every validation code a contact message can produce" do
+    record = ContactMessage.new(name: "", email: "x", message: "a" * 5001, locale: "xx")
+    record.valid?
+    record.message = "short"
+    record.valid?
+    produced = (record.errors.details.values.flatten.pluck(:error).map(&:to_s) + %w[too_long]).uniq
+
+    expect(schemas.dig("ValidationCodes", "items", "enum")).to include(*produced)
+  end
+
   it "documents every API route" do
     documented = document["paths"].keys.map { |path| path.gsub(/\{(\w+)\}/, ':\1') }
     routed = Rails.application.routes.routes

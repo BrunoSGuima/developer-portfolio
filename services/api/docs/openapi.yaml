@@ -80,6 +80,81 @@ paths:
     put: { summary: Not supported, responses: { "405": { $ref: "#/components/responses/MethodNotAllowed" } } }
     patch: { summary: Not supported, responses: { "405": { $ref: "#/components/responses/MethodNotAllowed" } } }
     delete: { summary: Not supported, responses: { "405": { $ref: "#/components/responses/MethodNotAllowed" } } }
+  /api/v1/contact_messages:
+    post:
+      operationId: createContactMessage
+      summary: Send a contact message
+      description: |
+        Stores a message for the site owner (ADR-0013). The response never contains an id or any
+        submitted value. Abuse protection, per client IP: at most 20 requests and 5 accepted
+        messages per hour (429 beyond that). `website` is a honeypot that people never see: when
+        it is filled, the response is the same 202 but nothing is stored. The body must be a JSON
+        object of at most 32 KB.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactMessageRequest"
+      responses:
+        "202":
+          description: Accepted (also returned, with nothing stored, when the honeypot is filled).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactMessageAccepted"
+              example:
+                data:
+                  status: received
+        "400":
+          description: The body isn't a JSON object.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "413":
+          description: The body is larger than 32 KB (or has no Content-Length).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "415":
+          description: The body isn't application/json.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          description: Invalid fields. `details` maps each invalid field to validation codes.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+              example:
+                error:
+                  code: validation_failed
+                  message: The message could not be sent
+                  details:
+                    email: [invalid]
+                    message: [too_short]
+        "429":
+          description: Too many requests or messages from this client; try again later.
+          headers:
+            Retry-After:
+              required: true
+              description: Seconds to wait (the length of the limit's window).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    get: { summary: Not supported, responses: { "405": { $ref: "#/components/responses/PostOnly" } } }
+    put: { summary: Not supported, responses: { "405": { $ref: "#/components/responses/PostOnly" } } }
+    patch: { summary: Not supported, responses: { "405": { $ref: "#/components/responses/PostOnly" } } }
+    delete: { summary: Not supported, responses: { "405": { $ref: "#/components/responses/PostOnly" } } }
 components:
   parameters:
     Slug:
@@ -106,7 +181,9 @@ components:
               message: Internal Server Error
               details: {}
     MethodNotAllowed:
-      description: The API is read-only. The Allow header lists the supported methods.
+      description: >-
+        The API is read-only. The Allow header lists the supported methods. The answer is the
+        same whatever the request body (any body sent to these paths is ignored).
       headers:
         Allow:
           required: true
@@ -122,7 +199,92 @@ components:
               code: method_not_allowed
               message: Method not allowed
               details: {}
+    PostOnly:
+      description: >-
+        Messages can only be sent (POST); nothing can read them over HTTP. The answer is the
+        same whatever the request body.
+      headers:
+        Allow:
+          required: true
+          schema:
+            type: string
+            enum: ["POST"]
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
   schemas:
+    ContactMessageRequest:
+      type: object
+      required: [name, email, message, locale]
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Trimmed, inner whitespace collapsed; no control characters.
+        email:
+          type: string
+          minLength: 1
+          maxLength: 254
+          description: Trimmed and lowercased; must look like an email address.
+        message:
+          type: string
+          minLength: 10
+          maxLength: 5000
+          description: Trimmed; newlines and tabs allowed, no other control characters.
+        locale:
+          $ref: "#/components/schemas/Locale"
+        website:
+          type: string
+          description: Honeypot. Leave empty; the form hides it from people.
+    ContactMessageAccepted:
+      type: object
+      required: [data]
+      additionalProperties: false
+      properties:
+        data:
+          type: object
+          required: [status]
+          additionalProperties: false
+          properties:
+            status:
+              type: string
+              enum: [received]
+    Locale:
+      description: The page language the message was sent from (the shell's locales).
+      type: string
+      enum: [en, pt-BR]
+    ValidationError:
+      type: object
+      required: [error]
+      additionalProperties: false
+      properties:
+        error:
+          type: object
+          required: [code, message, details]
+          additionalProperties: false
+          properties:
+            code:
+              type: string
+              enum: [validation_failed]
+            message:
+              type: string
+            details:
+              type: object
+              additionalProperties: false
+              properties:
+                name: { $ref: "#/components/schemas/ValidationCodes" }
+                email: { $ref: "#/components/schemas/ValidationCodes" }
+                message: { $ref: "#/components/schemas/ValidationCodes" }
+                locale: { $ref: "#/components/schemas/ValidationCodes" }
+    ValidationCodes:
+      type: array
+      minItems: 1
+      items:
+        type: string
+        enum: [blank, too_short, too_long, invalid, inclusion]
     ProjectList:
       type: object
       required: [data]
@@ -220,6 +382,8 @@ components:
                 - bad_request
                 - not_found
                 - method_not_allowed
+                - payload_too_large
+                - unsupported_media_type
                 - validation_failed
                 - rate_limited
                 - internal_error

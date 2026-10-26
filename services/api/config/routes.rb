@@ -19,6 +19,10 @@ Rails.application.routes.draw do
         # Other methods on existing resources: 405 with an Allow header (GET also answers HEAD).
         match "projects", to: "/api/base#method_not_allowed", via: :all, allow: "GET, HEAD"
         match "projects/:slug", to: "/api/base#method_not_allowed", via: :all, allow: "GET, HEAD"
+
+        # Contact messages can only be created: nothing can read them over HTTP (ADR-0013).
+        resources :contact_messages, only: :create
+        match "contact_messages", to: "/api/base#method_not_allowed", via: :all, allow: "POST"
       end
     end
 

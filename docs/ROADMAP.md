@@ -24,8 +24,8 @@ after Phase 1 were renumbered accordingly; the earlier plan had deployment as Ph
 **Phase 1 (React frontend foundation) is done:** CI ran green on GitHub for the Step 12 commit
 (`f15f91c`, 2026-10-25). The Architecture page update that followed is done too (`e0e22df`).
 
-**Phase 2 is in progress:** Steps 2.0 (`392f340`), 2.1 (`6ccc0a1`), 2.2 (`22b0bf0`) and 2.3
-(`725103c`) are done; Step 2.4 is ready for review.
+**Phase 2 is in progress:** Steps 2.0 (`392f340`), 2.1 (`6ccc0a1`), 2.2 (`22b0bf0`), 2.3
+(`725103c`) and 2.4 (`fa01741`) are done; Step 2.5 is ready for review.
 
 | Phase | Scope                                                                                                                                                                 | Status                        |
 | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
@@ -122,8 +122,8 @@ out of Phase 2.
 | 2.1 | Toolchain and API skeleton | Done             | 2.0        |
 | 2.2 | CI `api` job               | Done             | 2.1        |
 | 2.3 | Projects domain            | Done             | 2.1        |
-| 2.4 | Projects API               | Ready for review | 2.3        |
-| 2.5 | Contact messages           | Planned          | 2.4        |
+| 2.4 | Projects API               | Done             | 2.3        |
+| 2.5 | Contact messages           | Ready for review | 2.4        |
 | 2.6 | Hardening and docs         | Planned          | 2.5        |
 
 Each step follows the collaboration rules (plan → approval → implementation with tests →
@@ -210,7 +210,7 @@ review); none starts automatically.
 - **Decisions:** `{ "data": … }` responses, `{ "error": { code, message, details } }` errors,
   snake_case keys; every response validated against OpenAPI with `committee`.
 - **Tests:** 200, 404, unpublished hidden, order, both languages present, contract validation.
-- **Delivered (ready for review):** read-only routes under `/api/v1` (index and show by slug),
+- **Delivered:** read-only routes under `/api/v1` (index and show by slug),
   `Api::BaseController` (the error envelope), `ProjectSerializer` (explicit field allowlist: no
   id, position, published or timestamps), `Api::ErrorsController` as `config.exceptions_app`,
   and `services/api/docs/openapi.yaml`. Owner's adjustments (2026-10-25/26): **405** with
@@ -230,6 +230,23 @@ review); none starts automatically.
   `rate_limit`; rake tasks to list messages and purge those older than 12 months.
 - **Tests:** 201, 422 with per-field details, 429, honeypot not stored, request-size limits,
   model and task specs, contract validation.
+- **Delivered (ready for review):** `contact_messages` (name, email, message, locale; no IP or
+  user agent) with check constraints mirroring the model (lengths, no control characters, NUL
+  rejected with a 422); `POST /api/v1/contact_messages` answering **202** without an id
+  (identical for the honeypot `website`), 422 with validation codes per field, 400/413/415 from
+  `JsonBodyGuard` (JSON objects of at most 32 KB, checked before Rails parses; bodies sent to
+  any other `/api` route are discarded unread, so their 405s are unchanged), 429 with
+  `Retry-After`, and 405 `Allow: POST` for every other method (nothing reads messages over
+  HTTP); rake `contact_messages:list` (at most 20, newest first, `SINCE`, personal-data
+  warning) and `contact_messages:purge` (12 months, `DRY_RUN`). Owner's refinements
+  (2026-10-26): **two limits per IP**, 20 requests and 5 accepted messages per hour, so
+  validation mistakes don't lock visitors out; personal data verified absent from request and
+  SQL logs for stored, rejected and malformed messages, database errors and unexpected
+  exceptions. Found and fixed while verifying: Rails logs the raw body of unparsable JSON at
+  debug level (hence the middleware), `rescue_from` logs exception messages (database errors
+  are rescued in the action and only their class logged), and development's SQL query log tags
+  inline bind values into the log (turned off, guarded by a spec). Email delivery stays
+  deferred (Phase 4 gate).
 
 ### Step 2.6 — Hardening and docs
 

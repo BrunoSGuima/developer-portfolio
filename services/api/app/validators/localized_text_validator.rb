@@ -4,7 +4,7 @@
 #
 #   validates :name, localized_text: { maximum: 120 }
 class LocalizedTextValidator < ActiveModel::EachValidator
-  LOCALES = %w[en pt-BR].freeze
+  LOCALES = LocalizedText::LOCALES
 
   def validate_each(record, attribute, value)
     unless value.is_a?(Hash)

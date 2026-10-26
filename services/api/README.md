@@ -6,8 +6,9 @@ is tested on its own. Public endpoints will live under `/api/v1` (ADR-0012), ser
 with the shell through a proxy (Phase 3 Vite proxy, Phase 4 reverse proxy), so there is no CORS
 configuration.
 
-**Status (Step 2.4):** the toolchain, the database, the test setup, Rails' `GET /up` health
-check, the **Projects domain** (models, constraints, seeds) and the read-only **Projects API**.
+**Status (Step 2.5):** the toolchain, the database, the test setup, Rails' `GET /up` health
+check, the **Projects domain** (models, constraints, seeds), the read-only **Projects API** and
+**contact messages** (`POST` only, with abuse protection and privacy safeguards).
 
 | Component    | Version                                          | Pinned in                                      |
 | ------------ | ------------------------------------------------ | ---------------------------------------------- |
@@ -98,15 +99,17 @@ Only use it on purpose.
 
 ## Endpoints
 
-Read-only, JSON, under `/api/v1`. **The contract is [`docs/openapi.yaml`](docs/openapi.yaml)**
+JSON, under `/api/v1`. **The contract is [`docs/openapi.yaml`](docs/openapi.yaml)**
 (OpenAPI 3.0.3, ADR-0012): change it first; every request spec validates against it.
 
-| Request                       | Response                                                                                      |
-| ----------------------------- | --------------------------------------------------------------------------------------------- |
-| `GET /api/v1/projects`        | 200 `{ "data": [Project] }`: published projects, ordered by position then slug                |
-| `GET /api/v1/projects/{slug}` | 200 `{ "data": Project }`; **404** for unknown, unpublished or badly formed slugs (same body) |
-| Other methods on those paths  | **405** with `Allow: GET, HEAD`                                                               |
-| Any other path under `/api`   | **404**                                                                                       |
+| Request                         | Response                                                                                      |
+| ------------------------------- | --------------------------------------------------------------------------------------------- |
+| `GET /api/v1/projects`          | 200 `{ "data": [Project] }`: published projects, ordered by position then slug                |
+| `GET /api/v1/projects/{slug}`   | 200 `{ "data": Project }`; **404** for unknown, unpublished or badly formed slugs (same body) |
+| Other methods on those paths    | **405** with `Allow: GET, HEAD`                                                               |
+| `POST /api/v1/contact_messages` | **202** `{ "data": { "status": "received" } }`; 400, 413, 415, 422, 429 (see below)           |
+| Other methods on that path      | **405** with `Allow: POST`: nothing can read messages over HTTP                               |
+| Any other path under `/api`     | **404**                                                                                       |
 
 There are no format suffixes: `/api/v1/projects/valid-slug.json` or `/api/v1/projects/a.b` is a
 404 (the whole segment is treated as the slug), never the project before the dot.
@@ -119,6 +122,49 @@ always `{ "error": { "code", "message", "details" } }`.
 curl -s localhost:3000/api/v1/projects
 curl -s localhost:3000/api/v1/projects/developer-portfolio
 ```
+
+### Contact messages (ADR-0013)
+
+The body is a flat JSON object: `name` (≤ 100, no control characters), `email` (≤ 254),
+`message` (10–5000, newlines allowed), `locale` (`en` or `pt-BR`) and `website`, a **honeypot**
+the form hides from people. Responses never contain an id or any submitted value.
+
+| Situation                                               | Response                                            |
+| ------------------------------------------------------- | --------------------------------------------------- |
+| Stored, **or honeypot filled** (nothing stored)         | 202, identical body                                 |
+| Invalid fields                                          | 422 `validation_failed`, `details`: codes per field |
+| Body not `application/json` (e.g. an HTML form)         | 415 `unsupported_media_type`                        |
+| Body over 32 KB                                         | 413 `payload_too_large`                             |
+| Body not a JSON object (malformed, an array)            | 400 `bad_request`                                   |
+| Over 20 requests or 5 accepted messages per IP per hour | 429 `rate_limited` with `Retry-After`               |
+
+- **Two rate limits per client IP:** every request counts toward 20 per hour (Rails'
+  `rate_limit`); only accepted messages (honeypot hits included) count toward 5 per hour, so a
+  visitor who makes a few mistakes isn't locked out. The counters live in an in-memory store
+  (`config.x.rate_limit_store`): per process and reset on restart, fine for now; Phase 4 must
+  replace it with a shared store and configure trusted proxies (ADR-0013).
+- **Bodies are handled before Rails parses them** (`lib/middleware/json_body_guard.rb`): the
+  contact endpoint's body is checked as above; any other `/api` request's body is discarded
+  unread, so unsupported methods still get 405 with `Allow` whatever the body. Rails logs the
+  raw body at debug level when JSON fails to parse, which would put personal data in the
+  development log.
+- **Privacy:** no IP address, user agent or referrer is stored (the IP is only the in-memory
+  rate-limit key). `name`, `email` and `message` are in `filter_parameters`, so request
+  parameters, `inspect` output and SQL bind values show `[FILTERED]`. SQL query log tags stay
+  **off** in every environment: with them, Rails inlines bind values into the logged SQL (a spec
+  guards this). A database error's message (which can contain the row) is never logged or
+  returned; only its class is logged.
+- **Reading and deleting** (on the owner's machine; output contains personal data, nothing
+  prints messages automatically):
+
+  ```bash
+  bin/rails contact_messages:list                 # newest first, at most 20 (LIMIT=50, SINCE=2026-10-01)
+  bin/rails contact_messages:purge DRY_RUN=1      # count messages older than 12 months
+  bin/rails contact_messages:purge                # delete them (run by hand until Phase 4)
+  ```
+
+- **No email notification yet:** a notification or retrieval solution is required before public
+  deployment (Phase 4 gate).
 
 **Unexpected errors:** in **development** Rails shows its detailed error response (exception and
 backtrace) to help debugging. In **production** `config.exceptions_app` (`Api::ErrorsController`)
@@ -167,6 +213,11 @@ bin/rails db:migrate db:seed     # after pulling new migrations or seed changes
   `update_columns`) and expects the database to reject them; each write runs in a savepoint so
   a PostgreSQL error doesn't abort the example's transaction. `spec/db/seeds_spec.rb`: seeds
   create valid records, are idempotent and roll back completely on failure.
+- `spec/requests/api/v1/contact_messages_spec.rb`: acceptance, validation codes, the honeypot,
+  body checks, both rate limits, no reading over HTTP, and **privacy in the logs** (stored,
+  rejected and malformed messages, a database error, an unexpected exception: none of the
+  submitted values appear in the captured log or the response). `spec/tasks/`: `list` and
+  `purge`, with their output captured (it never reaches the CI log).
 - `spec/requests/api/`: the endpoints and error responses. Every response is validated against
   `docs/openapi.yaml` with `assert_schema_conform(status)` (`spec/support/committee.rb`);
   drift specs prove an undocumented or missing field fails. `spec/docs/openapi_spec.rb` keeps

@@ -58,6 +58,43 @@ RSpec.describe "Database constraints" do
     end
   end
 
+  describe "contact_messages" do
+    def message_row(**overrides)
+      { name: "Ada", email: "ada@example.com", message: "Hello there, friend", locale: "en",
+        created_at: Time.current, updated_at: Time.current }.merge(overrides)
+    end
+
+    it "accepts a valid row (newlines and tabs allowed in the message)" do
+      expect { write { ContactMessage.insert_all!([ message_row(message: "Hi\n\tthere friend") ]) } }
+        .to change(ContactMessage, :count).by(1)
+    end
+
+    {
+      "a blank name" => { name: "   " },
+      "a name over 100 characters" => { name: "a" * 101 },
+      # (A newline would be squished away by the model's normalizes, which insert_all also runs.)
+      "a control character in the name" => { name: "Ada\u0007Lovelace" },
+      "an email without @" => { email: "ada.example.com" },
+      "an email with spaces" => { email: "ada @example.com" },
+      "an email over 254 characters" => { email: "#{'a' * 250}@b.co" },
+      "a message under 10 characters" => { message: "too short" },
+      "a message over 5000 characters" => { message: "a" * 5001 },
+      "a blank message" => { message: " " * 12 },
+      "a control character in the message" => { message: "Hello \u0007 there friend" },
+      "an unknown locale" => { locale: "fr" }
+    }.each do |problem, overrides|
+      it "rejects #{problem}" do
+        expect { write { ContactMessage.insert_all!([ message_row(**overrides) ]) } }
+          .to raise_error(ActiveRecord::CheckViolation)
+      end
+    end
+
+    it "rejects NULL in required columns" do
+      expect { write { ContactMessage.insert_all!([ message_row(email: nil) ]) } }
+        .to raise_error(ActiveRecord::NotNullViolation)
+    end
+  end
+
   describe "project_links" do
     let(:project) { create(:project) }
 
