@@ -92,6 +92,14 @@ describe('architecture timeline', () => {
     expect(timeline.some((milestone) => milestone.status === 'live')).toBe(false);
   });
 
+  // Phase 3: the API is done (Phase 2), the integration is in progress until pages use it.
+  it('shows the Rails API done and the integration in progress while no section uses Rails', () => {
+    if (!sections.some((section) => section.backend === 'rails')) {
+      expect(milestoneById('rails-api').status).toBe('done');
+      expect(milestoneById('integration').status).toBe('in-progress');
+    }
+  });
+
   it('deploys only after the Rails API and the frontend/backend integration', () => {
     const at = (id: string) => timeline.indexOf(milestoneById(id));
 

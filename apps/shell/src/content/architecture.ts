@@ -96,9 +96,9 @@ export const components: readonly ArchitectureComponent[] = [
     id: 'automated-testing',
     name: { en: 'Automated testing', 'pt-BR': 'Testes automatizados' },
     description: {
-      en: 'Vitest and React Testing Library for components; Playwright with axe-core for end-to-end and accessibility checks, in both languages.',
+      en: 'Vitest and React Testing Library for components; Playwright with axe-core for end-to-end and accessibility checks, in both languages; RSpec, with FactoryBot and OpenAPI contract checks, for the Rails API.',
       'pt-BR':
-        'Vitest e React Testing Library para os componentes; Playwright com axe-core para testes ponta a ponta e de acessibilidade, nos dois idiomas.',
+        'Vitest e React Testing Library para os componentes; Playwright com axe-core para testes ponta a ponta e de acessibilidade, nos dois idiomas; RSpec, com FactoryBot e verificação do contrato OpenAPI, para a API em Rails.',
     },
     status: 'live',
   },
@@ -106,9 +106,9 @@ export const components: readonly ArchitectureComponent[] = [
     id: 'continuous-integration',
     name: { en: 'Continuous integration', 'pt-BR': 'Integração contínua' },
     description: {
-      en: 'On every push and pull request, GitHub Actions checks formatting, lint, types, tests, content and the build, and runs the end-to-end suite.',
+      en: 'On every push and pull request, GitHub Actions checks formatting, lint, types, tests, content and the build, and runs the end-to-end suite and the Rails API checks (style, security audits and RSpec against PostgreSQL).',
       'pt-BR':
-        'A cada push e pull request, o GitHub Actions verifica formatação, lint, tipos, testes, conteúdo e o build, e roda a suíte ponta a ponta.',
+        'A cada push e pull request, o GitHub Actions verifica formatação, lint, tipos, testes, conteúdo e o build, e roda a suíte ponta a ponta e as verificações da API em Rails (estilo, auditorias de segurança e RSpec com PostgreSQL).',
     },
     status: 'live',
   },
@@ -133,12 +133,12 @@ export const timeline: readonly Milestone[] = [
     status: 'done',
   },
   {
-    // In progress from Phase 2 planning (Step 2.0); done once Phase 2's acceptance criteria are
-    // met (docs/ROADMAP.md), independently of the integration.
+    // Done: Phase 2 accepted (5f9eb59, docs/ROADMAP.md). The API exists and is tested on its
+    // own; the pages don't use it until the integration (v3).
     id: 'rails-api',
     version: 'v2',
     name: { en: 'Rails API + PostgreSQL + RSpec', 'pt-BR': 'API em Rails + PostgreSQL + RSpec' },
-    status: 'in-progress',
+    status: 'done',
   },
   {
     id: 'integration',
@@ -147,7 +147,8 @@ export const timeline: readonly Milestone[] = [
       en: 'Frontend/backend integration (MVP)',
       'pt-BR': 'Integração entre front-end e back-end (MVP)',
     },
-    status: 'planned',
+    // Phase 3. Done only once sections are backed by Rails (architecture.test.ts).
+    status: 'in-progress',
   },
   {
     id: 'deployment',
@@ -301,6 +302,39 @@ export const decisions: readonly Decision[] = [
       en: 'Every push and pull request runs all checks; deployment waits until the backend is integrated.',
       'pt-BR':
         'Cada push e pull request executa todas as verificações; o deploy espera a integração com o back-end.',
+    },
+  },
+  {
+    id: 'ADR-0011',
+    title: { en: 'Rails API-only backend', 'pt-BR': 'Back-end em Rails somente API' },
+    summary: {
+      en: 'A Ruby on Rails API with PostgreSQL in its own service, same-origin with the shell and tested on its own.',
+      'pt-BR':
+        'Uma API em Ruby on Rails com PostgreSQL em um serviço próprio, na mesma origem que o shell e testada de forma independente.',
+    },
+  },
+  {
+    id: 'ADR-0012',
+    title: {
+      en: 'Localised data and an OpenAPI contract',
+      'pt-BR': 'Dados localizados e contrato OpenAPI',
+    },
+    summary: {
+      en: 'Bilingual text stored as JSON and a versioned REST API described by an OpenAPI document that both sides test against.',
+      'pt-BR':
+        'Textos bilíngues armazenados como JSON e uma API REST versionada, descrita por um documento OpenAPI que os dois lados usam nos testes.',
+    },
+  },
+  {
+    id: 'ADR-0013',
+    title: {
+      en: 'Contact messages: privacy and abuse protection',
+      'pt-BR': 'Mensagens de contato: privacidade e proteção contra abuso',
+    },
+    summary: {
+      en: 'Minimal personal data, no IP addresses, filtered logs, rate limits and a honeypot, with a 12-month retention.',
+      'pt-BR':
+        'Dados pessoais mínimos, sem endereços IP, logs filtrados, limites de envio e um honeypot, com retenção de 12 meses.',
     },
   },
 ];

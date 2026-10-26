@@ -24,18 +24,18 @@ after Phase 1 were renumbered accordingly; the earlier plan had deployment as Ph
 **Phase 1 (React frontend foundation) is done:** CI ran green on GitHub for the Step 12 commit
 (`f15f91c`, 2026-10-25). The Architecture page update that followed is done too (`e0e22df`).
 
-**Phase 2 (Ruby on Rails API + PostgreSQL) is complete locally** (Step 2.6, 2026-10-26): every
-acceptance criterion below is met and verified on a developer machine and in clean-copy
-rehearsals. Steps 2.0 (`392f340`), 2.1 (`6ccc0a1`), 2.2 (`22b0bf0`), 2.3 (`725103c`), 2.4
-(`fa01741`) and 2.5 (`ad889d3`) are committed with green GitHub CI. **Pending:** the green GitHub
-Actions run on the Step 2.6 commit (after the owner commits and pushes), which finalises Phase 2.
-Next: Phase 3, starting with the Architecture page update (v2 Done).
+**Phase 2 (Ruby on Rails API + PostgreSQL) is done:** every acceptance criterion below is met,
+and GitHub Actions ran green on the final Step 2.6 commit (`5f9eb59`, 2026-10-26).
+
+**Phase 3 (integration and MVP completion) is in progress:** Step 3.0 (Architecture page and
+Phase 3 documentation) is ready for review. The Rails API is built and tested, but the React pages
+don't use it yet; Steps 3.1–3.5 connect them.
 
 | Phase | Scope                                                                                                                                                                 | Status                        |
 | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
 | 1     | **React frontend foundation**: React + TypeScript shell, static data, mascot, Fun Fact, responsive layout, en/pt-BR, unit + E2E tests, CI                             | Done                          |
-| 2     | Ruby on Rails API + PostgreSQL: projects and contact messages, security, RSpec + FactoryBot, OpenAPI contract, its own CI job; works and is tested on its own         | Done (GitHub CI pending)      |
-| 3     | Frontend/backend integration, full-stack validation and **MVP completion**: the shell reads projects and sends contact messages through the API, full-stack E2E in CI | Planned                       |
+| 2     | Ruby on Rails API + PostgreSQL: projects and contact messages, security, RSpec + FactoryBot, OpenAPI contract, its own CI job; works and is tested on its own         | Done (`5f9eb59`)              |
+| 3     | Frontend/backend integration, full-stack validation and **MVP completion**: the shell reads projects and sends contact messages through the API, full-stack E2E in CI | In progress                   |
 | 4     | Production deployment (first public release): host and reverse proxy, CD, monitoring, prerendering/SEO                                                                | Planned (postponed until 2–3) |
 | 5     | Vue 3 microfrontend mounted by the React shell (order of 5–8 provisional)                                                                                             | Planned                       |
 | 6     | Python FastAPI service + interactive quiz                                                                                                                             | Planned                       |
@@ -305,13 +305,137 @@ When they are met, the Architecture timeline's v2 becomes **Done**. The frontend
 during Phase 2, so this one-line content change is **scheduled as the first task of Phase 3**
 (owner's decision, 2026-10-26).
 
-## Phase 3 — Integration and MVP completion (summary)
+## Phase 3 — Integration and MVP completion
+
+Planned and approved on 2026-10-26. The steps below are reviewed one at a time (plan → approval →
+implementation with tests → review); none starts automatically. Constraints for the whole phase:
+the design, responsive behaviour and bilingual routing (`/`, `/pt-br`) stay unchanged; no new
+runtime dependency; no deployment or Phase 4 infrastructure.
+
+| #   | Step                                                   | Status           | Depends on |
+| --- | ------------------------------------------------------ | ---------------- | ---------- |
+| 3.0 | Architecture page and Phase 3 documentation            | Ready for review | —          |
+| 3.1 | Same-origin development setup and full-stack E2E setup | Planned          | —          |
+| 3.2 | Typed API client                                       | Planned          | —          |
+| 3.3 | Projects from the API                                  | Planned          | 3.1, 3.2   |
+| 3.4 | Contact form                                           | Planned          | 3.1–3.3    |
+| 3.5 | Full-stack validation, docs and MVP completion         | Planned          | 3.0–3.4    |
+
+### Step 3.0 — Architecture page and Phase 3 documentation
+
+- **Scope:** the Architecture timeline shows v2 **Done** and v3 **In progress**, and its note
+  says the Rails API is built and tested but the pages aren't connected to it yet; the
+  "Automated testing" and "Continuous integration" cards mention the Rails API's checks (no new
+  card: the approved 10-card layout stays); ADR-0011 to 0013 join the decisions list (en +
+  pt-BR); this Phase 3 plan; `CLAUDE.md` and README status.
+- **Tests:** the truthfulness tests (v2 done and v3 in progress while no section uses Rails),
+  the page and translation tests, the E2E suite; a before/after visual comparison at 375, 1280
+  and 1600px in both languages.
+
+### Step 3.1 — Same-origin development setup and full-stack E2E setup
+
+- **Scope:** Vite `server.proxy` and `preview.proxy` for `/api` (target `VITE_API_PROXY_TARGET`,
+  default `http://127.0.0.1:3000`): same-origin, no CORS. Playwright starts two web servers:
+  Rails on port 3100 against a dedicated `portfolio_api_e2e` database (development environment,
+  `DATABASE_NAME` override, `db:prepare db:seed`) and the shell's preview proxying to it. The CI
+  `e2e` job becomes full-stack (a `postgres:18.6-trixie` service, `ruby/setup-ruby` with the
+  Bundler cache). A smoke spec reads the seeded project through the proxy.
+- **Rate limits in E2E (decision A2):** the E2E Rails server gets `RATE_LIMIT_STORE_PATH`, which
+  switches the rate-limit store to a file store at that path; without it the store stays in
+  memory, and the variable must never be set in production (checked by a spec and documented).
+  No test-only endpoint, no limit raised or disabled, no forged forwarding headers.
+- **Files:** `apps/shell/vite.config.ts`, `e2e/playwright.config.ts`,
+  `services/api/config/{database.yml,application.rb}`, `.github/workflows/ci.yml`, an E2E smoke
+  spec, READMEs, ADR-0009, ADR-0010.
+- **Acceptance:** `npm run test:e2e` starts both servers and passes locally and in CI; the
+  isolation is deterministic; the `quality` and `api` jobs are unchanged.
+
+### Step 3.2 — Typed API client
+
+- **Scope (decision A1):** types generated from `services/api/docs/openapi.yaml` by an
+  **isolated, lockfile-pinned generator package** `tools/openapi-types/` (exact
+  `openapi-typescript@7.13.0` and its supported peer `typescript@5.9.3`; committed
+  `package-lock.json` with sha512 integrity; `npm ci --ignore-scripts`; not an npm workspace,
+  so the shell's TypeScript 6 is untouched and no overrides are needed). `npm run api:types`
+  writes `apps/shell/src/api/schema.ts` (committed); `npm run api:types:check` fails on drift and
+  runs in the CI `quality` job. The generated file must compile under the shell's strict
+  settings; if it doesn't, the fallback (handwritten types plus a YAML-based contract test) is
+  proposed before use. `api/client.ts` (same-origin `fetch`, the error envelope as a typed
+  `ApiError`, network errors, abort), the mapping to the existing `ProjectCard` props, and
+  compile-time parity: the API's `Technology` ⊆ the shell's `TechId`, `Status` and `Locale`
+  equal. ADR-0014 (frontend data access).
+- **Acceptance:** the drift check is green in CI; no `any`; no UI change.
+
+### Step 3.3 — Projects from the API
+
+- **Scope (decision A3):** the Projects route's lazy module provides a `loader` that returns a
+  deferred promise (verified with React Router 8.4.0: navigation completes while it is pending,
+  and the loader runs again on every visit); the page renders its intro and Fun Fact at once and
+  the cards through `<Suspense>` + `<Await>` with accessible, localised loading, empty and error
+  (Retry) states. A cache inside the loader keeps the list for **5 minutes**, never caches
+  failures, is bypassed by Retry, and only stores a response if no newer request has started
+  (a slow, older request can't overwrite newer data). `content/projects.ts` is retired; the
+  seeds become the content source (the seeded description gets owner-approved text); the
+  Projects Fun Fact and registry `backend: 'rails'` (plus a PostgreSQL badge) are updated.
+- **Acceptance:** the loaded page looks identical (visual comparison); every state is
+  accessible in both languages; unit and E2E tests (real API, plus a stubbed error) pass.
+
+### Step 3.4 — Contact form
+
+- **Scope:** an accessible form below the existing channels (a route action plus
+  `useFetcher`): name, email and message with client-side checks that mirror the contract, the
+  page language, the hidden honeypot, localised field errors from the validation codes, the
+  pending, success, rate-limited and generic error states, and the privacy note
+  (owner-approved text). The Contact Fun Fact and registry `backend: 'rails'` are updated.
+- **E2E (decision A2):** real-API submissions run serially on the desktop project and reset
+  the file-based rate-limit store before each test (including a genuine 429 after five
+  accepted messages); language, mobile and error variants use `page.route` stubs.
+- **Acceptance:** WCAG 2.2 AA (axe, keyboard, focus management), both languages, the owner's
+  visual review.
+
+### Step 3.5 — Full-stack validation, docs and MVP completion
+
+- **Scope:** the Architecture timeline's v3 becomes Done (now allowed: sections use Rails) and the
+  testing/CI or a new Rails card describes the integrated site; a clean-copy full-stack
+  rehearsal; READMEs, `CLAUDE.md`, ADR-0004, 0009, 0010, 0012 and 0014; the acceptance evidence
+  below. The MVP is complete once GitHub CI is green on this step.
+
+### Phase 3 acceptance criteria
+
+1. The Projects page shows API data in English and Portuguese, with accessible loading, empty and
+   error states; no static project data remains.
+2. The Contact page sends messages through the API, with accessible validation, localised
+   errors, the honeypot, rate-limit messaging and the privacy note.
+3. API requests are same-origin through the Vite dev and preview proxies; no CORS.
+4. The shell's types are generated from the OpenAPI document and checked in CI; enum parity is
+   enforced at compile time.
+5. Full-stack Playwright E2E (shell, API, PostgreSQL) with axe passes locally and in CI; unit,
+   RSpec and quality checks pass.
+6. Fun Facts, registry backends and the Architecture page are truthful; the docs and ADRs are
+   current.
+7. The design, responsive behaviour and bilingual routing are unchanged (owner's visual review).
+
+### Phase 3 decisions (owner, 2026-10-26)
+
+- **Loading:** a route loader returning a deferred promise, with in-page `<Await>` states.
+- **Types (A1):** the isolated, lockfile-pinned generator package, with a compile gate and a
+  reported fallback.
+- **Contact submission:** a route action plus `useFetcher`.
+- **Cache (A3):** 5 minutes, failures never cached, Retry bypasses it, stale in-flight requests
+  can't overwrite newer data.
+- **E2E:** the existing `e2e` job becomes full-stack, with a dedicated `portfolio_api_e2e`
+  database; rate-limit isolation by the E2E-only file store and serial real-API specs (A2).
+- **Fun Facts:** a PostgreSQL badge; the privacy note and the seeded description are drafted in
+  their steps for the owner's approval; the contact form goes below the channels.
+- **Architecture page:** the testing and CI cards are updated instead of adding an eleventh card.
+
+### Summary and readiness (recorded at the end of Phase 2)
 
 The shell reads projects through route loaders (loading and error states in both languages),
 `/api` is proxied same-origin (Vite dev server and preview), an accessible contact form with a
 privacy note, Fun Facts / registry `backend: 'rails'` / Architecture page updated truthfully,
 the frontend's types and fixtures checked against the OpenAPI document, and full-stack E2E in
-CI. Completing it completes the **MVP**. Detailed planning happens after Phase 2.
+CI. Completing it completes the **MVP**.
 
 **Readiness (recorded at the end of Phase 2):**
 

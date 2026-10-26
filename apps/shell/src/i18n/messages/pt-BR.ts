@@ -64,7 +64,7 @@ export const ptBR: Messages = {
     builtToday: 'Como ele é construído hoje',
     evolution: 'Como ele vai evoluir',
     timelineNote:
-      'O deploy vem depois da integração com o back-end. A ordem das etapas seguintes (v5–v8) é provisória.',
+      'A API em Rails (v2) está construída e testada de forma independente; as páginas ainda não estão conectadas a ela, e esse é o próximo passo (v3). O deploy vem depois dessa integração. A ordem das etapas seguintes (v5–v8) é provisória.',
     decisions: 'Principais decisões',
   },
   contact: {

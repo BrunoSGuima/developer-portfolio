@@ -1,6 +1,6 @@
 import { screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { components, timeline } from '../../content/architecture.ts';
+import { components, decisions, timeline } from '../../content/architecture.ts';
 import { renderPage } from '../../test/renderPage.tsx';
 import page from '../Page.module.css';
 import archCss from './ArchitecturePage.module.css?raw';
@@ -65,11 +65,13 @@ describe('ArchitecturePage', () => {
     expect(items[0]).toHaveTextContent('Done');
   });
 
-  it('says that deployment follows the backend and the later order is provisional', () => {
+  it('says the API is built but not connected yet, deployment follows, and the later order is provisional', () => {
     renderPage(ArchitecturePage);
 
     const region = screen.getByRole('region', { name: 'How it will evolve' });
-    expect(region).toHaveTextContent(/Deployment comes after the backend integration/);
+    expect(region).toHaveTextContent(/Rails API \(v2\) is built and tested on its own/);
+    expect(region).toHaveTextContent(/the pages are not connected to it yet/);
+    expect(region).toHaveTextContent(/Deployment comes after that integration/);
     expect(region).toHaveTextContent(/provisional/);
   });
 
@@ -115,7 +117,8 @@ describe('ArchitecturePage', () => {
 
     const region = screen.getByRole('region', { name: 'Key decisions' });
     const items = within(region).getAllByRole('listitem');
-    expect(items).toHaveLength(10);
+    expect(items).toHaveLength(decisions.length);
+    expect(decisions.at(-1)?.id).toBe('ADR-0013');
     items.forEach((item, index) =>
       expect(item).toHaveTextContent(`ADR-${String(index + 1).padStart(4, '0')}`),
     );

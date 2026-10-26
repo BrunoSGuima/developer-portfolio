@@ -68,7 +68,7 @@ export const en = {
     builtToday: "How it's built today",
     evolution: 'How it will evolve',
     timelineNote:
-      'Deployment comes after the backend integration. The order of the later steps (v5–v8) is provisional.',
+      'The Rails API (v2) is built and tested on its own; the pages are not connected to it yet, which is the next step (v3). Deployment comes after that integration. The order of the later steps (v5–v8) is provisional.',
     decisions: 'Key decisions',
   },
   contact: {

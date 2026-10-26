@@ -16,11 +16,13 @@ tokens, registry & routing, Fun Fact, portfolio content, microfrontend host, mas
 illustrated Home, responsive layout, i18n en + pt-BR, transitions & polish, Playwright E2E, CI;
 CI is green on GitHub; Architecture page updated). Phase 1 is **not** the MVP.
 
-**Phase 2 — Ruby on Rails API + PostgreSQL: complete locally** (Steps 2.0–2.6: ADRs, the API
-toolchain and skeleton in `services/api`, the CI `api` job, the Projects domain, the read-only
-Projects API, contact messages, hardening and docs). The green GitHub Actions run on the Step 2.6
-commit finalises it. **Phase 3 is next** (not started): its first task is the Architecture
-page's v2 → Done; its readiness notes are in `docs/ROADMAP.md`.
+**Phase 2 — Ruby on Rails API + PostgreSQL: done** (Steps 2.0–2.6; GitHub Actions green on
+`5f9eb59`). **Phase 3 — Frontend/backend integration and MVP completion: in progress** (Step 3.0,
+Architecture page and Phase 3 docs, ready for review). The API is built and tested, but the React
+pages don't use it yet (Steps 3.1–3.5; plan, decisions and acceptance criteria in
+`docs/ROADMAP.md`). Phase 3 rules: API calls are same-origin `/api` through the Vite proxies
+(no CORS); from Step 3.2 the shell's API types are generated from `services/api/docs/openapi.yaml`
+(never edited by hand); keep the design, responsiveness and bilingual routing unchanged.
 Phase 2 is complete when the API, persistence, endpoints, security and RSpec suite work on their
 own (no frontend required). **The MVP is complete only at the end of Phase 3** (integration and
 full-stack validation). **Deployment is postponed** to Phase 4; do not add hosting, CD or
@@ -28,7 +30,7 @@ production infrastructure before it. The roadmap, step list, acceptance criteria
 decisions live in **`docs/ROADMAP.md`** (version-controlled source of truth; keep it current).
 
 The API runs Ruby 4.0.9, Rails 8.1.4 and PostgreSQL 18.6 (ADR-0011). Do not add Python, Redis, Sidekiq or Vue until their phase. The shell keeps its
-static data until Phase 3.
+static project data until Step 3.3 retires it.
 
 ## Architecture
 
