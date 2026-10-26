@@ -46,6 +46,15 @@ Specs: `pages`, `navigation`, `language`, `mobile-menu`, `keyboard`, `mascot`, `
 | Screenshot comparisons | Brittle across fonts, GPUs and OSes; geometric assertions state the actual intent.            |
 | Hand-injected axe-core | The official `@axe-core/playwright` wrapper is maintained and simpler.                        |
 
+**Full stack (Phase 3, Step 3.1):** the suite now runs against the real Rails API.
+Playwright starts two web servers and never reuses running ones: the API in its dedicated `e2e`
+Rails environment (`services/api/bin/e2e-server`: database `portfolio_api_e2e`, prepared, seeded
+and reset on every run, served on `127.0.0.1:3100`) and the shell's preview on port 4173, which
+proxies `/api` to it (`API_PROXY_TARGET`), keeping requests same-origin. Specs that write to a
+rate-limited endpoint run serially on the desktop project and reset the e2e API's file-based
+rate-limit store before each test; all other specs stub such endpoints with `page.route`. No
+test-only endpoints exist and no limits are changed.
+
 ## Consequences
 
 - `npm run test:e2e` builds, serves and tests everything (about 45 s locally); the unit suite

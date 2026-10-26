@@ -236,6 +236,26 @@ bin/rails db:migrate db:seed     # after pulling new migrations or seed changes
   handling is tested by switching the request to production-style exception rendering.
 - The suite needs PostgreSQL running and nothing else (no Node, no shell).
 
+## End-to-end environment
+
+The Playwright suite (`npm run test:e2e` from the repository root) runs the API in its own Rails
+environment, **`e2e`** (`config/environments/e2e.rb`, based on development), against its own
+database **`portfolio_api_e2e`**. Your development and test databases are never touched: database
+tasks in the `e2e` environment only act on its database.
+
+- Playwright starts **`bin/e2e-server`**, which refuses any other `RAILS_ENV`, then runs
+  `db:prepare` (creates the database and loads the seeds the first time), `db:seed` and
+  `e2e:reset`, and serves on `127.0.0.1:3100` with its own PID file
+  (`tmp/pids/e2e-server.pid`), so it can run next to a development server on port 3000.
+- **`bin/rails e2e:reset`** empties the e2e database's contact messages and its rate-limit store.
+  It aborts unless `RAILS_ENV` is `e2e` **and** the connected database is `portfolio_api_e2e`.
+- **Rate limits** in this environment count in files at `tmp/e2e/rate-limits` (the only
+  environment with a file store), so serial end-to-end specs can reset them between tests by
+  deleting that directory (`e2e/support/rateLimits.ts`). No endpoint resets them; the limits
+  themselves are unchanged.
+- **Cleanup:** `RAILS_ENV=e2e bin/rails db:drop` drops only `portfolio_api_e2e` (it's recreated on
+  the next run).
+
 ## Continuous integration
 
 GitHub Actions' `api` job (`.github/workflows/ci.yml`, ADR-0010) runs **`bin/ci`**, the same
@@ -255,6 +275,8 @@ when `.ruby-version` changes.
 | `Cannot connect to the Docker daemon`                        | Start Docker. On WSL without systemd: `sudo service docker start` (once per WSL boot).                                                                                                                                   |
 | `required variable POSTGRES_PASSWORD is missing a value`     | Create `infra/.env` (Setup, step 2).                                                                                                                                                                                     |
 | `Connection refused` on port 5432                            | PostgreSQL isn't running: `docker compose -f infra/compose.yaml up -d --wait`.                                                                                                                                           |
+| E2E: port 3100 or 4173 already in use                        | Stop whatever uses it (`ss -ltnp \| grep -E ':(3100\|4173) '`); the suite never reuses a running server.                                                                                                                 |
+| E2E: the API server doesn't start                            | Is PostgreSQL running and `services/api/.env` present? Run `RAILS_ENV=e2e bin/e2e-server` by hand to see its output.                                                                                                     |
 | Port 5432 already in use                                     | Set the same free port as `POSTGRES_PORT` in `infra/.env` and `DATABASE_PORT` in `services/api/.env`, then `up -d --wait` again.                                                                                         |
 | `password authentication failed`                             | The two `.env` files differ, or the password changed after the volume was created (the volume keeps the first one). Restore the original password, or change it inside the database with `ALTER ROLE`.                   |
 | `/up` returns 200 but specs fail to connect                  | `/up` only checks that the app boots, not the database. Check PostgreSQL and the `.env` files.                                                                                                                           |

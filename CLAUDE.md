@@ -86,7 +86,8 @@ static project data until Step 3.3 retires it.
   Caddy, path-routed same-origin, is the current plan. No Kubernetes in the MVP.
 - **CI** (ADR-0010, `.github/workflows/ci.yml`): on pushes to `main` and pull requests, three
   parallel jobs: `quality` (`npm ci`, format, lint, typecheck, unit tests, `content:check`,
-  build), `e2e` (Playwright + axe, HTML report artifact) and `api` (`ruby/setup-ruby` from
+  build), `e2e` (full stack since Step 3.1: PostgreSQL service and Ruby, then Playwright + axe
+  against the e2e API and the shell's preview; HTML report artifact) and `api` (`ruby/setup-ruby` from
   `services/api/.ruby-version` with the Bundler cache, a `postgres:18.6-trixie` service container,
   then `bin/ci`). Read-only token, actions pinned to commit SHAs (update SHA and release comment
   together), no secrets (the `api` job's database password is a documented throwaway). Keep CI
@@ -229,8 +230,12 @@ before the app uses its own router.
   transactional isolation; request specs validate responses against the OpenAPI document. Rails
   tests never read the shell's TypeScript files.
 - Python (Phase 6): Pytest + HTTPX.
-- End-to-end (ADR-0009, `e2e/`): Playwright against the production build (`vite preview`),
-  projects `desktop` (real scrollbars) and `mobile`, with `@axe-core/playwright` (any
+- End-to-end (ADR-0009, `e2e/`): Playwright against the full stack: the shell's production build
+  (`vite preview`, proxying `/api`) and the Rails API in its `e2e` environment
+  (`services/api/bin/e2e-server`, database `portfolio_api_e2e`, ports 4173 and 3100; servers are
+  never reused). Specs that write to a rate-limited endpoint run serially on the desktop project
+  and call `resetRateLimits()` (`e2e/support/rateLimits.ts`); every other spec stubs such
+  endpoints with `page.route`. Projects `desktop` (real scrollbars) and `mobile`, with `@axe-core/playwright` (any
   violation fails). Specs import languages, dictionaries and the registry from the shell, so
   expectations follow the app; reduced motion by default; geometric assertions, no screenshot
   comparisons. A test exposing an unfixed app bug is marked `test.fail()` with the reason.
@@ -255,7 +260,7 @@ Run from the repository root (after `nvm use`):
 | `npm run content:check`               | Fail if any content placeholder remains (CI gate)     |
 | `npm run illustrations -w apps/shell` | Rebuild WebP derivatives from `docs/assets/source/`   |
 | `npm run favicon -w apps/shell`       | Rebuild the favicons (mascot head crop) in `public/`  |
-| `npm run test:e2e`                    | Build, serve and run the Playwright E2E suite         |
+| `npm run test:e2e`                    | Start the e2e API and the preview, run Playwright     |
 | `npm run report -w e2e`               | Open the last E2E HTML report                         |
 
 The Rails API (`services/api`, Ruby from `.ruby-version` via asdf) is outside the npm
@@ -278,7 +283,11 @@ Inside a workspace (e.g. `apps/shell`): `npm run test:watch` runs Vitest in watc
   committed `.env.example` files). Never commit them or `config/master.key`. Prettier ignores
   `services/api/` except its README (RuboCop covers the Ruby code).
 - E2E browsers are a one-time setup: `npx playwright install chromium` and, on Linux/WSL,
-  `sudo npx playwright install-deps chromium` (system libraries).
+  `sudo npx playwright install-deps chromium` (system libraries). E2E also needs the API's
+  setup (Ruby, `services/api/.env`) and PostgreSQL running (`docker compose -f infra/compose.yaml
+up -d --wait`).
+- `/api` is proxied by the Vite dev server and `vite preview` to `API_PROXY_TARGET` (default
+  `http://127.0.0.1:3000`, a development API from `bin/rails server`); same-origin, no CORS.
 
 - `apps/shell` was scaffolded with `create-vite` (react-ts template); the template's oxlint
   setup was replaced with ESLint as decided in the plan.

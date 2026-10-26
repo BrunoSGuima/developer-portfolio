@@ -67,15 +67,22 @@ npm run build       # production build to apps/shell/dist
 ```
 
 ```bash
-npm run test:e2e    # Playwright E2E + axe against the production build (both languages)
+npm run test:e2e    # Playwright E2E + axe against the full stack (both languages)
 ```
 
 CI (`.github/workflows/ci.yml`, ADR-0010) runs the same commands on every push to `main` and
 every pull request, plus `npm run content:check` (no unconfirmed `todo()` content), and the
 Rails API's `bin/ci` against a PostgreSQL service container.
 
-The E2E suite needs a browser once: `npx playwright install chromium` (on Linux/WSL also
-`sudo npx playwright install-deps chromium`). Root scripts delegate to npm workspaces.
+The E2E suite runs against the full stack: Playwright starts the Rails API in its `e2e`
+environment (port 3100, its own database `portfolio_api_e2e`, prepared and reset on every run) and
+the shell's production build with `vite preview` (port 4173), which proxies `/api` to it. It
+needs PostgreSQL running (`docker compose -f infra/compose.yaml up -d --wait`), the API's one-time
+setup ([`services/api/README.md`](./services/api/README.md)) and a browser once:
+`npx playwright install chromium` (on Linux/WSL also `sudo npx playwright install-deps chromium`).
+Both ports must be free: running servers are never reused. During development, `npm run dev`
+proxies `/api` to `http://127.0.0.1:3000` (a `bin/rails server`); set `API_PROXY_TARGET` to change
+it. Root scripts delegate to npm workspaces.
 
 ## Documentation
 

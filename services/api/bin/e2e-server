@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Starts the API for the end-to-end suite (Playwright starts it; see e2e/playwright.config.ts):
+# prepares and seeds the e2e database, resets its mutable state, then serves on the loopback
+# interface with its own PID file, so it can run next to a development server.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+if [ -n "${RAILS_ENV:-}" ] && [ "$RAILS_ENV" != "e2e" ]; then
+  echo "bin/e2e-server only runs the e2e environment (RAILS_ENV is '$RAILS_ENV')." >&2
+  exit 1
+fi
+export RAILS_ENV=e2e
+port="${PORT:-3100}"
+
+bin/rails db:prepare
+bin/rails db:seed
+bin/rails e2e:reset
+
+exec bin/rails server -b 127.0.0.1 -p "$port" --pid tmp/pids/e2e-server.pid

@@ -26,6 +26,12 @@ test:
   # every run); tests build their own data with FactoryBot instead.
   seeds: false
 
+# End-to-end tests (Playwright) run the API in the e2e environment against their own database,
+# prepared and reset by bin/e2e-server. Database tasks in this environment only touch it.
+e2e:
+  <<: *default
+  database: portfolio_api_e2e
+
 # Production is configured in Phase 4 (deployment), from the environment only.
 production:
   <<: *default

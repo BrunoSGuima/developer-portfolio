@@ -27,9 +27,9 @@ after Phase 1 were renumbered accordingly; the earlier plan had deployment as Ph
 **Phase 2 (Ruby on Rails API + PostgreSQL) is done:** every acceptance criterion below is met,
 and GitHub Actions ran green on the final Step 2.6 commit (`5f9eb59`, 2026-10-26).
 
-**Phase 3 (integration and MVP completion) is in progress:** Step 3.0 (Architecture page and
-Phase 3 documentation) is ready for review. The Rails API is built and tested, but the React pages
-don't use it yet; Steps 3.1–3.5 connect them.
+**Phase 3 (integration and MVP completion) is in progress:** Step 3.0 (`84b4e4c`) is done; Step
+3.1 (same-origin proxies and full-stack E2E) is ready for review. The Rails API is built and
+tested, but the React pages don't use it yet; Steps 3.3–3.4 connect them.
 
 | Phase | Scope                                                                                                                                                                 | Status                        |
 | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
@@ -314,8 +314,8 @@ runtime dependency; no deployment or Phase 4 infrastructure.
 
 | #   | Step                                                   | Status           | Depends on |
 | --- | ------------------------------------------------------ | ---------------- | ---------- |
-| 3.0 | Architecture page and Phase 3 documentation            | Ready for review | —          |
-| 3.1 | Same-origin development setup and full-stack E2E setup | Planned          | —          |
+| 3.0 | Architecture page and Phase 3 documentation            | Done             | —          |
+| 3.1 | Same-origin development setup and full-stack E2E setup | Ready for review | —          |
 | 3.2 | Typed API client                                       | Planned          | —          |
 | 3.3 | Projects from the API                                  | Planned          | 3.1, 3.2   |
 | 3.4 | Contact form                                           | Planned          | 3.1–3.3    |
@@ -349,6 +349,30 @@ runtime dependency; no deployment or Phase 4 infrastructure.
   spec, READMEs, ADR-0009, ADR-0010.
 - **Acceptance:** `npm run test:e2e` starts both servers and passes locally and in CI; the
   isolation is deterministic; the `quality` and `api` jobs are unchanged.
+- **Delivered (ready for review), owner's decisions 2026-10-26:** the plan above was refined
+  before implementation:
+  - **A dedicated Rails `e2e` environment** (`config/environments/e2e.rb`, based on development)
+    with the fixed database `portfolio_api_e2e`, instead of the development environment with a
+    database override: in Rails 8.1 the development environment's database tasks also act on
+    the test database. Production-style JSON errors, a per-boot secret, query log tags off.
+  - **The rate-limit file store is defined only in `e2e.rb`, at the fixed path
+    `tmp/e2e/rate-limits`** (no `RATE_LIMIT_STORE_PATH` variable), so it can't be enabled
+    elsewhere; a spec pins this.
+  - **`bin/e2e-server`** (refuses any other `RAILS_ENV`): `db:prepare`, `db:seed`,
+    `e2e:reset` (which aborts unless the environment is `e2e` **and** the connected database is
+    `portfolio_api_e2e`, then empties contact messages and the rate-limit store), then Puma on
+    `127.0.0.1:3100` with its own PID file. It never drops or resets a database.
+  - **Proxy variable `API_PROXY_TARGET`** (not `VITE_`-prefixed, so it never reaches the bundle);
+    Playwright never reuses running servers.
+  - **Per-test rate-limit resets** (`e2e/support/rateLimits.ts`) delete the store directory only
+    from serial, desktop-only real-API specs; verified to be deterministic against the live
+    server (five accepted then 429, identically after each reset; the store directory is
+    recreated by the next request).
+  - Tests: the proxy against a stub upstream (status, headers and JSON bodies for 200/404/405
+    and a controlled 500; method, path, query, body and Host forwarded unchanged); smoke specs
+    through the real preview proxy (seeded projects, same-origin fetch, 404 and 405 envelopes);
+    the rate-limit isolation spec; RSpec guards for the `e2e` environment, `bin/e2e-server` and
+    `e2e:reset`. The CI `e2e` job is full-stack (PostgreSQL service, Ruby, 25-minute timeout).
 
 ### Step 3.2 — Typed API client
 

@@ -57,7 +57,26 @@ jobs:
   e2e:
     name: End-to-end and accessibility (Playwright + axe)
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 25
+    # Full stack (Phase 3): Playwright starts the Rails API in its e2e environment
+    # (services/api/bin/e2e-server, database portfolio_api_e2e) and the shell's preview, which
+    # proxies /api to it. Same image and throwaway password as the api job (not a secret).
+    services:
+      postgres:
+        image: postgres:18.6-trixie
+        env:
+          POSTGRES_USER: portfolio
+          POSTGRES_PASSWORD: ci-throwaway-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U portfolio -d postgres"
+          --health-interval 5s --health-timeout 3s --health-retries 10 --health-start-period 10s
+    env:
+      DATABASE_HOST: 127.0.0.1
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: portfolio
+      DATABASE_PASSWORD: ci-throwaway-password
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -70,6 +89,12 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      # Ruby from services/api/.ruby-version and the API's gems (cached), for the e2e API server.
+      - uses: ruby/setup-ruby@7f797815d8adceb1c412e7abefdd1ab4abc47a5f # v1.335.0
+        with:
+          working-directory: services/api
+          bundler-cache: true
 
       # The browser build is tied to the Playwright version: cache it under that version.
       - name: Read the Playwright version
@@ -92,8 +117,8 @@ jobs:
         if: steps.browser-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
 
-      # Builds the shell, serves it with `vite preview` and runs every spec (CI mode: two
-      # workers, two retries, GitHub annotations).
+      # Starts the e2e API and the shell's preview, then runs every spec (CI mode: two workers,
+      # two retries, GitHub annotations).
       - name: End-to-end tests
         run: npm run test:e2e
 

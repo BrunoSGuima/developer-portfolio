@@ -18,9 +18,11 @@ One workflow, `.github/workflows/ci.yml`, on `push` to `main` and on `pull_reque
 - **Three parallel jobs** on `ubuntu-24.04`, each with a timeout:
   - `quality`: `npm ci` → `format:check` → `lint` → `typecheck` → `test` → `content:check` →
     `build`. Fast feedback (≈ 1 minute of work).
-  - `e2e`: `npm ci` → Chromium (+ system libraries) → `npm run test:e2e` (builds the shell and runs
-    the Playwright + axe suite against `vite preview`) → uploads the HTML report as an artifact
-    (14 days), also when tests fail.
+  - `e2e`: `npm ci` → Ruby with the API's cached gems → Chromium (+ system libraries) →
+    `npm run test:e2e` (since Step 3.1 full stack: a `postgres:18.6-trixie` service and the same
+    throwaway database password as `api`; Playwright starts the Rails API in its `e2e`
+    environment and the shell's `vite preview`, which proxies `/api` to it) → uploads the HTML
+    report as an artifact (14 days), also when tests fail. Timeout 25 minutes.
   - `api` (Step 2.2, ADR-0011): `ruby/setup-ruby` reads `services/api/.ruby-version` and caches
     the gems (`bundler-cache`, frozen `Gemfile.lock`); a `postgres:18.6-trixie` service container
     (the same image as `infra/compose.yaml`) with a health check; then one step, **`bin/ci`**,

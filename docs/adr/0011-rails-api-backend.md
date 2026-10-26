@@ -63,6 +63,12 @@ Deployment is Phase 4.
 | PostgreSQL installed natively                 | Docker Compose keeps the database version pinned and identical across machines. |
 | Redis / Sidekiq now                           | No MVP requirement needs background jobs or a separate cache (Phase 7).         |
 
+**End-to-end environment (Phase 3, Step 3.1):** a fourth Rails environment, `e2e`, exists only
+for the Playwright suite: based on development, with production-style JSON errors, its own
+database `portfolio_api_e2e` and a file-based rate-limit store at a fixed path. It is started
+only by `bin/e2e-server`; a dedicated environment (rather than development with another
+database) keeps Rails' database tasks away from the test database.
+
 ## Consequences
 
 - Two ecosystems in one repository, with clear boundaries: `services/api` has its own tooling,
