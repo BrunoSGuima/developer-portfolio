@@ -69,7 +69,14 @@ installed into the shell without overriding that peer.
   forbids `src/api/*` imports in `src/components/` and `src/sections/`; data loading lives
   outside them.
 
-### The two modes (implemented in Steps 3.3–3.5)
+### The two modes (from Step 3.3)
+
+- **Implemented in Step 3.3:** `VITE_APP_MODE` (`static` by default, `fullstack` explicitly,
+  anything else fails the build), read only in `src/config/mode.ts` and baked into builds as a
+  literal; the registry's `fullstack` overrides resolved by `sectionInMode()`; the Projects
+  route loader in `src/projects/source.ts` (the static data, or the API as a deferred promise
+  with the cache below); the API import guarded by the literal mode check at its import site, so
+  a static build contains no API code at all; E2E in both modes, in CI.
 
 - The mode is chosen **at build time**, explicitly, by one setting read in one module; a built
   site is either static or full-stack. Nothing is detected at runtime.
@@ -83,10 +90,11 @@ installed into the shell without overriding that peer.
 - Static data and the API's seeds stay equivalent: a full-stack test compares both **after
   normalising them to the `Project` model** (static data as-is, API responses through
   `toProject`), never their raw representations.
-- Planned loading: a React Router loader returning a deferred promise, rendered with
-  `<Suspense>`/`<Await>`, with a 5-minute cache that never stores failures, is bypassed by Retry
-  and ignores stale in-flight responses (3.3); the contact form submits through a route action
-  with `useFetcher` (3.4).
+- Loading (3.3): a React Router loader returning a deferred promise, rendered with
+  `<Suspense>`/`<Await>`, with a 5-minute cache that never stores failures, is always bypassed by
+  Try again, can't be overwritten by an older in-flight response, and isn't tied to one
+  navigation's abort signal. The contact form submits through a route action with `useFetcher`
+  (3.4).
 
 ## Alternatives considered
 

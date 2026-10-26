@@ -59,17 +59,20 @@ npm install
 ```
 
 ```bash
-npm run dev         # shell dev server at http://localhost:5173
+npm run dev         # shell dev server at http://localhost:5173 (static mode)
+npm run dev:fullstack  # the same in full-stack mode (with `bin/rails server` on port 3000)
 npm run lint        # ESLint (type-aware + accessibility rules)
 npm run typecheck   # TypeScript strict type-check
 npm test            # Vitest + React Testing Library
-npm run build       # production build to apps/shell/dist
+npm run build       # production build to apps/shell/dist (the static site)
+npm run build:fullstack  # the full-stack site (VITE_APP_MODE=fullstack)
 npm run api:types   # regenerate the shell's API types from the OpenAPI contract
                     # (first: npm run api:types:install; CI checks them with api:types:check)
 ```
 
 ```bash
 npm run test:e2e    # Playwright E2E + axe against the full stack (both languages)
+npm run test:e2e:static  # the same suite against the static build, with no API
 ```
 
 CI (`.github/workflows/ci.yml`, ADR-0010) runs the same commands on every push to `main` and

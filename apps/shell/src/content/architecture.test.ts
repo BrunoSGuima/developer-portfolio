@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { APP_MODES } from '../config/mode.ts';
 import { isPlaceholderArt } from '../mascot/assets.ts';
 import RemoteSection from '../microfrontends/RemoteSection.tsx';
 import { LOCALES } from '../i18n/locales.ts';
-import { remoteMount, sections } from '../sections/registry.ts';
+import { remoteMount, sectionInMode, sections } from '../sections/registry.ts';
 import { components, timeline } from './architecture.ts';
 
 function componentById(id: string) {
@@ -31,17 +32,26 @@ describe('architecture truthfulness', () => {
   });
 
   // The Rails API (Phase 2) is finished on its own acceptance criteria; the site only uses it
-  // once the integration (Phase 3) is done.
-  it('only marks the integration milestone done if a section is backed by Rails', () => {
-    const usesRails = sections.some((section) => section.backend === 'rails');
-    expect(finished('integration')).toBe(usesRails);
-  });
+  // once the integration (Phase 3) is done. Sections use Rails only in a full-stack build
+  // (ADR-0014), so each rule is checked for the sections as built in each mode.
+  it.each(APP_MODES)(
+    'never marks the integration done in a %s build without a Rails-backed section',
+    (mode) => {
+      if (!sections.some((section) => sectionInMode(section, mode).backend === 'rails')) {
+        expect(finished('integration')).toBe(false);
+      }
+    },
+  );
 
-  it('never has a Rails-backed section before the Rails API milestone is done', () => {
-    if (sections.some((section) => section.backend === 'rails')) {
-      expect(finished('rails-api')).toBe(true);
-    }
-  });
+  it.each(APP_MODES)(
+    'never has a Rails-backed section in a %s build before the Rails API milestone is done',
+    (mode) => {
+      if (sections.some((section) => sectionInMode(section, mode).backend === 'rails')) {
+        expect(finished('rails-api')).toBe(true);
+        expect(milestoneById('integration').status).not.toBe('planned');
+      }
+    },
+  );
 
   it('only marks the FastAPI milestone done if a section is backed by FastAPI', () => {
     const usesFastApi = sections.some((section) => section.backend === 'fastapi');

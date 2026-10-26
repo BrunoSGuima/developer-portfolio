@@ -18,10 +18,13 @@ CI is green on GitHub; Architecture page updated). Phase 1 is **not** the MVP.
 
 **Phase 2 — Ruby on Rails API + PostgreSQL: done** (Steps 2.0–2.6; GitHub Actions green on
 `5f9eb59`). **Phase 3 — Frontend/backend integration and MVP completion: in progress** (Steps
-3.0–3.1 done; Step 3.2, the typed API client, ready for review). The API is built and tested, but
-the React pages don't use it yet (plan, decisions and acceptance criteria in `docs/ROADMAP.md`).
-**Long-term requirement:** one codebase builds a **full-stack** site (Rails API + PostgreSQL) or a
-**static** site (local data, no backend), chosen at build time (from Step 3.3; ADR-0014). Phase 3
+3.0–3.2 done; Step 3.3, mode selection and Projects data, ready for review; plan, decisions and
+acceptance criteria in `docs/ROADMAP.md`). **Long-term requirement:** one codebase builds a
+**full-stack** site (Rails API + PostgreSQL) or a **static** site (local data, no backend),
+chosen at build time by `VITE_APP_MODE` (`static` by default, `fullstack` explicitly; ADR-0014).
+Read the mode only through `src/config/mode.ts`; per-section differences go in the registry's
+`fullstack` overrides (`sectionInMode()`); full-stack-only code must stay behind the mode so the
+static build contains none of it (the static E2E run checks). Phase 3
 rules:
 
 - API calls are same-origin `/api` through the Vite proxies (no CORS).
@@ -96,10 +99,11 @@ static project data until Step 3.3 retires it.
 - **Hosting**: not deployed yet (owner's decision). The first release is Phase 4, after the Rails
   API and PostgreSQL are integrated (Phases 2–3); then a single VPS with Docker Compose behind
   Caddy, path-routed same-origin, is the current plan. No Kubernetes in the MVP.
-- **CI** (ADR-0010, `.github/workflows/ci.yml`): on pushes to `main` and pull requests, three
+- **CI** (ADR-0010, `.github/workflows/ci.yml`): on pushes to `main` and pull requests, four
   parallel jobs: `quality` (`npm ci`, format, lint, typecheck, unit tests, `content:check`,
   build), `e2e` (full stack since Step 3.1: PostgreSQL service and Ruby, then Playwright + axe
-  against the e2e API and the shell's preview; HTML report artifact) and `api` (`ruby/setup-ruby` from
+  against the e2e API and the shell's full-stack preview; HTML report artifact), `e2e-static`
+  (the same suite against the static build, no API; since Step 3.3) and `api` (`ruby/setup-ruby` from
   `services/api/.ruby-version` with the Bundler cache, a `postgres:18.6-trixie` service container,
   then `bin/ci`). Read-only token, actions pinned to commit SHAs (update SHA and release comment
   together), no secrets (the `api` job's database password is a documented throwaway). Keep CI
@@ -258,25 +262,28 @@ before the app uses its own router.
 
 Run from the repository root (after `nvm use`):
 
-| Command                               | Purpose                                               |
-| ------------------------------------- | ----------------------------------------------------- |
-| `npm install`                         | Install all workspace dependencies                    |
-| `npm run dev`                         | Start the shell dev server (http://localhost:5173)    |
-| `npm run build`                       | Type-check and build all workspaces                   |
-| `npm run lint`                        | ESLint (type-aware) in all workspaces                 |
-| `npm run typecheck`                   | `tsc -b` in all workspaces                            |
-| `npm test`                            | Vitest unit/component tests in all workspaces         |
-| `npm run format`                      | Format the whole repo with Prettier                   |
-| `npm run format:check`                | Check formatting (no writes)                          |
-| `npm run content:todo`                | List content placeholders still awaiting confirmation |
-| `npm run content:check`               | Fail if any content placeholder remains (CI gate)     |
-| `npm run api:types:install`           | Install the locked OpenAPI type generator (once)      |
-| `npm run api:types`                   | Regenerate `apps/shell/src/api/schema.ts`             |
-| `npm run api:types:check`             | Fail if the generated API types are stale (CI gate)   |
-| `npm run illustrations -w apps/shell` | Rebuild WebP derivatives from `docs/assets/source/`   |
-| `npm run favicon -w apps/shell`       | Rebuild the favicons (mascot head crop) in `public/`  |
-| `npm run test:e2e`                    | Start the e2e API and the preview, run Playwright     |
-| `npm run report -w e2e`               | Open the last E2E HTML report                         |
+| Command                               | Purpose                                                |
+| ------------------------------------- | ------------------------------------------------------ |
+| `npm install`                         | Install all workspace dependencies                     |
+| `npm run dev`                         | Start the shell dev server (static mode, port 5173)    |
+| `npm run dev:fullstack`               | Dev server in full-stack mode (needs `bin/rails s`)    |
+| `npm run build`                       | Type-check and build all workspaces (static site)      |
+| `npm run build:fullstack`             | Build the full-stack shell (`VITE_APP_MODE=fullstack`) |
+| `npm run lint`                        | ESLint (type-aware) in all workspaces                  |
+| `npm run typecheck`                   | `tsc -b` in all workspaces                             |
+| `npm test`                            | Vitest unit/component tests in all workspaces          |
+| `npm run format`                      | Format the whole repo with Prettier                    |
+| `npm run format:check`                | Check formatting (no writes)                           |
+| `npm run content:todo`                | List content placeholders still awaiting confirmation  |
+| `npm run content:check`               | Fail if any content placeholder remains (CI gate)      |
+| `npm run api:types:install`           | Install the locked OpenAPI type generator (once)       |
+| `npm run api:types`                   | Regenerate `apps/shell/src/api/schema.ts`              |
+| `npm run api:types:check`             | Fail if the generated API types are stale (CI gate)    |
+| `npm run illustrations -w apps/shell` | Rebuild WebP derivatives from `docs/assets/source/`    |
+| `npm run favicon -w apps/shell`       | Rebuild the favicons (mascot head crop) in `public/`   |
+| `npm run test:e2e`                    | Full-stack E2E: the e2e API plus the preview           |
+| `npm run test:e2e:static`             | Static E2E: the static build alone, no API             |
+| `npm run report -w e2e`               | Open the last E2E HTML report                          |
 
 The Rails API (`services/api`, Ruby from `.ruby-version` via asdf) is outside the npm
 workspaces; its setup and commands are in `services/api/README.md`:

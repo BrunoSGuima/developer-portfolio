@@ -1,5 +1,6 @@
 import PageIntro from '../../components/PageIntro/PageIntro.tsx';
 import StatusTag from '../../components/StatusTag/StatusTag.tsx';
+import { appMode } from '../../config/mode.ts';
 import { components, decisions, timeline } from '../../content/architecture.ts';
 import { useLocale, useMessages } from '../../i18n/context.ts';
 import { pick, text } from '../../i18n/localized.ts';
@@ -51,7 +52,7 @@ function ArchitecturePage() {
             </li>
           ))}
         </ol>
-        <p className={page.note}>{messages.architecture.timelineNote}</p>
+        <p className={page.note}>{messages.architecture.timelineNote[appMode]}</p>
       </section>
 
       <section className={page.section} aria-labelledby="decisions">

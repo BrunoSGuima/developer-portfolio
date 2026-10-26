@@ -17,6 +17,7 @@ export const technologies = {
   'react-router': { label: 'React Router', tone: 'slate' },
   vue: { label: 'Vue.js', tone: 'green' },
   rails: { label: 'Ruby on Rails', tone: 'burgundy' },
+  postgresql: { label: 'PostgreSQL', tone: 'blue' },
 } as const satisfies Record<string, Technology>;
 
 export type TechId = keyof typeof technologies;

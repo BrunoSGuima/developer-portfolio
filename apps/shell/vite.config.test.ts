@@ -4,12 +4,33 @@ import type { AddressInfo } from 'node:net';
 import { fileURLToPath } from 'node:url';
 import { createServer, type ViteDevServer } from 'vite';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import config, { apiProxy } from './vite.config.ts';
+import config, { apiProxy, checkAppMode } from './vite.config.ts';
+
+describe('the build mode (VITE_APP_MODE)', () => {
+  it('defaults to static', () => {
+    expect(checkAppMode({})).toBe('static');
+    expect(checkAppMode({ VITE_APP_MODE: '' })).toBe('static');
+    expect(checkAppMode({ VITE_APP_MODE: 'static' })).toBe('static');
+  });
+
+  it('selects full-stack only when asked explicitly', () => {
+    expect(checkAppMode({ VITE_APP_MODE: 'fullstack' })).toBe('fullstack');
+  });
+
+  it('rejects anything else instead of silently building a static site', () => {
+    for (const value of ['full-stack', 'FULLSTACK', 'api', 'true']) {
+      expect(() => checkAppMode({ VITE_APP_MODE: value })).toThrow(
+        `VITE_APP_MODE must be "static" or "fullstack" (got "${value}").`,
+      );
+    }
+  });
+});
 
 describe('the /api proxy configuration', () => {
   it('is the same for the dev server and vite preview', () => {
-    expect(config.server?.proxy).toBe(apiProxy);
-    expect(config.preview?.proxy).toBe(apiProxy);
+    const { server, preview } = config({ mode: 'test', command: 'serve' });
+    expect(server?.proxy).toBe(apiProxy);
+    expect(preview?.proxy).toBe(apiProxy);
   });
 
   it('targets the local API by default and rewrites nothing', () => {

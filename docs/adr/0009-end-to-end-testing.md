@@ -55,6 +55,12 @@ rate-limited endpoint run serially on the desktop project and reset the e2e API'
 rate-limit store before each test; all other specs stub such endpoints with `page.route`. No
 test-only endpoints exist and no limits are changed.
 
+**Both modes (Phase 3, Step 3.3):** `npm run test:e2e` tests the full-stack build;
+`npm run test:e2e:static` (`E2E_MODE=static`) tests the static build served alone, with `/api`
+proxied to a closed port, and checks that no page requests `/api` and that the built files
+contain no API client. Specs that need the API skip themselves in static runs; expected Fun Facts
+are resolved for the mode under test (`e2e/support/mode.ts`, `sectionInMode()`).
+
 ## Consequences
 
 - `npm run test:e2e` builds, serves and tests everything (about 45 s locally); the unit suite

@@ -56,6 +56,10 @@ export const ptBR: Messages = {
     leadLink: 'Sobre',
     leadAfterLink: '.',
     note: 'Novos projetos públicos serão adicionados à medida que este portfólio crescer.',
+    loading: 'Carregando projetos…',
+    empty: 'Ainda não há projetos para mostrar.',
+    error: 'Não foi possível carregar os projetos. Verifique sua conexão e tente novamente.',
+    retry: 'Tentar novamente',
   },
   architecture: {
     leadBeforeStatus:
@@ -63,8 +67,12 @@ export const ptBR: Messages = {
     leadAfterStatus: 'ainda não existe.',
     builtToday: 'Como ele é construído hoje',
     evolution: 'Como ele vai evoluir',
-    timelineNote:
-      'A API em Rails (v2) está construída e testada de forma independente; as páginas ainda não estão conectadas a ela, e esse é o próximo passo (v3). O deploy vem depois dessa integração. A ordem das etapas seguintes (v5–v8) é provisória.',
+    timelineNote: {
+      static:
+        'A API em Rails (v2) está construída e testada de forma independente; esta versão do site é estática e não a utiliza. O deploy vem depois da integração (v3). A ordem das etapas seguintes (v5–v8) é provisória.',
+      fullstack:
+        'A API em Rails (v2) está construída e testada; a página de Projetos já carrega seus dados dela, e a integração continua com o formulário de contato (v3). O deploy vem depois dessa integração. A ordem das etapas seguintes (v5–v8) é provisória.',
+    },
     decisions: 'Principais decisões',
   },
   contact: {

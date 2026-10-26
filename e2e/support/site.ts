@@ -10,7 +10,12 @@ import {
 } from '../../apps/shell/src/i18n/locales.ts';
 import { pick } from '../../apps/shell/src/i18n/localized.ts';
 import { messages } from '../../apps/shell/src/i18n/messages/index.ts';
-import { liveSections, shellFunFact } from '../../apps/shell/src/sections/registry.ts';
+import {
+  liveSections,
+  sectionInMode,
+  shellFunFact,
+} from '../../apps/shell/src/sections/registry.ts';
+import { e2eMode } from './mode.ts';
 
 export { LOCALES, localeConfig, localizePath, messages, type Locale };
 
@@ -42,7 +47,8 @@ export const pages: readonly PageCase[] = LOCALES.flatMap((locale) =>
       label: pick(section.label, locale),
       title: isHome ? strings.site.title : `${title} · ${strings.site.title}`,
       description: pick(section.description, locale),
-      funFact: pick(section.funFact.text, locale),
+      // As built in the mode under test (static or full-stack).
+      funFact: pick(sectionInMode(section, e2eMode).funFact.text, locale),
     };
   }),
 );

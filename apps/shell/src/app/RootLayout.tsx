@@ -8,7 +8,8 @@ import FunFactStage from '../mascot/FunFactStage.tsx';
 import HeaderMascot from '../mascot/HeaderMascot.tsx';
 import HomeBackdrop from '../mascot/HomeBackdrop.tsx';
 import { DESKTOP_QUERY, useMediaQuery } from '../mascot/useMediaQuery.ts';
-import { sections, shellFunFact } from '../sections/registry.ts';
+import { appMode } from '../config/mode.ts';
+import { sectionInMode, sections, shellFunFact } from '../sections/registry.ts';
 import AppLayout from './layout/AppLayout.tsx';
 import Metadata from './Metadata.tsx';
 import { readHandle } from './routeHandle.ts';
@@ -66,7 +67,7 @@ function RootLayout() {
         context={
           // Home: the mascot presents the card in the illustrated hero. Elsewhere: it peeks over it.
           <FunFactStage composition={isHome ? 'hero' : 'peek'} sectionId={sectionId}>
-            <FunFact fact={section?.funFact ?? shellFunFact} />
+            <FunFact fact={section ? sectionInMode(section, appMode).funFact : shellFunFact} />
           </FunFactStage>
         }
       >

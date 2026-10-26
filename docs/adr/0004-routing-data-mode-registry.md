@@ -41,6 +41,11 @@ microfrontend (ADR-0002) and API-backed sections in later phases.
 | `React.lazy` + `<Suspense>`                       | Loading fallbacks flash mid-navigation; not integrated with router errors.                                      |
 | `useEffect` / react-helmet for titles             | More code or an extra dependency for what React 19 does natively.                                               |
 
+**Section loaders (Phase 3, Step 3.3):** a section may declare a `loader` in the registry;
+`buildRoutes()` attaches it to the section's route in every language, next to the lazy page.
+The Projects loader (`src/projects/source.ts`) returns its data unawaited in a full-stack build,
+so navigation completes at once and the page renders loading, error and retry states itself.
+
 ## Consequences
 
 - Adding a section = one registry entry + one page component; routes, nav and tests follow.

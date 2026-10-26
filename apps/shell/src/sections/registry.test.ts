@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { APP_MODES } from '../config/mode.ts';
 import { LOCALES } from '../i18n/locales.ts';
 import {
   type Backend,
@@ -6,6 +7,7 @@ import {
   getSection,
   liveSections,
   remoteMount,
+  sectionInMode,
   sections,
   shellFunFact,
 } from './registry.ts';
@@ -76,8 +78,14 @@ const BACKEND_TECH: Record<Exclude<Backend, 'none'>, string> = {
   fastapi: 'fastapi',
 };
 
+// Each rule holds for every section as built in each mode (static and full-stack, ADR-0014).
+const inEveryMode = (list: readonly (typeof sections)[number][]) =>
+  APP_MODES.flatMap((mode) =>
+    list.map((section) => [`${section.id} (${mode})`, sectionInMode(section, mode)] as const),
+  );
+
 describe('Fun Fact truthfulness', () => {
-  it.each(liveSections.map((section) => [section.id, section] as const))(
+  it.each(inEveryMode(liveSections))(
     '%s has Fun Fact text in every language and at least one live badge',
     (_id, section) => {
       for (const locale of LOCALES) expect(section.funFact.text[locale].trim()).not.toBe('');
@@ -85,31 +93,64 @@ describe('Fun Fact truthfulness', () => {
     },
   );
 
-  it.each(sections.map((section) => [section.id, section] as const))(
-    '%s lists its own framework as a live badge',
-    (_id, section) => {
-      expect(section.funFact.tech).toContain(FRAMEWORK_TECH[section.framework]);
-    },
-  );
+  it.each(inEveryMode(sections))('%s lists its own framework as a live badge', (_id, section) => {
+    expect(section.funFact.tech).toContain(FRAMEWORK_TECH[section.framework]);
+  });
 
-  it.each(sections.map((section) => [section.id, section] as const))(
-    '%s only claims a backend it actually uses',
-    (_id, section) => {
-      const liveTech: readonly string[] = section.funFact.tech;
-      for (const [backend, tech] of Object.entries(BACKEND_TECH)) {
-        expect(liveTech.includes(tech)).toBe(section.backend === backend);
-      }
-    },
-  );
+  it.each(inEveryMode(sections))('%s only claims a backend it actually uses', (_id, section) => {
+    const liveTech: readonly string[] = section.funFact.tech;
+    for (const [backend, tech] of Object.entries(BACKEND_TECH)) {
+      expect(liveTech.includes(tech)).toBe(section.backend === backend);
+    }
+    // PostgreSQL is only ever claimed together with the Rails API that uses it.
+    if (liveTech.includes('postgresql')) expect(section.backend).toBe('rails');
+  });
 
   it.each([
-    ...sections.map((section) => [section.id, section.funFact] as const),
+    ...inEveryMode(sections).map(([id, section]) => [id, section.funFact] as const),
     ['shell', shellFunFact] as const,
   ])('%s never lists a technology as both live and planned', (_id, funFact) => {
     const live = new Set<string>(funFact.tech);
     for (const tech of funFact.plannedTech ?? []) {
       expect(live.has(tech)).toBe(false);
     }
+  });
+
+  it('describes a static build without any backend', () => {
+    for (const section of sections) {
+      expect(sectionInMode(section, 'static').backend).toBe('none');
+    }
+  });
+
+  it('describes the full-stack Projects page as backed by the Rails API and PostgreSQL', () => {
+    const projects = sectionInMode(getSection('projects')!, 'fullstack');
+
+    expect(projects.backend).toBe('rails');
+    expect(projects.funFact.tech).toEqual(['react', 'typescript', 'rails', 'postgresql']);
+    expect(projects.funFact.text.en).toMatch(/Ruby on Rails API backed by PostgreSQL/);
+  });
+});
+
+describe('sectionInMode', () => {
+  it('returns the section unchanged in a static build', () => {
+    const projects = getSection('projects')!;
+
+    expect(sectionInMode(projects, 'static')).toBe(projects);
+  });
+
+  it('applies only the full-stack overrides', () => {
+    const projects = getSection('projects')!;
+    const resolved = sectionInMode(projects, 'fullstack');
+
+    expect(resolved).toEqual({ ...projects, ...projects.fullstack });
+    expect(resolved.path).toBe(projects.path);
+    expect(resolved.mount).toBe(projects.mount);
+  });
+
+  it('leaves sections without overrides as they are', () => {
+    const about = getSection('about')!;
+
+    expect(sectionInMode(about, 'fullstack')).toBe(about);
   });
 });
 

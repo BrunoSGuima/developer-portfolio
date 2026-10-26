@@ -30,6 +30,8 @@ export default defineConfig([
     // Presentation never depends on the API layer (ADR-0014): pages and components render the
     // shell's own models; only data-loading code may import src/api.
     files: ['src/components/**', 'src/sections/**'],
+    // Tests may build their data with the API layer's fixtures; the rule is for shipped code.
+    ignores: ['**/*.test.ts', '**/*.test.tsx'],
     rules: {
       'no-restricted-imports': [
         'error',

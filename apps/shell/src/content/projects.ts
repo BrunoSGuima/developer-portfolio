@@ -16,11 +16,11 @@ export const projects: readonly Project[] = [
     },
     status: 'in-progress',
     description: {
-      en: "An interactive portfolio built as a set of independent applications. Today it's a React and TypeScript shell with a section registry, client-side routing, accessibility-first components and a Fun Fact that describes the real stack behind each page. Next up: a Ruby on Rails API, a Vue.js microfrontend and a Python service.",
+      en: 'An interactive portfolio built as a set of independent applications: a React and TypeScript shell with client-side routing, accessibility-first components and a Fun Fact that describes the real stack behind each page, and a Ruby on Rails API with PostgreSQL. Next up: a Vue.js microfrontend and a Python service.',
       'pt-BR':
-        'Um portfólio interativo construído como um conjunto de aplicações independentes. Hoje ele é um shell em React e TypeScript com registro de seções, roteamento no navegador, componentes pensados para acessibilidade e uma Curiosidade que descreve a tecnologia real por trás de cada página. Próximos passos: uma API em Ruby on Rails, um microfrontend em Vue.js e um serviço em Python.',
+        'Um portfólio interativo construído como um conjunto de aplicações independentes: um shell em React e TypeScript com roteamento no navegador, componentes pensados para acessibilidade e uma Curiosidade que descreve a tecnologia real por trás de cada página, e uma API em Ruby on Rails com PostgreSQL. Próximos passos: um microfrontend em Vue.js e um serviço em Python.',
     },
-    tech: ['react', 'typescript', 'vite', 'react-router'],
+    tech: ['react', 'typescript', 'vite', 'react-router', 'rails'],
     // The repository hasn't been pushed yet, so this points to the GitHub profile for now.
     links: [
       {

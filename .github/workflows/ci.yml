@@ -128,9 +128,9 @@ jobs:
         if: steps.browser-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
 
-      # Starts the e2e API and the shell's preview, then runs every spec (CI mode: two workers,
-      # two retries, GitHub annotations).
-      - name: End-to-end tests
+      # Builds the full-stack site (VITE_APP_MODE=fullstack), starts the e2e API and the shell's
+      # preview, then runs every spec (CI mode: two workers, two retries, GitHub annotations).
+      - name: End-to-end tests (full-stack build)
         run: npm run test:e2e
 
       - name: Upload the Playwright report
@@ -138,6 +138,59 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: playwright-report
+          path: e2e/playwright-report/
+          retention-days: 14
+
+  e2e-static:
+    name: End-to-end and accessibility, static build (Playwright + axe)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    # The static build (ADR-0014, the default and the long-term deployment): no Rails API, no
+    # database. The suite checks that it makes no /api request and contains no API client.
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The browser build is tied to the Playwright version: cache it under that version.
+      - name: Read the Playwright version
+        id: playwright
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache the Playwright browser
+        id: browser-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}-chromium
+
+      - name: Install Chromium and its system libraries
+        if: steps.browser-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      # The cache holds the browser only; the system libraries are installed on every run.
+      - name: Install the system libraries (browser restored from cache)
+        if: steps.browser-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      # Builds the static site and serves it with `vite preview` (no API), then runs every spec
+      # that applies to it (CI mode: two workers, two retries, GitHub annotations).
+      - name: End-to-end tests (static build)
+        run: npm run test:e2e:static
+
+      - name: Upload the Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-report-static
           path: e2e/playwright-report/
           retention-days: 14
 

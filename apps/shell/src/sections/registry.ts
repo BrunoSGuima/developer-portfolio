@@ -1,4 +1,6 @@
 import type { ComponentType } from 'react';
+import type { LoaderFunction } from 'react-router';
+import type { AppMode } from '../config/mode.ts';
 import type { Locale } from '../i18n/locales.ts';
 import { type Localized, pick } from '../i18n/localized.ts';
 import type { TechId } from './technologies.ts';
@@ -69,6 +71,14 @@ export interface Section {
   status: SectionStatus;
   mount: SectionMount;
   funFact: FunFact;
+  /** Loads the page's data before it renders (React Router loader); see projects/source.ts. */
+  loader?: LoaderFunction;
+  /**
+   * What changes in a full-stack build (ADR-0014). `backend` and `funFact` above describe the
+   * static build; these override them when VITE_APP_MODE is 'fullstack'. Resolve with
+   * sectionInMode(); the registry itself never reads the mode.
+   */
+  fullstack?: Partial<Pick<Section, 'backend' | 'funFact'>>;
   /**
    * Where the Fun Fact sits on this page from 64rem: 'aside' puts it in a right-hand column so
    * the content starts near the top; 'intro' puts it beside the page's intro, with the content
@@ -94,11 +104,21 @@ export const sections: readonly Section[] = [
     mount: { kind: 'react', load: () => import('./home/HomePage.tsx') },
     funFact: {
       text: {
-        en: "This page is built with React and TypeScript and bundled by Vite. There's no backend yet: everything you see is static data, served as plain files.",
+        en: 'This page is built with React and TypeScript and bundled by Vite. This build has no backend: everything you see is static data, served as plain files.',
         'pt-BR':
-          'Esta página é feita com React e TypeScript e empacotada pelo Vite. Ainda não há backend: tudo o que você vê são dados estáticos, servidos como arquivos simples.',
+          'Esta página é feita com React e TypeScript e empacotada pelo Vite. Esta versão não tem backend: tudo o que você vê são dados estáticos, servidos como arquivos simples.',
       },
       tech: ['react', 'typescript', 'vite'],
+    },
+    fullstack: {
+      funFact: {
+        text: {
+          en: 'This page is built with React and TypeScript and bundled by Vite. This page is static; the Projects page loads its data from a Ruby on Rails API.',
+          'pt-BR':
+            'Esta página é feita com React e TypeScript e empacotada pelo Vite. Esta página é estática; a página de Projetos carrega seus dados de uma API em Ruby on Rails.',
+        },
+        tech: ['react', 'typescript', 'vite'],
+      },
     },
   },
   {
@@ -138,14 +158,27 @@ export const sections: readonly Section[] = [
     backend: 'none',
     status: 'live',
     mount: { kind: 'react', load: () => import('./projects/ProjectsPage.tsx') },
+    // Imported when the route loads, so the registry stays free of build-time settings (the
+    // end-to-end specs import it in Node).
+    loader: () => import('../projects/source.ts').then(({ projectsLoader }) => projectsLoader()),
     funFact: {
       text: {
-        en: 'These project cards are rendered by React from typed static data bundled with the page. A Ruby on Rails API is planned to serve them.',
+        en: "These project cards are rendered by React from typed data bundled with the page. This build of the site is static: it runs without the project's Rails API.",
         'pt-BR':
-          'Estes cards de projetos são renderizados pelo React a partir de dados estáticos tipados, empacotados com a página. Uma API em Ruby on Rails está planejada para servi-los.',
+          'Estes cards de projetos são renderizados pelo React a partir de dados tipados, empacotados com a página. Esta versão do site é estática: funciona sem a API em Rails do projeto.',
       },
       tech: ['react', 'typescript'],
-      plannedTech: ['rails'],
+    },
+    fullstack: {
+      backend: 'rails',
+      funFact: {
+        text: {
+          en: "These project cards come from a Ruby on Rails API backed by PostgreSQL, loaded by React through a client typed from the API's OpenAPI contract.",
+          'pt-BR':
+            'Estes cards de projetos vêm de uma API em Ruby on Rails com PostgreSQL, carregados pelo React por meio de um cliente tipado a partir do contrato OpenAPI da API.',
+        },
+        tech: ['react', 'typescript', 'rails', 'postgresql'],
+      },
     },
     contextPlacement: 'intro',
   },
@@ -190,9 +223,9 @@ export const sections: readonly Section[] = [
     mount: { kind: 'react', load: () => import('./contact/ContactPage.tsx') },
     funFact: {
       text: {
-        en: 'No contact form here: this site has no backend yet, so this page simply links to ways to reach me, and nothing you type is collected.',
+        en: 'No contact form here: this page links to ways to reach me, and nothing you type is collected.',
         'pt-BR':
-          'Não há formulário de contato aqui: este site ainda não tem backend, então esta página apenas indica formas de falar comigo, e nada do que você digita é coletado.',
+          'Não há formulário de contato aqui: esta página indica formas de falar comigo, e nada do que você digita é coletado.',
       },
       tech: ['react', 'typescript'],
     },
@@ -210,6 +243,11 @@ export const shellFunFact: FunFact = {
 };
 
 /** Sections that are routed and shown in the navigation, in registry order. */
+/** A section as built in `mode`: its full-stack overrides applied in a full-stack build. */
+export function sectionInMode(section: Section, mode: AppMode): Section {
+  return mode === 'fullstack' && section.fullstack ? { ...section, ...section.fullstack } : section;
+}
+
 export const liveSections: readonly Section[] = sections.filter(
   (section) => section.status === 'live',
 );

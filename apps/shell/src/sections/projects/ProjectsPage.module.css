@@ -3,6 +3,30 @@
   --grid-min: 20rem;
   --grid-cols: 2;
   --grid-max: 32rem; /* a single project never stretches across a wide column */
+}
 
+/* The list's place on the page: the same spacing whatever it shows (cards or a state). It takes
+   focus programmatically when Retry replaces the error message. */
+.region {
   margin-block-start: var(--space-6);
+}
+
+.region:focus {
+  outline: none;
+}
+
+/* Loading, empty and error states: plain text in the reading measure, in the space a card takes
+   (so the note below doesn't jump when the cards arrive). */
+.state {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+  justify-items: start;
+  max-inline-size: var(--measure);
+  min-block-size: 12rem;
+  color: var(--color-text);
+}
+
+.state p {
+  margin: 0;
 }

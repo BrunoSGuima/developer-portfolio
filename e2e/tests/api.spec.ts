@@ -1,7 +1,10 @@
 import { expect, test } from '@playwright/test';
+import { e2eMode } from '../support/mode.ts';
 
 // The real Rails API (e2e environment, seeded database) through the shell's same-origin /api
 // proxy (Step 3.1). Read-only, so it runs in parallel on both projects.
+test.skip(e2eMode !== 'fullstack', 'The API exists only in full-stack runs.');
+
 test.describe('the API through the /api proxy', () => {
   test('serves the seeded projects as JSON, in both languages', async ({ request }) => {
     const response = await request.get('/api/v1/projects');

@@ -27,9 +27,10 @@ after Phase 1 were renumbered accordingly; the earlier plan had deployment as Ph
 **Phase 2 (Ruby on Rails API + PostgreSQL) is done:** every acceptance criterion below is met,
 and GitHub Actions ran green on the final Step 2.6 commit (`5f9eb59`, 2026-10-26).
 
-**Phase 3 (integration and MVP completion) is in progress:** Steps 3.0 (`84b4e4c`) and 3.1
-(`c922ddc`) are done; Step 3.2 (the typed API client) is ready for review. The Rails API is built
-and tested, but the React pages don't use it yet; Steps 3.3–3.4 connect them. **Long-term
+**Phase 3 (integration and MVP completion) is in progress:** Steps 3.0 (`84b4e4c`), 3.1
+(`c922ddc`) and 3.2 (`1b6bca1`) are done; Step 3.3 (mode selection and Projects data) is ready
+for review. In a full-stack build the Projects page now loads from the Rails API; the Contact
+page follows in 3.4. **Long-term
 requirement (2026-10-26):** the same codebase builds a **full-stack** site (React + Rails API +
 PostgreSQL) or a **static** site (local data, no backend), so the portfolio can stay public
 after the paid backend is shut down (see "Two modes" below).
@@ -319,8 +320,8 @@ runtime dependency; no deployment or Phase 4 infrastructure.
 | --- | ------------------------------------------------------ | ---------------- | ---------- |
 | 3.0 | Architecture page and Phase 3 documentation            | Done             | —          |
 | 3.1 | Same-origin development setup and full-stack E2E setup | Done             | —          |
-| 3.2 | Typed API client                                       | Ready for review | —          |
-| 3.3 | Mode selection and Projects data                       | Planned          | 3.1, 3.2   |
+| 3.2 | Typed API client                                       | Done             | —          |
+| 3.3 | Mode selection and Projects data                       | Ready for review | 3.1, 3.2   |
 | 3.4 | Contact form (full-stack mode only)                    | Planned          | 3.1–3.3    |
 | 3.5 | Both modes validated, docs and MVP completion          | Planned          | 3.0–3.4    |
 
@@ -488,7 +489,33 @@ One React codebase on one branch builds either mode; there are never two version
 9. **No silent fallback:** in full-stack mode, API failures show accessible error states (tested).
 10. Fun Facts, registry backends and the Architecture page describe the built mode.
 
-### Step 3.2 delivery (ready for review)
+### Step 3.3 delivery (ready for review)
+
+- **The mode:** `VITE_APP_MODE` = `static` (default) or `fullstack`; anything else fails `vite`
+  and `vite build`. `apps/shell/src/config/mode.ts` is the single source; builds get the value as
+  a literal (`define`), so a static build drops every full-stack branch. Scripts: `dev` /
+  `dev:fullstack`, `build` / `build:fullstack`, `test:e2e` (full-stack) / `test:e2e:static`.
+- **Registry per mode:** each section's fields describe the static build; an optional
+  `fullstack` override (`backend`, `funFact`) applies in a full-stack build through the pure
+  `sectionInMode()`. Truthfulness tests run in both modes. A PostgreSQL badge exists.
+- **Projects:** `projects/source.ts` gives the route its loader: the static data in a static
+  build; in a full-stack build the API (typed client) as a deferred promise, rendered with
+  `<Suspense>` + `<Await>`, with accessible, localised loading, empty and error (Try again)
+  states and the same `ProjectCard` list. Cache: 5 minutes; failures never cached; a newer
+  request can't be overwritten by an older one; **Try again always makes a fresh request**; the
+  cached request isn't tied to one navigation. **No fallback to static data.**
+- **The static build contains no API client and makes no `/api` request** (the API import sits
+  behind the literal mode check, so not even an orphan chunk is emitted); E2E checks both.
+- **Content parity:** a full-stack E2E spec compares the API's seeded projects with the static
+  data after normalising both to `Project`; it runs only in the full-stack test environment,
+  never as part of building or deploying the static site.
+- **Copy (owner-approved):** mode-dependent Fun Facts (Home, Projects; Contact neutral), the
+  Architecture timeline note per mode, and the shared project description in the static data and
+  the seeds (now listing Rails).
+- **CI:** the `e2e` job tests the full-stack build; a new `e2e-static` job tests the static build
+  (no PostgreSQL, no Ruby).
+
+### Step 3.2 delivery
 
 - `tools/openapi-types/`: the isolated generator (`openapi-typescript@7.13.0`,
   `typescript@5.9.3`, its own lockfile with sha512 integrity, matching the npm registry);

@@ -65,5 +65,9 @@ function sectionRoute(section: Section, locale: Locale): RouteObject {
     const page = await mount.load();
     return { Component: page.default };
   };
-  return relative === '' ? { index: true, handle, lazy } : { path: relative, handle, lazy };
+  // A section's data loader (e.g. Projects, projects/source.ts) runs alongside the lazy page.
+  const data = section.loader ? { loader: section.loader } : {};
+  return relative === ''
+    ? { index: true, handle, lazy, ...data }
+    : { path: relative, handle, lazy, ...data };
 }

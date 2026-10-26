@@ -1,10 +1,13 @@
 import { expect, test } from '@playwright/test';
+import { e2eMode } from '../support/mode.ts';
 import { resetRateLimits } from '../support/rateLimits.ts';
 
 // Real-API writes to a rate-limited endpoint (POST /api/v1/contact_messages) are isolated by
 // resetting the e2e API's rate-limit store before each test. That is only safe while nothing
 // else uses the endpoint, so such specs run serially, on the desktop project only.
 test.describe.configure({ mode: 'serial' });
+
+test.skip(e2eMode !== 'fullstack', 'The API exists only in full-stack runs.');
 
 test.describe('rate-limit isolation between real-API tests', () => {
   test.skip(({ isMobile }) => isMobile, 'Real-API writes run on the desktop project only.');

@@ -65,13 +65,13 @@ describe('ArchitecturePage', () => {
     expect(items[0]).toHaveTextContent('Done');
   });
 
-  it('says the API is built but not connected yet, deployment follows, and the later order is provisional', () => {
+  it('says, in a static build, that the API exists but this build does not use it', () => {
     renderPage(ArchitecturePage);
 
     const region = screen.getByRole('region', { name: 'How it will evolve' });
     expect(region).toHaveTextContent(/Rails API \(v2\) is built and tested on its own/);
-    expect(region).toHaveTextContent(/the pages are not connected to it yet/);
-    expect(region).toHaveTextContent(/Deployment comes after that integration/);
+    expect(region).toHaveTextContent(/this build of the site is static and doesn't use it/);
+    expect(region).toHaveTextContent(/Deployment comes after the integration/);
     expect(region).toHaveTextContent(/provisional/);
   });
 

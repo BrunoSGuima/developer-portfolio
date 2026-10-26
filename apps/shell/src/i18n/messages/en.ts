@@ -60,6 +60,10 @@ export const en = {
     /** Follows the link directly, so it carries its own leading space where needed. */
     leadAfterLink: ' page.',
     note: 'More public projects will be added as this portfolio grows.',
+    loading: 'Loading projects…',
+    empty: 'No projects to show yet.',
+    error: "The projects couldn't be loaded. Check your connection and try again.",
+    retry: 'Try again',
   },
   architecture: {
     leadBeforeStatus:
@@ -67,8 +71,13 @@ export const en = {
     leadAfterStatus: "doesn't exist yet.",
     builtToday: "How it's built today",
     evolution: 'How it will evolve',
-    timelineNote:
-      'The Rails API (v2) is built and tested on its own; the pages are not connected to it yet, which is the next step (v3). Deployment comes after that integration. The order of the later steps (v5–v8) is provisional.',
+    /** Depends on the build's mode (src/config/mode.ts). */
+    timelineNote: {
+      static:
+        "The Rails API (v2) is built and tested on its own; this build of the site is static and doesn't use it. Deployment comes after the integration (v3). The order of the later steps (v5–v8) is provisional.",
+      fullstack:
+        'The Rails API (v2) is built and tested; the Projects page already loads from it, and the integration continues with the contact form (v3). Deployment comes after that integration. The order of the later steps (v5–v8) is provisional.',
+    },
     decisions: 'Key decisions',
   },
   contact: {
