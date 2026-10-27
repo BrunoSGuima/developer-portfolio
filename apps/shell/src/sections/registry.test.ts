@@ -129,6 +129,17 @@ describe('Fun Fact truthfulness', () => {
     expect(projects.funFact.tech).toEqual(['react', 'typescript', 'rails', 'postgresql']);
     expect(projects.funFact.text.en).toMatch(/Ruby on Rails API backed by PostgreSQL/);
   });
+
+  it('describes the full-stack Contact page as sending to the Rails API, and the static one as formless', () => {
+    const contact = getSection('contact')!;
+
+    expect(sectionInMode(contact, 'static').funFact.text.en).toMatch(/^No contact form here/);
+    const fullstack = sectionInMode(contact, 'fullstack');
+    expect(fullstack.backend).toBe('rails');
+    expect(fullstack.funFact.tech).toEqual(['react', 'typescript', 'rails', 'postgresql']);
+    expect(fullstack.funFact.text.en).toMatch(/Ruby on Rails API/);
+    expect(contact.action).toBeTypeOf('function');
+  });
 });
 
 describe('sectionInMode', () => {

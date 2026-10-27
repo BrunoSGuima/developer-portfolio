@@ -9,5 +9,7 @@ export type ApiProjectList = Schemas['ProjectList'];
 export type ApiStatus = Schemas['Status'];
 export type ApiTechnology = Schemas['Technology'];
 export type ApiLocale = Schemas['Locale'];
+export type ApiContactMessageRequest = Schemas['ContactMessageRequest'];
+export type ApiContactMessageAccepted = Schemas['ContactMessageAccepted'];
 export type ApiErrorEnvelope = Schemas['Error'];
 export type ApiValidationError = Schemas['ValidationError'];

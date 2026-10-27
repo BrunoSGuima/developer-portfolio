@@ -60,12 +60,13 @@ describe('interface strings (messages)', () => {
 describe('content and registry text', () => {
   const content = {
     ...allContent,
-    sections: sections.map(({ id, label, title, description, funFact }) => ({
+    sections: sections.map(({ id, label, title, description, funFact, fullstack }) => ({
       id,
       label,
       title,
       description,
       funFact,
+      fullstack,
     })),
     shellFunFact,
   };

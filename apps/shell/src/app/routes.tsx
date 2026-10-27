@@ -65,8 +65,12 @@ function sectionRoute(section: Section, locale: Locale): RouteObject {
     const page = await mount.load();
     return { Component: page.default };
   };
-  // A section's data loader (e.g. Projects, projects/source.ts) runs alongside the lazy page.
-  const data = section.loader ? { loader: section.loader } : {};
+  // A section's data loader (e.g. Projects, projects/source.ts) runs alongside the lazy page;
+  // its action (e.g. Contact, contact/action.ts) handles the page's form submissions.
+  const data = {
+    ...(section.loader ? { loader: section.loader } : {}),
+    ...(section.action ? { action: section.action } : {}),
+  };
   return relative === ''
     ? { index: true, handle, lazy, ...data }
     : { path: relative, handle, lazy, ...data };

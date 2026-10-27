@@ -23,13 +23,27 @@ test.describe('the static build', () => {
     expect(apiRequests).toEqual([]);
   });
 
-  test('contains no API client code', () => {
+  test('has no contact form, only the channels', async ({ page }) => {
+    for (const path of ['/contact', '/pt-br/contact']) {
+      await page.goto(path);
+      await expect(page.getByRole('link', { name: /linkedin\.com/ })).toBeVisible();
+      await expect(page.locator('form')).toHaveCount(0);
+      await expect(page.getByRole('textbox')).toHaveCount(0);
+      await expect(page.locator('[data-contact-form]')).toHaveCount(0);
+    }
+  });
+
+  test('contains no API client or contact form code', () => {
     const assets = fileURLToPath(new URL('../../apps/shell/dist/assets/', import.meta.url));
     const scripts = readdirSync(assets).filter((file) => file.endsWith('.js'));
 
     expect(scripts.length).toBeGreaterThan(0);
     for (const file of scripts) {
-      expect(readFileSync(assets + file, 'utf8'), file).not.toContain('/api/v1');
+      const code = readFileSync(assets + file, 'utf8');
+      expect(code, file).not.toContain('/api/v1');
+      expect(code, file).not.toContain('contact_messages');
+      // The contact form (data-contact-form) is full-stack only, like its client.
+      expect(code, file).not.toContain('data-contact-form');
     }
   });
 });

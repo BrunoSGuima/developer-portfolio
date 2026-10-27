@@ -76,12 +76,55 @@ export const en = {
       static:
         "The Rails API (v2) is built and tested on its own; this build of the site is static and doesn't use it. Deployment comes after the integration (v3). The order of the later steps (v5–v8) is provisional.",
       fullstack:
-        'The Rails API (v2) is built and tested; the Projects page already loads from it, and the integration continues with the contact form (v3). Deployment comes after that integration. The order of the later steps (v5–v8) is provisional.',
+        'The Rails API (v2) is built and tested; the Projects page loads from it and the contact form sends to it. Validating that integration completes v3; deployment comes after it. The order of the later steps (v5–v8) is provisional.',
     },
     decisions: 'Key decisions',
   },
   contact: {
     location: 'Location',
+    /** The contact form (full-stack builds only). */
+    form: {
+      heading: 'Send a message',
+      intro: 'Or write to me here. All fields are required.',
+      name: 'Name',
+      email: 'Email',
+      message: 'Message',
+      messageHint: 'Between 10 and 5,000 characters.',
+      honeypot: 'Leave this field empty',
+      submit: 'Send message',
+      sending: 'Sending…',
+      errors: {
+        name: {
+          blank: 'Enter your name.',
+          too_short: 'Enter your name.',
+          too_long: 'Use at most 100 characters for your name.',
+          invalid: 'Remove the special control characters from your name.',
+        },
+        email: {
+          blank: 'Enter your email address.',
+          too_short: 'Enter your email address.',
+          too_long: 'Use an email address of at most 254 characters.',
+          invalid: 'Enter an email address like name@example.com.',
+        },
+        message: {
+          blank: 'Enter your message.',
+          too_short: 'Write a message of at least 10 characters.',
+          too_long: 'Shorten your message to at most 5,000 characters.',
+          invalid: 'Remove the special control characters from your message.',
+        },
+      },
+      sent: "Thank you, your message was sent. I'll reply by email.",
+      network:
+        "Your message couldn't be confirmed as sent: the connection failed, so it may or may not have arrived. Your text is still here. You can try again, or email me if you'd rather not send it twice.",
+      unavailable:
+        "Your message couldn't be sent right now. Your text is still here: please try again later, or email me.",
+      /** {when} is a relative time, e.g. "in 1 hour". */
+      rateLimited:
+        'Too many messages have been sent from your connection recently. Please try again {when}, or email me.',
+      rateLimitedLater: 'later',
+      privacy:
+        "Privacy: I use your name, email and message only to reply to you. They're stored together with this page's language, and messages are deleted within 12 months under my retention policy. Your IP address isn't saved with your message.",
+    },
   },
   notFound: {
     title: 'Page not found',

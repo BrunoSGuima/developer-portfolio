@@ -28,9 +28,9 @@ after Phase 1 were renumbered accordingly; the earlier plan had deployment as Ph
 and GitHub Actions ran green on the final Step 2.6 commit (`5f9eb59`, 2026-10-26).
 
 **Phase 3 (integration and MVP completion) is in progress:** Steps 3.0 (`84b4e4c`), 3.1
-(`c922ddc`) and 3.2 (`1b6bca1`) are done; Step 3.3 (mode selection and Projects data) is ready
-for review. In a full-stack build the Projects page now loads from the Rails API; the Contact
-page follows in 3.4. **Long-term
+(`c922ddc`), 3.2 (`1b6bca1`) and 3.3 (`4b3f833`) are done; Step 3.4 (the contact form) is ready
+for review. In a full-stack build the Projects page loads from the Rails API and the Contact
+page has a form that sends to it; a static build keeps the channels only. **Long-term
 requirement (2026-10-26):** the same codebase builds a **full-stack** site (React + Rails API +
 PostgreSQL) or a **static** site (local data, no backend), so the portfolio can stay public
 after the paid backend is shut down (see "Two modes" below).
@@ -321,8 +321,8 @@ runtime dependency; no deployment or Phase 4 infrastructure.
 | 3.0 | Architecture page and Phase 3 documentation            | Done             | —          |
 | 3.1 | Same-origin development setup and full-stack E2E setup | Done             | —          |
 | 3.2 | Typed API client                                       | Done             | —          |
-| 3.3 | Mode selection and Projects data                       | Ready for review | 3.1, 3.2   |
-| 3.4 | Contact form (full-stack mode only)                    | Planned          | 3.1–3.3    |
+| 3.3 | Mode selection and Projects data                       | Done             | 3.1, 3.2   |
+| 3.4 | Contact form (full-stack mode only)                    | Ready for review | 3.1–3.3    |
 | 3.5 | Both modes validated, docs and MVP completion          | Planned          | 3.0–3.4    |
 
 ### Two modes: static and full-stack (owner's requirement, 2026-10-26)
@@ -456,6 +456,24 @@ One React codebase on one branch builds either mode; there are never two version
   static mode, the channels work and no form exists.
 - **Acceptance:** WCAG 2.2 AA (axe, keyboard, focus management), both languages, both modes,
   the owner's visual review.
+- **Implemented (owner's refinements, 2026-10-26):**
+  - The privacy note describes the 12-month retention as a policy ("deleted within 12 months
+    under my retention policy") and says the IP address isn't saved with the message. It makes
+    no promise of automatic deletion (the purge isn't scheduled yet; Phase 4 gate below) and no
+    claim about tracking or third parties.
+  - Drafts survive a language switch (in memory only). A submission in flight is never sent
+    twice: a ref blocks a second submit before the fetcher state changes, the fields are
+    read-only while sending, and the shared fetcher keeps it, and its localised result, across
+    the switch.
+  - A failed connection is explained as ambiguous (the message may have arrived); nothing is
+    retried automatically, and the rate limit is not relied on against duplicates.
+  - Real submissions (success, a genuine 422 with the body altered in transit, a genuine 429,
+    the honeypot) are in `e2e/tests/contact-api.spec.ts`, the only file that writes to the
+    endpoint (it replaces `rate-limits.spec.ts`); each test marks its message and reads the e2e
+    database back (stored, normalised, for the success; nothing stored for 422, 429 and the
+    honeypot). `contact.spec.ts` stubs the endpoint.
+  - The static build contains none of the form's code (lazy, mode-guarded imports) and only a
+    small stub action that refuses submissions.
 
 ### Step 3.5 — Both modes validated, docs and MVP completion
 
@@ -584,7 +602,11 @@ CI. Completing it completes the **MVP**.
 - The 12-month retention period reviewed.
 - Rate limiting backed by a store shared by all API processes, with correct client IPs behind
   the reverse proxy (ADR-0013 lists the current limitations).
-- The privacy note published with the contact form.
+- The privacy note published with the contact form (done in Step 3.4; review its wording with
+  the final retention decision).
+- **Retention purge scheduled and verified (mandatory):** `bin/rails contact_messages:purge`
+  runs on a schedule in production and a run is verified (e.g. with `DRY_RUN=1` first) before
+  the site is public. Until then the privacy note states a policy, not automatic deletion.
 - **Reverse proxy and client IPs:** the API is never reachable directly, only through the proxy
   (Caddy); the proxy overwrites `X-Forwarded-For` with the real client address and drops
   `Client-IP`; `config.action_dispatch.trusted_proxies` matches the deployment (the rate-limit

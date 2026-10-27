@@ -71,12 +71,53 @@ export const ptBR: Messages = {
       static:
         'A API em Rails (v2) está construída e testada de forma independente; esta versão do site é estática e não a utiliza. O deploy vem depois da integração (v3). A ordem das etapas seguintes (v5–v8) é provisória.',
       fullstack:
-        'A API em Rails (v2) está construída e testada; a página de Projetos já carrega seus dados dela, e a integração continua com o formulário de contato (v3). O deploy vem depois dessa integração. A ordem das etapas seguintes (v5–v8) é provisória.',
+        'A API em Rails (v2) está construída e testada; a página de Projetos carrega seus dados dela e o formulário de contato envia mensagens para ela. A validação dessa integração conclui a v3; o deploy vem depois dela. A ordem das etapas seguintes (v5–v8) é provisória.',
     },
     decisions: 'Principais decisões',
   },
   contact: {
     location: 'Localização',
+    form: {
+      heading: 'Envie uma mensagem',
+      intro: 'Ou escreva para mim por aqui. Todos os campos são obrigatórios.',
+      name: 'Nome',
+      email: 'E-mail',
+      message: 'Mensagem',
+      messageHint: 'Entre 10 e 5.000 caracteres.',
+      honeypot: 'Deixe este campo em branco',
+      submit: 'Enviar mensagem',
+      sending: 'Enviando…',
+      errors: {
+        name: {
+          blank: 'Informe seu nome.',
+          too_short: 'Informe seu nome.',
+          too_long: 'Use no máximo 100 caracteres no seu nome.',
+          invalid: 'Remova os caracteres de controle especiais do seu nome.',
+        },
+        email: {
+          blank: 'Informe seu endereço de e-mail.',
+          too_short: 'Informe seu endereço de e-mail.',
+          too_long: 'Use um endereço de e-mail de no máximo 254 caracteres.',
+          invalid: 'Informe um endereço de e-mail como nome@exemplo.com.',
+        },
+        message: {
+          blank: 'Escreva sua mensagem.',
+          too_short: 'Escreva uma mensagem com pelo menos 10 caracteres.',
+          too_long: 'Reduza sua mensagem para no máximo 5.000 caracteres.',
+          invalid: 'Remova os caracteres de controle especiais da sua mensagem.',
+        },
+      },
+      sent: 'Obrigado, sua mensagem foi enviada. Vou responder por e-mail.',
+      network:
+        'Não foi possível confirmar o envio da sua mensagem: a conexão falhou, então ela pode ou não ter chegado. Seu texto continua aqui. Você pode tentar de novo, ou me mandar um e-mail se preferir não enviá-la duas vezes.',
+      unavailable:
+        'Não foi possível enviar sua mensagem agora. Seu texto continua aqui: tente novamente mais tarde, ou me mande um e-mail.',
+      rateLimited:
+        'Muitas mensagens foram enviadas da sua conexão recentemente. Tente novamente {when}, ou me mande um e-mail.',
+      rateLimitedLater: 'mais tarde',
+      privacy:
+        'Privacidade: uso seu nome, e-mail e mensagem apenas para responder a você. Eles são armazenados junto com o idioma desta página, e as mensagens são excluídas em até 12 meses, conforme minha política de retenção. Seu endereço IP não é salvo com a sua mensagem.',
+    },
   },
   notFound: {
     title: 'Página não encontrada',

@@ -78,6 +78,18 @@ installed into the shell without overriding that peer.
   with the cache below); the API import guarded by the literal mode check at its import site, so
   a static build contains no API code at all; E2E in both modes, in CI.
 
+- **Implemented in Step 3.4:** the Contact route's `action` (registry `action`, wired by
+  `buildRoutes` like `loader`) in `src/contact/action.ts`, which loads `src/contact/submit.ts`
+  (validation, the draft and `api/contact.ts`) behind the same literal check, so a static build
+  gets only a stub that refuses submissions; `ContactPage` loads the form
+  (`sections/contact/ContactForm.tsx`) lazily behind that check too, so a static build contains
+  none of the form's code. The action returns a `ContactResult` (`src/contact/model.ts`): codes only,
+  never submitted values or text, so the form renders it in either language. Client checks
+  (`src/contact/validation.ts`) mirror the Rails model, normalisation and code-point lengths
+  included. One shared fetcher key keeps a submission in flight and its result across a
+  language switch; the draft is kept in memory only (`src/contact/draft.ts`, never Web
+  Storage); a ref blocks a second submit synchronously; nothing is retried automatically.
+
 - The mode is chosen **at build time**, explicitly, by one setting read in one module; a built
   site is either static or full-stack. Nothing is detected at runtime.
 - **No silent fallback:** in full-stack mode an API failure shows an accessible error state with
@@ -94,7 +106,7 @@ installed into the shell without overriding that peer.
   `<Suspense>`/`<Await>`, with a 5-minute cache that never stores failures, is always bypassed by
   Try again, can't be overwritten by an older in-flight response, and isn't tied to one
   navigation's abort signal. The contact form submits through a route action with `useFetcher`
-  (3.4).
+  (3.4, above).
 
 ## Alternatives considered
 

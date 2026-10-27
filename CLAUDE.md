@@ -18,7 +18,7 @@ CI is green on GitHub; Architecture page updated). Phase 1 is **not** the MVP.
 
 **Phase 2 — Ruby on Rails API + PostgreSQL: done** (Steps 2.0–2.6; GitHub Actions green on
 `5f9eb59`). **Phase 3 — Frontend/backend integration and MVP completion: in progress** (Steps
-3.0–3.2 done; Step 3.3, mode selection and Projects data, ready for review; plan, decisions and
+3.0–3.3 done; Step 3.4, the contact form (full-stack only), ready for review; plan, decisions and
 acceptance criteria in `docs/ROADMAP.md`). **Long-term requirement:** one codebase builds a
 **full-stack** site (Rails API + PostgreSQL) or a **static** site (local data, no backend),
 chosen at build time by `VITE_APP_MODE` (`static` by default, `fullstack` explicitly; ADR-0014).
@@ -36,7 +36,12 @@ rules:
   `apps/shell/src/api/`; `src/components/` and `src/sections/` never import `src/api/`
   (ESLint-enforced). The static data (`content/projects.ts`) stays for static mode.
 - In full-stack mode an API failure is shown as an error, never replaced by static data; the
-  contact form exists only in full-stack mode.
+  contact form exists only in full-stack mode (`sections/contact/ContactForm.tsx`, loaded lazily
+  behind the mode check, submitting through the registry `action` in `src/contact/action.ts`,
+  which loads `src/contact/submit.ts` the same way; its client checks in
+  `src/contact/validation.ts` mirror `ContactMessage` in Rails, so change them together). Never
+  retry a contact submission automatically, and keep the privacy note truthful (no automatic
+  deletion promise until the purge is scheduled, Phase 4).
 - Keep the design, responsiveness and bilingual routing unchanged.
   Phase 2 is complete when the API, persistence, endpoints, security and RSpec suite work on their
   own (no frontend required). **The MVP is complete only at the end of Phase 3** (integration and
@@ -250,8 +255,11 @@ before the app uses its own router.
   (`vite preview`, proxying `/api`) and the Rails API in its `e2e` environment
   (`services/api/bin/e2e-server`, database `portfolio_api_e2e`, ports 4173 and 3100; servers are
   never reused). Specs that write to a rate-limited endpoint run serially on the desktop project
-  and call `resetRateLimits()` (`e2e/support/rateLimits.ts`); every other spec stubs such
-  endpoints with `page.route`. Projects `desktop` (real scrollbars) and `mobile`, with `@axe-core/playwright` (any
+  and call `resetRateLimits()` (`e2e/support/rateLimits.ts`); they all live in
+  `e2e/tests/contact-api.spec.ts` (two files would race on the shared store), which also reads
+  back what was stored through `e2e/support/database.ts` (a read-only Rails runner script that
+  refuses any environment or database but e2e), and every other spec stubs such endpoints with
+  `page.route`. Projects `desktop` (real scrollbars) and `mobile`, with `@axe-core/playwright` (any
   violation fails). Specs import languages, dictionaries and the registry from the shell, so
   expectations follow the app; reduced motion by default; geometric assertions, no screenshot
   comparisons. A test exposing an unfixed app bug is marked `test.fail()` with the reason.

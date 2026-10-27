@@ -1,4 +1,9 @@
-import type { ApiProject, ApiProjectList } from './types.ts';
+import type {
+  ApiContactMessageAccepted,
+  ApiContactMessageRequest,
+  ApiProject,
+  ApiProjectList,
+} from './types.ts';
 
 /**
  * API responses for tests, checked against the generated contract types (`satisfies`), so the
@@ -26,6 +31,18 @@ export const projectResponse = {
 } satisfies ApiProject;
 
 export const projectListResponse = { data: [projectResponse] } satisfies ApiProjectList;
+
+export const contactMessageRequest = {
+  name: 'Ada Lovelace',
+  email: 'ada@example.com',
+  message: 'Hello! I would like to talk about a role.',
+  locale: 'en',
+  website: '',
+} satisfies ApiContactMessageRequest;
+
+export const contactMessageAccepted = {
+  data: { status: 'received' },
+} satisfies ApiContactMessageAccepted;
 
 export const errorResponse = (
   code: string,

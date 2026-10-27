@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import type { LoaderFunction } from 'react-router';
+import type { ActionFunction, LoaderFunction } from 'react-router';
 import type { AppMode } from '../config/mode.ts';
 import type { Locale } from '../i18n/locales.ts';
 import { type Localized, pick } from '../i18n/localized.ts';
@@ -73,6 +73,8 @@ export interface Section {
   funFact: FunFact;
   /** Loads the page's data before it renders (React Router loader); see projects/source.ts. */
   loader?: LoaderFunction;
+  /** Handles the page's form submissions (React Router action); see contact/action.ts. */
+  action?: ActionFunction;
   /**
    * What changes in a full-stack build (ADR-0014). `backend` and `funFact` above describe the
    * static build; these override them when VITE_APP_MODE is 'fullstack'. Resolve with
@@ -113,9 +115,9 @@ export const sections: readonly Section[] = [
     fullstack: {
       funFact: {
         text: {
-          en: 'This page is built with React and TypeScript and bundled by Vite. This page is static; the Projects page loads its data from a Ruby on Rails API.',
+          en: 'This page is built with React and TypeScript and bundled by Vite. This page is static; the Projects page loads its data from a Ruby on Rails API, and the contact form sends messages to it.',
           'pt-BR':
-            'Esta página é feita com React e TypeScript e empacotada pelo Vite. Esta página é estática; a página de Projetos carrega seus dados de uma API em Ruby on Rails.',
+            'Esta página é feita com React e TypeScript e empacotada pelo Vite. Esta página é estática; a página de Projetos carrega seus dados de uma API em Ruby on Rails, e o formulário de contato envia mensagens para ela.',
         },
         tech: ['react', 'typescript', 'vite'],
       },
@@ -221,6 +223,9 @@ export const sections: readonly Section[] = [
     status: 'live',
     contextPlacement: 'aside',
     mount: { kind: 'react', load: () => import('./contact/ContactPage.tsx') },
+    // The form exists only in a full-stack build; contact/action.ts refuses submissions otherwise.
+    action: (args) =>
+      import('../contact/action.ts').then(({ contactAction }) => contactAction(args)),
     funFact: {
       text: {
         en: 'No contact form here: this page links to ways to reach me, and nothing you type is collected.',
@@ -228,6 +233,17 @@ export const sections: readonly Section[] = [
           'Não há formulário de contato aqui: esta página indica formas de falar comigo, e nada do que você digita é coletado.',
       },
       tech: ['react', 'typescript'],
+    },
+    fullstack: {
+      backend: 'rails',
+      funFact: {
+        text: {
+          en: 'This form is sent by a React Router action to a Ruby on Rails API, which validates the message, limits abuse per connection and stores it in PostgreSQL.',
+          'pt-BR':
+            'Este formulário é enviado por uma action do React Router para uma API em Ruby on Rails, que valida a mensagem, limita abusos por conexão e a armazena no PostgreSQL.',
+        },
+        tech: ['react', 'typescript', 'rails', 'postgresql'],
+      },
     },
   },
 ];

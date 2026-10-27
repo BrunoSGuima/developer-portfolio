@@ -37,4 +37,12 @@ describe('ContactPage', () => {
     expect(screen.queryByText(/^To confirm:/)).not.toBeInTheDocument();
     expect(screen.getAllByRole('link')).toHaveLength(3);
   });
+
+  it('has no contact form in a static build (tests run as one)', () => {
+    renderPage(ContactPage);
+
+    expect(screen.queryByRole('form')).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
 });

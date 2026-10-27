@@ -52,7 +52,9 @@ Rails environment (`services/api/bin/e2e-server`: database `portfolio_api_e2e`, 
 and reset on every run, served on `127.0.0.1:3100`) and the shell's preview on port 4173, which
 proxies `/api` to it (`API_PROXY_TARGET`), keeping requests same-origin. Specs that write to a
 rate-limited endpoint run serially on the desktop project and reset the e2e API's file-based
-rate-limit store before each test; all other specs stub such endpoints with `page.route`. No
+rate-limit store before each test; all of them live in one file (`tests/contact-api.spec.ts`,
+since Step 3.4: a second file in another worker could reset the store mid-test), and all other
+specs stub such endpoints with `page.route`. No
 test-only endpoints exist and no limits are changed.
 
 **Both modes (Phase 3, Step 3.3):** `npm run test:e2e` tests the full-stack build;
