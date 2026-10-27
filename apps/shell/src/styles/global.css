@@ -66,12 +66,20 @@ a {
     scroll-behavior: auto;
   }
 
+  /*
+   * Transitions take 0s, not the common 0.01ms: transition-property defaults to `all`, so any
+   * non-zero duration here would turn every style change on every element into a transition,
+   * painted from its old value until a later frame. That made the Home "What I do" section jump
+   * when its measured spacer applied (Step 4.0, e2e/tests/layout-stability.spec.ts). Nothing
+   * waits for transitionend under reduced motion (the header mascot jumps instead).
+   */
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
   }
 }
 

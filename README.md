@@ -14,23 +14,23 @@ the real technology stack behind each section.
 > Brazilian Portuguese under `/pt-br`, page transitions, Playwright E2E, GitHub Actions CI).
 > Phase 2 (Ruby on Rails API + PostgreSQL) is done: a read-only Projects API and contact
 > messages in [`services/api`](./services/api/README.md), tested on their own. Phase 3
-> (integration) is validated and awaiting CI: in a full-stack build the Projects page loads from
+> (integration) is done, and with it the MVP: in a full-stack build the Projects page loads from
 > the API and the Contact page sends messages to it; a static build runs with no backend at all.
-> Phase 3, and with it the MVP, is complete once its final commit is green in CI; deployment
-> (Phase 4) follows. See [`docs/ROADMAP.md`](./docs/ROADMAP.md).
+> Phase 4 (deployment) is in progress; nothing is deployed yet. See
+> [`docs/ROADMAP.md`](./docs/ROADMAP.md).
 
 ## Roadmap
 
-| Phase | Scope                                                                                | Status                 |
-| ----- | ------------------------------------------------------------------------------------ | ---------------------- |
-| 1     | React frontend foundation: shell, static data, mascot, Fun Fact, en/pt-BR, tests, CI | Done                   |
-| 2     | Ruby on Rails API + PostgreSQL: projects, contact messages, RSpec, OpenAPI           | Done                   |
-| 3     | Frontend/backend integration, full-stack validation and MVP completion               | Validated, awaiting CI |
-| 4     | Production deployment (postponed until the backend is integrated), monitoring        | Planned                |
-| 5     | Vue 3 microfrontend mounted by the React shell                                       | Planned                |
-| 6     | Python FastAPI service + interactive quiz                                            | Planned                |
-| 7     | Background jobs (Redis + Sidekiq)                                                    | Planned                |
-| 8     | AI Lab and future expansion                                                          | Planned                |
+| Phase | Scope                                                                                | Status      |
+| ----- | ------------------------------------------------------------------------------------ | ----------- |
+| 1     | React frontend foundation: shell, static data, mascot, Fun Fact, en/pt-BR, tests, CI | Done        |
+| 2     | Ruby on Rails API + PostgreSQL: projects, contact messages, RSpec, OpenAPI           | Done        |
+| 3     | Frontend/backend integration, full-stack validation and MVP completion               | Done        |
+| 4     | Production deployment (full stack for a limited period, then static), monitoring     | In progress |
+| 5     | Vue 3 microfrontend mounted by the React shell                                       | Planned     |
+| 6     | Python FastAPI service + interactive quiz                                            | Planned     |
+| 7     | Background jobs (Redis + Sidekiq)                                                    | Planned     |
+| 8     | AI Lab and future expansion                                                          | Planned     |
 
 ## Repository layout
 

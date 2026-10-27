@@ -29,7 +29,9 @@ the approved layouts.
    Fact's own fade-in is skipped while a transition is active (`:active-view-transition`), so
    it never fades twice; browsers without view transitions keep it.
 4. **Reduced motion:** the duration tokens are 0ms and an explicit rule removes every
-   `::view-transition-*` animation: navigation is instant.
+   `::view-transition-*` animation: navigation is instant. The global reduced-motion rule in
+   `global.css` sets transitions to 0s (since Phase 4, Step 4.0; it was 0.01ms, which turned
+   every style change into a transition and made the Home layout jump).
 5. Focus management (`useRouteFocus`), scroll restoration and `preventScrollReset` on the
    language switcher are unchanged.
 

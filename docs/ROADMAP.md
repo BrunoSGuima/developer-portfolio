@@ -27,26 +27,26 @@ after Phase 1 were renumbered accordingly; the earlier plan had deployment as Ph
 **Phase 2 (Ruby on Rails API + PostgreSQL) is done:** every acceptance criterion below is met,
 and GitHub Actions ran green on the final Step 2.6 commit (`5f9eb59`, 2026-10-26).
 
-**Phase 3 (integration and MVP completion) is validated, awaiting CI:** Steps 3.0 (`84b4e4c`),
-3.1 (`c922ddc`), 3.2 (`1b6bca1`), 3.3 (`4b3f833`) and 3.4 (`9d7b47b`) are done; Step 3.5 (final
-validation) passed locally in both modes (see "MVP acceptance evidence"). Phase 3, and with it
-the **MVP**, is complete once the Step 3.5 commit is pushed and all four GitHub Actions jobs pass.
-In a full-stack build the Projects page loads from the Rails API and the Contact page has a form
+**Phase 3 (integration and MVP completion) is done, and with it the MVP:** Steps 3.0
+(`84b4e4c`), 3.1 (`c922ddc`), 3.2 (`1b6bca1`), 3.3 (`4b3f833`), 3.4 (`9d7b47b`) and 3.5
+(`f66efbf`); all four GitHub Actions jobs passed on `f66efbf` ([run 40561117258](https://github.com/BrunoSGuima/developer-portfolio/actions/runs/40561117258)).
+**Phase 4 (deployment) is in progress:** Step 4.0 (the Home layout fix) is ready for review; see
+"Phase 4 — Deployment" below. In a full-stack build the Projects page loads from the Rails API and the Contact page has a form
 that sends to it; a static build uses local data and keeps the channels only. **Long-term
 requirement (2026-10-26):** the same codebase builds a **full-stack** site (React + Rails API +
 PostgreSQL) or a **static** site (local data, no backend), so the portfolio can stay public
 after the paid backend is shut down (see "Two modes" below).
 
-| Phase | Scope                                                                                                                                                                 | Status                        |
-| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| 1     | **React frontend foundation**: React + TypeScript shell, static data, mascot, Fun Fact, responsive layout, en/pt-BR, unit + E2E tests, CI                             | Done                          |
-| 2     | Ruby on Rails API + PostgreSQL: projects and contact messages, security, RSpec + FactoryBot, OpenAPI contract, its own CI job; works and is tested on its own         | Done (`5f9eb59`)              |
-| 3     | Frontend/backend integration, full-stack validation and **MVP completion**: the shell reads projects and sends contact messages through the API, full-stack E2E in CI | Validated, awaiting CI        |
-| 4     | Production deployment (first public release): host and reverse proxy, CD, monitoring, prerendering/SEO                                                                | Planned (postponed until 2–3) |
-| 5     | Vue 3 microfrontend mounted by the React shell (order of 5–8 provisional)                                                                                             | Planned                       |
-| 6     | Python FastAPI service + interactive quiz                                                                                                                             | Planned                       |
-| 7     | Background jobs (Redis + Sidekiq)                                                                                                                                     | Planned                       |
-| 8     | AI Lab and future expansion                                                                                                                                           | Planned                       |
+| Phase | Scope                                                                                                                                                                 | Status           |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| 1     | **React frontend foundation**: React + TypeScript shell, static data, mascot, Fun Fact, responsive layout, en/pt-BR, unit + E2E tests, CI                             | Done             |
+| 2     | Ruby on Rails API + PostgreSQL: projects and contact messages, security, RSpec + FactoryBot, OpenAPI contract, its own CI job; works and is tested on its own         | Done (`5f9eb59`) |
+| 3     | Frontend/backend integration, full-stack validation and **MVP completion**: the shell reads projects and sends contact messages through the API, full-stack E2E in CI | Done (`f66efbf`) |
+| 4     | Production deployment (first public release): host and reverse proxy, CD, monitoring, prerendering/SEO                                                                | In progress      |
+| 5     | Vue 3 microfrontend mounted by the React shell (order of 5–8 provisional)                                                                                             | Planned          |
+| 6     | Python FastAPI service + interactive quiz                                                                                                                             | Planned          |
+| 7     | Background jobs (Redis + Sidekiq)                                                                                                                                     | Planned          |
+| 8     | AI Lab and future expansion                                                                                                                                           | Planned          |
 
 ## MVP definition
 
@@ -318,14 +318,14 @@ implementation with tests → review); none starts automatically. Constraints fo
 the design, responsive behaviour and bilingual routing (`/`, `/pt-br`) stay unchanged; no new
 runtime dependency; no deployment or Phase 4 infrastructure.
 
-| #   | Step                                                   | Status      | Depends on |
-| --- | ------------------------------------------------------ | ----------- | ---------- |
-| 3.0 | Architecture page and Phase 3 documentation            | Done        | —          |
-| 3.1 | Same-origin development setup and full-stack E2E setup | Done        | —          |
-| 3.2 | Typed API client                                       | Done        | —          |
-| 3.3 | Mode selection and Projects data                       | Done        | 3.1, 3.2   |
-| 3.4 | Contact form (full-stack mode only)                    | Done        | 3.1–3.3    |
-| 3.5 | Both modes validated, docs and MVP completion          | Awaiting CI | 3.0–3.4    |
+| #   | Step                                                   | Status | Depends on |
+| --- | ------------------------------------------------------ | ------ | ---------- |
+| 3.0 | Architecture page and Phase 3 documentation            | Done   | —          |
+| 3.1 | Same-origin development setup and full-stack E2E setup | Done   | —          |
+| 3.2 | Typed API client                                       | Done   | —          |
+| 3.3 | Mode selection and Projects data                       | Done   | 3.1, 3.2   |
+| 3.4 | Contact form (full-stack mode only)                    | Done   | 3.1–3.3    |
+| 3.5 | Both modes validated, docs and MVP completion          | Done   | 3.0–3.4    |
 
 ### Two modes: static and full-stack (owner's requirement, 2026-10-26)
 
@@ -494,8 +494,8 @@ One React codebase on one branch builds either mode; there are never two version
     modes. No new card.
   - **Data:** the static data and the seeds stay two copies, changed together; the normalised
     parity E2E (full-stack only) catches drift.
-  - **Status:** "Validated, awaiting CI" until the Step 3.5 commit is green on all four jobs;
-    then Phase 3 and the MVP are Done.
+  - **Status:** "Validated, awaiting CI" until the Step 3.5 commit was green on all four jobs;
+    it was (`f66efbf`), so Phase 3 and the MVP are Done.
   - **No new E2E specs;** one unit-test race fixed (focus after a server 422 is now awaited).
   - **Phase 4 prerequisites** rewritten as a checklist (below), including backups and restore,
     the mandatory automated purge and privacy/logging review, how messages are reviewed without
@@ -527,8 +527,8 @@ One React codebase on one branch builds either mode; there are never two version
 
 Validated locally on the Step 3.5 working tree (on top of `9d7b47b`), including a **clean-copy
 rehearsal of all four CI jobs** (a fresh copy of the tracked files, `npm ci`, `CI=true`, the
-workflow's commands): every step passed, with no flaky retries. **Awaiting:** the four GitHub
-Actions jobs on the pushed Step 3.5 commit (add the run link here).
+workflow's commands): every step passed, with no flaky retries. **GitHub Actions:** all four
+jobs passed on the pushed Step 3.5 commit `f66efbf` ([run 40561117258](https://github.com/BrunoSGuima/developer-portfolio/actions/runs/40561117258)).
 
 | Check                                                       | Result                                                                         |
 | ----------------------------------------------------------- | ------------------------------------------------------------------------------ |
@@ -648,6 +648,58 @@ decided otherwise, the correction is noted in brackets.
 - **CI:** a full-stack E2E job (PostgreSQL service, the Rails server, the shell preview with the
   proxy) and axe on the form.
 
+## Phase 4 — Deployment
+
+Started 2026-10-27. The direction was approved by the owner: Render for the temporary full-stack
+deployment (pricing to be verified first) and Cloudflare Pages for the permanent static site; a
+single-origin Docker service (Rails serving the full-stack shell and `/api`); one repository,
+one `main` branch and both build modes; the static site prepared and validated before the
+backend is shut down; the same public domain in both stages. **No cloud resources or charges
+without the owner's explicit approval**; one step at a time.
+
+| #   | Step                                                         | Status           |
+| --- | ------------------------------------------------------------ | ---------------- |
+| 4.0 | Home layout shift under reduced motion (separate from infra) | Ready for review |
+| 4.1 | Deployment ADR and docs                                      | Planned          |
+| 4.2 | Production container (Dockerfile; Rails serves the shell)    | Planned          |
+| 4.3 | Production hardening (hosts, proxies, headers, logging)      | Planned          |
+| 4.4 | Static-host readiness (Cloudflare Pages preview)             | Planned          |
+| 4.5 | Temporary full-stack hosting (owner-approved resources)      | Planned          |
+| 4.6 | Operations (backups, restore drill, purge, message review)   | Planned          |
+| 4.7 | Privacy and logging review                                   | Planned          |
+| 4.8 | Go live (Stage A)                                            | Planned          |
+| 4.9 | Static cutover and backend shutdown (Stage B)                | Planned          |
+
+Steps 4.1–4.9 are the approved outline; each is planned in detail and approved before it starts.
+
+### Step 4.0 — Home layout shift under reduced motion
+
+- **Defect:** in full-stack builds, the Home "What I do" section jumped down a moment after the
+  first paint (24px at 1280px; more at 1024px, where the stage is taller), for visitors with
+  `prefers-reduced-motion: reduce`.
+- **Root cause:** the global reduced-motion rule set `transition-duration: 0.01ms !important`
+  on every element. `transition-property` defaults to `all`, so every style change became a
+  transition, painted from its old value until a later frame. When `useHeroExtent` applied the
+  measured stage height (`--home-stage-block`), the Home spacer kept its fallback height for the
+  first frames. Static builds were unaffected (their measured height equals the fallback).
+- **Fix:** reduced-motion transitions take `0s` (`transition-duration` and `transition-delay`),
+  so changes apply immediately. Nothing waits for `transitionend` under reduced motion (the
+  header mascot jumps). No design, layout or responsive change; users without reduced motion
+  are unaffected.
+- **Tests:** `apps/shell/src/styles/global.test.ts` (the rule itself) and
+  `e2e/tests/layout-stability.spec.ts` (both modes; en and pt-BR; 1024, 1280 and 1440px; motion
+  on and off): on the first frame the spacer equals the measured height plus `--space-3`, and
+  "What I do" never moves down after the first paint. Against the old rule the spec fails in
+  every reduced-motion case.
+- **Known, separate, accepted (owner's decision, 2026-10-27): the font-swap reflow.** The app
+  renders before Inter loads, so text first wraps in the fallback font and re-wraps when Inter
+  arrives (both modes; measured on Linux with the DejaVu fallback: up to CLS 0.039 at 1024px,
+  the hero text moving up about 28px; other systems' fallbacks are closer to Inter). It stays
+  within the "good" CLS range (< 0.1). Measured alternatives, **not adopted**: preloading the
+  Latin Inter file removes it (CLS 0) but delays first paint on slow networks (about +19% on Fast
+  3G, +25% at 400 kbps); also waiting for the font before rendering (1 s cap) costs about +24%
+  and +32%. Revisit if the trade-off changes.
+
 ## Phase 4 prerequisites (before public deployment)
 
 Recorded in Step 3.5 (2026-10-27) as the starting checklist for Phase 4 planning. **Nothing here
@@ -710,8 +762,9 @@ marked **mandatory** must be done and verified before the site is public.
 - **Reviewing messages during the full-stack period (a decision for Phase 4 planning):** the
   owner needs to know that messages arrived **without automatically forwarding every
   submission to a personal inbox**. Options to decide between: a periodic digest that says only
-  how many new messages exist (no content), read with `bin/rails contact_messages:recent` on the
-  server; a scheduled reminder to review; or an authenticated, owner-only reading view. The
+  how many new messages exist (no content), with the messages read on the server through the
+  existing `bin/rails contact_messages:list` (`LIMIT=20`, `SINCE=YYYY-MM-DD`; it prints personal
+  data, so only in a private shell); a scheduled reminder to review; or an authenticated, owner-only reading view. The
   choice is reflected in the privacy note.
 
 **Retiring the backend (after the full-stack period):**

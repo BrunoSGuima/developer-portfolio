@@ -17,11 +17,12 @@ illustrated Home, responsive layout, i18n en + pt-BR, transitions & polish, Play
 CI is green on GitHub; Architecture page updated). Phase 1 is **not** the MVP.
 
 **Phase 2 — Ruby on Rails API + PostgreSQL: done** (Steps 2.0–2.6; GitHub Actions green on
-`5f9eb59`). **Phase 3 — Frontend/backend integration and MVP completion: validated, awaiting
-CI** (Steps 3.0–3.4 done; Step 3.5, the final validation, passed locally in both modes; Phase 3
-and the MVP are Done once that commit is green on all four CI jobs; evidence, decisions and
-acceptance criteria in `docs/ROADMAP.md`). **Next: Phase 4 (deployment), only when the owner
-starts it**, from the prerequisites checklist in ROADMAP. **Long-term requirement:** one codebase builds a
+`5f9eb59`). **Phase 3 — Frontend/backend integration and MVP completion: done** (Steps 3.0–3.5;
+GitHub Actions green on `f66efbf`; the MVP is complete). **Phase 4 — Deployment: in progress**
+(Step 4.0, the Home layout fix, ready for review; the approved direction, step outline and
+prerequisites are in `docs/ROADMAP.md`). Phase 4 rules: one step at a time; **never create
+cloud resources, buy anything or incur charges without the owner's explicit approval**; keep
+one repository, one `main` branch and both build modes. **Long-term requirement:** one codebase builds a
 **full-stack** site (Rails API + PostgreSQL) or a **static** site (local data, no backend),
 chosen at build time by `VITE_APP_MODE` (`static` by default, `fullstack` explicitly; ADR-0014).
 Read the mode only through `src/config/mode.ts`; per-section differences go in the registry's
@@ -143,6 +144,9 @@ Sidekiq or Vue until their phase.
   the region between header and footer crossfades (`view-transition-name: page`); the header
   and its walking mascot never animate. New motion must use the duration tokens
   (`--duration-fast`, `--duration-base`; 0ms under reduced motion) and never move layout.
+  Under reduced motion, `global.css` sets every transition to **0s** (never a non-zero global
+  duration such as 0.01ms: with `transition-property: all` it would delay every style change and
+  make measured layouts jump; Step 4.0, `global.test.ts`, `e2e/tests/layout-stability.spec.ts`).
 - **Truthfulness:** the Fun Fact and Architecture page must only describe what is actually
   implemented. Planned components are marked `planned`.
 - **Writing Fun Facts:** describe only what exists at the end of the current step; put future
