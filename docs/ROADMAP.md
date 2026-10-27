@@ -27,10 +27,12 @@ after Phase 1 were renumbered accordingly; the earlier plan had deployment as Ph
 **Phase 2 (Ruby on Rails API + PostgreSQL) is done:** every acceptance criterion below is met,
 and GitHub Actions ran green on the final Step 2.6 commit (`5f9eb59`, 2026-10-26).
 
-**Phase 3 (integration and MVP completion) is in progress:** Steps 3.0 (`84b4e4c`), 3.1
-(`c922ddc`), 3.2 (`1b6bca1`) and 3.3 (`4b3f833`) are done; Step 3.4 (the contact form) is ready
-for review. In a full-stack build the Projects page loads from the Rails API and the Contact
-page has a form that sends to it; a static build keeps the channels only. **Long-term
+**Phase 3 (integration and MVP completion) is validated, awaiting CI:** Steps 3.0 (`84b4e4c`),
+3.1 (`c922ddc`), 3.2 (`1b6bca1`), 3.3 (`4b3f833`) and 3.4 (`9d7b47b`) are done; Step 3.5 (final
+validation) passed locally in both modes (see "MVP acceptance evidence"). Phase 3, and with it
+the **MVP**, is complete once the Step 3.5 commit is pushed and all four GitHub Actions jobs pass.
+In a full-stack build the Projects page loads from the Rails API and the Contact page has a form
+that sends to it; a static build uses local data and keeps the channels only. **Long-term
 requirement (2026-10-26):** the same codebase builds a **full-stack** site (React + Rails API +
 PostgreSQL) or a **static** site (local data, no backend), so the portfolio can stay public
 after the paid backend is shut down (see "Two modes" below).
@@ -39,7 +41,7 @@ after the paid backend is shut down (see "Two modes" below).
 | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
 | 1     | **React frontend foundation**: React + TypeScript shell, static data, mascot, Fun Fact, responsive layout, en/pt-BR, unit + E2E tests, CI                             | Done                          |
 | 2     | Ruby on Rails API + PostgreSQL: projects and contact messages, security, RSpec + FactoryBot, OpenAPI contract, its own CI job; works and is tested on its own         | Done (`5f9eb59`)              |
-| 3     | Frontend/backend integration, full-stack validation and **MVP completion**: the shell reads projects and sends contact messages through the API, full-stack E2E in CI | In progress                   |
+| 3     | Frontend/backend integration, full-stack validation and **MVP completion**: the shell reads projects and sends contact messages through the API, full-stack E2E in CI | Validated, awaiting CI        |
 | 4     | Production deployment (first public release): host and reverse proxy, CD, monitoring, prerendering/SEO                                                                | Planned (postponed until 2–3) |
 | 5     | Vue 3 microfrontend mounted by the React shell (order of 5–8 provisional)                                                                                             | Planned                       |
 | 6     | Python FastAPI service + interactive quiz                                                                                                                             | Planned                       |
@@ -254,7 +256,7 @@ review); none starts automatically.
   debug level (hence the middleware), `rescue_from` logs exception messages (database errors
   are rescued in the action and only their class logged), and development's SQL query log tags
   inline bind values into the log (turned off, guarded by a spec). Email delivery stays
-  deferred (Phase 4 gate).
+  deferred (a Phase 4 prerequisite).
 
 ### Step 2.6 — Hardening and docs
 
@@ -316,14 +318,14 @@ implementation with tests → review); none starts automatically. Constraints fo
 the design, responsive behaviour and bilingual routing (`/`, `/pt-br`) stay unchanged; no new
 runtime dependency; no deployment or Phase 4 infrastructure.
 
-| #   | Step                                                   | Status           | Depends on |
-| --- | ------------------------------------------------------ | ---------------- | ---------- |
-| 3.0 | Architecture page and Phase 3 documentation            | Done             | —          |
-| 3.1 | Same-origin development setup and full-stack E2E setup | Done             | —          |
-| 3.2 | Typed API client                                       | Done             | —          |
-| 3.3 | Mode selection and Projects data                       | Done             | 3.1, 3.2   |
-| 3.4 | Contact form (full-stack mode only)                    | Ready for review | 3.1–3.3    |
-| 3.5 | Both modes validated, docs and MVP completion          | Planned          | 3.0–3.4    |
+| #   | Step                                                   | Status      | Depends on |
+| --- | ------------------------------------------------------ | ----------- | ---------- |
+| 3.0 | Architecture page and Phase 3 documentation            | Done        | —          |
+| 3.1 | Same-origin development setup and full-stack E2E setup | Done        | —          |
+| 3.2 | Typed API client                                       | Done        | —          |
+| 3.3 | Mode selection and Projects data                       | Done        | 3.1, 3.2   |
+| 3.4 | Contact form (full-stack mode only)                    | Done        | 3.1–3.3    |
+| 3.5 | Both modes validated, docs and MVP completion          | Awaiting CI | 3.0–3.4    |
 
 ### Two modes: static and full-stack (owner's requirement, 2026-10-26)
 
@@ -376,7 +378,7 @@ One React codebase on one branch builds either mode; there are never two version
   spec, READMEs, ADR-0009, ADR-0010.
 - **Acceptance:** `npm run test:e2e` starts both servers and passes locally and in CI; the
   isolation is deterministic; the `quality` and `api` jobs are unchanged.
-- **Delivered (ready for review), owner's decisions 2026-10-26:** the plan above was refined
+- **Delivered (`c922ddc`), owner's decisions 2026-10-26:** the plan above was refined
   before implementation:
   - **A dedicated Rails `e2e` environment** (`config/environments/e2e.rb`, based on development)
     with the fixed database `portfolio_api_e2e`, instead of the development environment with a
@@ -420,7 +422,7 @@ One React codebase on one branch builds either mode; there are never two version
   compile-time parity: the API's `Technology` ⊆ the shell's `TechId`, `Status` and `Locale`
   equal. ADR-0014 (frontend data access).
 - **Acceptance:** the drift check is green in CI; no `any`; no UI change.
-- **Delivered (ready for review):** see the "Step 3.2 delivery" notes below.
+- **Delivered (`1b6bca1`):** see the "Step 3.2 delivery" notes below.
 
 ### Step 3.3 — Mode selection and Projects data
 
@@ -459,7 +461,7 @@ One React codebase on one branch builds either mode; there are never two version
 - **Implemented (owner's refinements, 2026-10-26):**
   - The privacy note describes the 12-month retention as a policy ("deleted within 12 months
     under my retention policy") and says the IP address isn't saved with the message. It makes
-    no promise of automatic deletion (the purge isn't scheduled yet; Phase 4 gate below) and no
+    no promise of automatic deletion (the purge isn't scheduled yet; see "Phase 4 prerequisites" below) and no
     claim about tracking or third parties.
   - Drafts survive a language switch (in memory only). A submission in flight is never sent
     twice: a ref blocks a second submit before the fetcher state changes, the fields are
@@ -485,6 +487,20 @@ One React codebase on one branch builds either mode; there are never two version
 - **Docs:** how to build and run each mode (READMEs), `CLAUDE.md`, ADR-0004, 0009, 0010, 0012
   and 0014, a note on running the static mode after the backend is shut down, and the
   acceptance evidence below. The MVP is complete once GitHub CI is green on this step.
+- **Delivered (owner's decisions, 2026-10-27):**
+  - **Milestones describe the project:** v3 is Done in both builds (the truthfulness test ties it
+    to a Rails-backed section in the full-stack build); each build's timeline note says whether
+    that build uses the API. ADR-0014 joins "Key decisions"; the CI card mentions both E2E
+    modes. No new card.
+  - **Data:** the static data and the seeds stay two copies, changed together; the normalised
+    parity E2E (full-stack only) catches drift.
+  - **Status:** "Validated, awaiting CI" until the Step 3.5 commit is green on all four jobs;
+    then Phase 3 and the MVP are Done.
+  - **No new E2E specs;** one unit-test race fixed (focus after a server 422 is now awaited).
+  - **Phase 4 prerequisites** rewritten as a checklist (below), including backups and restore,
+    the mandatory automated purge and privacy/logging review, how messages are reviewed without
+    forwarding them to a personal inbox, and how messages are handled when the backend is
+    retired.
 
 ### Phase 3 acceptance criteria
 
@@ -507,7 +523,41 @@ One React codebase on one branch builds either mode; there are never two version
 9. **No silent fallback:** in full-stack mode, API failures show accessible error states (tested).
 10. Fun Facts, registry backends and the Architecture page describe the built mode.
 
-### Step 3.3 delivery (ready for review)
+### MVP acceptance evidence (Step 3.5, 2026-10-27)
+
+Validated locally on the Step 3.5 working tree (on top of `9d7b47b`), including a **clean-copy
+rehearsal of all four CI jobs** (a fresh copy of the tracked files, `npm ci`, `CI=true`, the
+workflow's commands): every step passed, with no flaky retries. **Awaiting:** the four GitHub
+Actions jobs on the pushed Step 3.5 commit (add the run link here).
+
+| Check                                                       | Result                                                                         |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Unit (Vitest, `npm test`)                                   | 487 passed; 10 consecutive full runs with no failure                           |
+| E2E full stack (`npm run test:e2e`)                         | 210 passed, 50 skipped (by design: mobile and static-only)                     |
+| E2E static (`npm run test:e2e:static`)                      | 174 passed, 86 skipped (by design: API- and form-only)                         |
+| Rails (`bin/ci`: RuboCop, audits, Brakeman, RSpec)          | 269 examples, 0 failures                                                       |
+| Format, lint, typecheck, `content:check`, `api:types:check` | Pass                                                                           |
+| Builds                                                      | Both pass; the static bundle has no `/api/v1`, `contact_messages` or form code |
+| Development and test databases                              | Unchanged by every E2E run (row counts and timestamps compared)                |
+
+| Criterion                       | Evidence                                                                                                                                                                               |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Projects, both modes         | `e2e/tests/projects.spec.ts` (both modes, both languages; loading, error and Try again with the real API); `ProjectsPage*.test.tsx` (loading, empty, error)                            |
+| 2. Contact form                 | `e2e/tests/contact-api.spec.ts` (real Rails: 202 stored in PostgreSQL and read back, 422 and 429 not stored, honeypot not stored); `contact.spec.ts` (keyboard, pending, network, axe) |
+| 3. Same-origin `/api`, no CORS  | `apps/shell/vite.config.test.ts` (dev and preview proxy); every E2E request goes through the preview's proxy                                                                           |
+| 4. Generated types, enum parity | `npm run api:types:check` (CI `quality`); `apps/shell/src/api/contract.ts` (typecheck)                                                                                                 |
+| 5. Full-stack E2E, all suites   | The four CI jobs, rehearsed from a clean copy (above)                                                                                                                                  |
+| 6. Truthful Fun Facts and docs  | `registry.test.ts` and `content/architecture.test.ts` in both modes; docs and ADRs reviewed in Step 3.5                                                                                |
+| 7. Design unchanged             | Layout, mascot and transition E2E specs in both modes; the owner's visual review                                                                                                       |
+| 8. Both modes from one branch   | `e2e` and `e2e-static` jobs; `static-mode.spec.ts` (no `/api` request, no API or form code in the bundle)                                                                              |
+| 9. No silent fallback           | `projects.spec.ts` (an API 500 shows the error, never static cards); `ProjectsPage.fullstack.test.tsx`                                                                                 |
+| 10. The built mode is described | Per-mode Fun Facts (`e2e/support/site.ts` resolves them for the mode under test) and timeline notes (`ArchitecturePage*.test.tsx`)                                                     |
+
+Fixed during validation: a unit-test race (focus after a server 422 is now awaited) and an
+intermittent full-stack E2E failure in `mascot.spec.ts` (the Home measurement now waits for the
+settled layout, as the other geometric checks do; 240/240 repeated runs passed).
+
+### Step 3.3 delivery
 
 - **The mode:** `VITE_APP_MODE` = `static` (default) or `fullstack`; anything else fails `vite`
   and `vite build`. `apps/shell/src/config/mode.ts` is the single source; builds get the value as
@@ -545,7 +595,7 @@ One React codebase on one branch builds either mode; there are never two version
   (typed with `satisfies`), with unit tests.
 - `apps/shell/src/projects/model.ts`: the neutral `Project` view model; `content/projects.ts`
   (kept) and `ProjectCard` import it. ESLint forbids `src/api/*` in components and sections.
-- ADR-0014 (frontend data access and the two modes); no page uses the API yet.
+- ADR-0014 (frontend data access and the two modes); at that step no page used the API yet.
 
 ### Phase 3 decisions (owner, 2026-10-26)
 
@@ -572,7 +622,8 @@ privacy note, Fun Facts / registry `backend: 'rails'` / Architecture page update
 the frontend's types and fixtures checked against the OpenAPI document, and full-stack E2E in
 CI. Completing it completes the **MVP**.
 
-**Readiness (recorded at the end of Phase 2):**
+**Readiness (recorded at the end of Phase 2):** kept as a historical record; where Phase 3
+decided otherwise, the correction is noted in brackets.
 
 - **First task:** the Architecture timeline's v2 becomes Done (deferred from Phase 2).
 - **Contract:** `services/api/docs/openapi.yaml` (OpenAPI 3.0.3; the source for the shell's
@@ -588,37 +639,95 @@ CI. Completing it completes the **MVP**.
 - **Shell:** a Projects route loader with loading/error states in both languages; mapping
   `technologies` → `tech` and `url` → `href` (or adopting the API's names); types checked
   against the document (`openapi-typescript` or handwritten types with a fixture test, to
-  decide); a test that the shell knows every `Technology`, `Status` and `Locale` value; the
-  contact form (hidden `website` field, `locale` from the URL, localised validation messages,
-  a 429 message, the privacy note); `content/projects.ts` retired; the seeded project
-  description updated with the shell's text; the Contact Fun Fact, registry `backend: 'rails'`
-  and the Architecture page updated truthfully.
+  decide) [decided in Step 3.2: generated types, ADR-0014]; a test that the shell knows every
+  `Technology`, `Status` and `Locale` value; the contact form (hidden `website` field, `locale`
+  from the URL, localised validation messages, a 429 message, the privacy note);
+  `content/projects.ts` retired [superseded: it is kept permanently as the static mode's data,
+  ADR-0014]; the seeded project description updated with the shell's text; the Contact Fun Fact,
+  registry `backend: 'rails'` and the Architecture page updated truthfully.
 - **CI:** a full-stack E2E job (PostgreSQL service, the Rails server, the shell preview with the
   proxy) and axe on the form.
 
-## Before public deployment (Phase 4 gates)
+## Phase 4 prerequisites (before public deployment)
 
-- A practical notification or message-retrieval solution for contact messages.
-- The 12-month retention period reviewed.
-- Rate limiting backed by a store shared by all API processes, with correct client IPs behind
-  the reverse proxy (ADR-0013 lists the current limitations).
-- The privacy note published with the contact form (done in Step 3.4; review its wording with
-  the final retention decision).
-- **Retention purge scheduled and verified (mandatory):** `bin/rails contact_messages:purge`
-  runs on a schedule in production and a run is verified (e.g. with `DRY_RUN=1` first) before
-  the site is public. Until then the privacy note states a policy, not automatic deletion.
-- **Reverse proxy and client IPs:** the API is never reachable directly, only through the proxy
-  (Caddy); the proxy overwrites `X-Forwarded-For` with the real client address and drops
-  `Client-IP`; `config.action_dispatch.trusted_proxies` matches the deployment (the rate-limit
-  key believes forwarded headers only from trusted peers); the application server sees the
-  proxy as a real IP peer (not a Unix socket, which would put every visitor under the shared
-  `unknown` key). A request-body limit at the proxy.
-- **Rails production settings:** `config.hosts`, secrets (`SECRET_KEY_BASE` or the master key)
-  and `DATABASE_URL` from the environment, one database role per service.
-- **Logging:** retention, and whether to keep client IPs in request logs ("Started … for
-  <ip>"); error reporting.
-- **Operations:** scheduled retention purge, backups, `/up` monitoring, the production image
-  (with YJIT).
+Recorded in Step 3.5 (2026-10-27) as the starting checklist for Phase 4 planning. **Nothing here
+is implemented yet**; Phase 4 is planned and approved step by step like the earlier phases. Items
+marked **mandatory** must be done and verified before the site is public.
+
+**Hosting plan (owner's requirement, preserved):**
+
+1. Deploy the **full-stack** build (`npm run build:fullstack`, `VITE_APP_MODE=fullstack`) with
+   the Rails API and PostgreSQL for a limited period (about three months).
+2. Afterwards, keep the portfolio online as the **static** build (`npm run build`) on static
+   hosting, with no backend hosting costs (see "Retiring the backend" below).
+
+**Hosting and environment:**
+
+- A single VPS with Docker Compose and Caddy (TLS; same-origin path routing: the shell's build at
+  `/`, the Rails API at `/api`); an SPA fallback to `index.html` for deep links such as
+  `/pt-br/contact`. Provider and domain to be decided.
+- The build mode checked on the deployed site (the Fun Facts and the Architecture note show it).
+- Rails production settings from the environment only: `DATABASE_URL`, `SECRET_KEY_BASE` (or
+  `RAILS_MASTER_KEY`), `config.hosts`, `config.action_dispatch.trusted_proxies`; no secrets in
+  the image or the repository; the production image (with YJIT).
+
+**Production database:**
+
+- PostgreSQL 18.6 on a persistent volume; one database role per service with least privilege.
+- **Backup and restore policy (mandatory):** scheduled backups, an off-server copy, encryption
+  at rest for the copies, a retention period for backups consistent with the contact-message
+  policy (a deleted message must not live on in backups longer than the policy allows), and a
+  **tested restore** before going public.
+
+**Security:**
+
+- **Reverse proxy and client IPs (mandatory):** the API is reachable only through the proxy; the
+  proxy overwrites `X-Forwarded-For` with the real client address and drops `Client-IP`;
+  `trusted_proxies` matches the deployment (the rate-limit key believes forwarded headers only
+  from trusted peers); the application server sees the proxy as a real IP peer (not a Unix
+  socket, which would put every visitor under the shared `unknown` key); a request-body limit at
+  the proxy.
+- Rate limiting backed by a store shared by all API processes (ADR-0013 lists the current
+  limitations).
+- Security headers (HSTS; a Content Security Policy designed for the shell); the dependency
+  audits stay in CI.
+
+**Logging, monitoring and privacy (mandatory review before public deployment):**
+
+- Log retention; whether request logs keep client IPs ("Started … for <ip>"), and for how long;
+  contact-message values stay filtered (ADR-0013); error reporting without personal data; `/up`
+  monitoring.
+- **The production privacy review:** the privacy note checked against the real setup (what is
+  stored, logs, backups, retention, any processor such as the host or an email provider) and
+  updated if needed.
+
+**Contact messages:**
+
+- **Automated 12-month purge (mandatory):** `bin/rails contact_messages:purge` runs on a schedule
+  in production (cron, a systemd timer or a recurring job), first verified with `DRY_RUN=1`, then
+  monitored. Until it runs, the privacy note's wording stays a policy statement, never a promise
+  of automatic deletion.
+- **Reviewing messages during the full-stack period (a decision for Phase 4 planning):** the
+  owner needs to know that messages arrived **without automatically forwarding every
+  submission to a personal inbox**. Options to decide between: a periodic digest that says only
+  how many new messages exist (no content), read with `bin/rails contact_messages:recent` on the
+  server; a scheduled reminder to review; or an authenticated, owner-only reading view. The
+  choice is reflected in the privacy note.
+
+**Retiring the backend (after the full-stack period):**
+
+1. Build the static site from the same commit (`npm run build`) and deploy `apps/shell/dist` to
+   a static host with the SPA fallback; verify it (the static E2E suite, no `/api` requests).
+2. **Review the stored contact messages.** Securely export **only** legitimate messages that
+   still need a follow-up (if any), stored encrypted and themselves deleted under the retention
+   policy; **delete** everything else.
+3. Shut down Rails and PostgreSQL; delete the database, volumes and backups once the backup
+   retention period allows.
+4. The Fun Facts and the Architecture page describe the static build automatically (they follow
+   the build mode).
+
+**Open questions for Phase 4 planning:** the VPS provider and domain; how messages are reviewed
+(above); whether pages are prerendered for SEO; CD (deploy on tag or manual).
 
 ## Step 12 — CI & automated quality checks
 

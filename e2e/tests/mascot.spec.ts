@@ -1,6 +1,6 @@
 import { expect, type Page, test } from '@playwright/test';
 import { homeScene, overlaps } from '../support/geometry.ts';
-import { clickLanguage, clickNav, mainNav, open } from '../support/shell.ts';
+import { clickLanguage, clickNav, mainNav, open, waitForStableLayout } from '../support/shell.ts';
 import { languageOf, LOCALES, localizePath, pageOf } from '../support/site.ts';
 
 const walker = (page: Page) => page.locator('[data-mascot="header"] > div');
@@ -132,6 +132,9 @@ test.describe('Fun Fact mascot', () => {
         test.skip(isMobile, 'desktop composition');
         await page.setViewportSize({ width, height: 900 });
         await open(page, localizePath('/', locale));
+        // The stage's measured height (useHeroExtent) can move "What I do" a frame or two after
+        // the first render, notably with the taller full-stack Fun Fact: measure the settled page.
+        await waitForStableLayout(page);
         const scene = await homeScene(page);
         expect(scene).not.toBeNull();
         const { card, fingertip, figure, heading, cards, heroText } = scene!;

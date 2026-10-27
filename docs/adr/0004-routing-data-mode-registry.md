@@ -46,6 +46,10 @@ microfrontend (ADR-0002) and API-backed sections in later phases.
 The Projects loader (`src/projects/source.ts`) returns its data unawaited in a full-stack build,
 so navigation completes at once and the page renders loading, error and retry states itself.
 
+**Section actions (Phase 3, Step 3.4):** likewise, a section may declare an `action` (the
+Contact form's submission, `src/contact/action.ts`), which `buildRoutes()` attaches next to the
+loader; the page submits to it with a fetcher.
+
 ## Consequences
 
 - Adding a section = one registry entry + one page component; routes, nav and tests follow.

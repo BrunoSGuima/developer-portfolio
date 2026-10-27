@@ -106,9 +106,9 @@ export const components: readonly ArchitectureComponent[] = [
     id: 'continuous-integration',
     name: { en: 'Continuous integration', 'pt-BR': 'Integração contínua' },
     description: {
-      en: 'On every push and pull request, GitHub Actions checks formatting, lint, types, tests, content and the build, and runs the end-to-end suite and the Rails API checks (style, security audits and RSpec against PostgreSQL).',
+      en: 'On every push and pull request, GitHub Actions checks formatting, lint, types, tests, content and the build, runs the end-to-end suite against both the full-stack and the static build, and runs the Rails API checks (style, security audits and RSpec against PostgreSQL).',
       'pt-BR':
-        'A cada push e pull request, o GitHub Actions verifica formatação, lint, tipos, testes, conteúdo e o build, e roda a suíte ponta a ponta e as verificações da API em Rails (estilo, auditorias de segurança e RSpec com PostgreSQL).',
+        'A cada push e pull request, o GitHub Actions verifica formatação, lint, tipos, testes, conteúdo e o build, roda a suíte ponta a ponta tanto na versão full-stack quanto na versão estática, e roda as verificações da API em Rails (estilo, auditorias de segurança e RSpec com PostgreSQL).',
     },
     status: 'live',
   },
@@ -133,8 +133,7 @@ export const timeline: readonly Milestone[] = [
     status: 'done',
   },
   {
-    // Done: Phase 2 accepted (5f9eb59, docs/ROADMAP.md). The API exists and is tested on its
-    // own; the pages don't use it until the integration (v3).
+    // Done: Phase 2 accepted (5f9eb59, docs/ROADMAP.md).
     id: 'rails-api',
     version: 'v2',
     name: { en: 'Rails API + PostgreSQL + RSpec', 'pt-BR': 'API em Rails + PostgreSQL + RSpec' },
@@ -147,8 +146,11 @@ export const timeline: readonly Milestone[] = [
       en: 'Frontend/backend integration (MVP)',
       'pt-BR': 'Integração entre front-end e back-end (MVP)',
     },
-    // Phase 3. Done only once sections are backed by Rails (architecture.test.ts).
-    status: 'in-progress',
+    // Done: Phase 3 implemented and validated (Steps 3.0–3.5). Milestones describe the project,
+    // so this is the same in both builds; the timeline note says whether this build uses the
+    // API (ADR-0014). Done only while some section is Rails-backed in a full-stack build
+    // (architecture.test.ts).
+    status: 'done',
   },
   {
     id: 'deployment',
@@ -335,6 +337,18 @@ export const decisions: readonly Decision[] = [
       en: 'Minimal personal data, no IP addresses, filtered logs, rate limits and a honeypot, with a 12-month retention.',
       'pt-BR':
         'Dados pessoais mínimos, sem endereços IP, logs filtrados, limites de envio e um honeypot, com retenção de 12 meses.',
+    },
+  },
+  {
+    id: 'ADR-0014',
+    title: {
+      en: 'Frontend data access: static and full-stack modes',
+      'pt-BR': 'Acesso a dados no front-end: modos estático e full-stack',
+    },
+    summary: {
+      en: 'One codebase builds a full-stack site (Rails API and PostgreSQL) or a static one (local data, no backend); the mode is chosen at build time, and API failures are shown, never hidden.',
+      'pt-BR':
+        'Um único código gera um site full-stack (API em Rails e PostgreSQL) ou um estático (dados locais, sem back-end); o modo é escolhido no build, e falhas da API são mostradas, nunca escondidas.',
     },
   },
 ];

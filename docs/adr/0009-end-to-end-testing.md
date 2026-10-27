@@ -1,6 +1,6 @@
 # ADR-0009: End-to-end testing with Playwright and axe
 
-- **Status:** Accepted (Phase 1, Step 11)
+- **Status:** Accepted (Phase 1, Step 11; full stack since Step 3.1, both build modes since Step 3.3)
 - **Date:** 2026-10-20
 
 ## Context

@@ -1,6 +1,6 @@
 # ADR-0014: Frontend data access, static and full-stack modes
 
-- **Status:** Accepted (Phase 3, Step 3.2; the mode switch and page integration follow in 3.3–3.5)
+- **Status:** Accepted (Phase 3, Step 3.2; implemented in Steps 3.3–3.4; validated in Step 3.5)
 - **Date:** 2026-10-26
 
 ## Context

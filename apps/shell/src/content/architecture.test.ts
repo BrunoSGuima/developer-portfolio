@@ -34,14 +34,15 @@ describe('architecture truthfulness', () => {
   // The Rails API (Phase 2) is finished on its own acceptance criteria; the site only uses it
   // once the integration (Phase 3) is done. Sections use Rails only in a full-stack build
   // (ADR-0014), so each rule is checked for the sections as built in each mode.
-  it.each(APP_MODES)(
-    'never marks the integration done in a %s build without a Rails-backed section',
-    (mode) => {
-      if (!sections.some((section) => sectionInMode(section, mode).backend === 'rails')) {
-        expect(finished('integration')).toBe(false);
-      }
-    },
-  );
+  // Milestones describe the project, so they're the same in both builds (a static build says,
+  // in its timeline note, that it doesn't use the API): the integration is done only while some
+  // section is Rails-backed in the full-stack build.
+  it('marks the integration done only while the full-stack build has a Rails-backed section', () => {
+    const integrated = sections.some(
+      (section) => sectionInMode(section, 'fullstack').backend === 'rails',
+    );
+    expect(finished('integration')).toBe(integrated);
+  });
 
   it.each(APP_MODES)(
     'never has a Rails-backed section in a %s build before the Rails API milestone is done',
@@ -102,12 +103,11 @@ describe('architecture timeline', () => {
     expect(timeline.some((milestone) => milestone.status === 'live')).toBe(false);
   });
 
-  // Phase 3: the API is done (Phase 2), the integration is in progress until pages use it.
-  it('shows the Rails API done and the integration in progress while no section uses Rails', () => {
-    if (!sections.some((section) => section.backend === 'rails')) {
-      expect(milestoneById('rails-api').status).toBe('done');
-      expect(milestoneById('integration').status).toBe('in-progress');
-    }
+  // End of Phase 3: the API (v2) and the integration (v3, the MVP) are done; deployment is next.
+  it('shows the Rails API and the integration done, and deployment not started', () => {
+    expect(milestoneById('rails-api').status).toBe('done');
+    expect(milestoneById('integration').status).toBe('done');
+    expect(milestoneById('deployment').status).toBe('planned');
   });
 
   it('deploys only after the Rails API and the frontend/backend integration', () => {

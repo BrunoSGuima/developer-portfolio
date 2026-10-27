@@ -27,7 +27,7 @@ deployment. No Redis, no email infrastructure and no secrets in Phase 2.
 - **Retention**: a rake task deletes messages older than **12 months**; the period is reviewed
   before deployment.
 - **Retrieval**: in Phase 2 the owner reads messages with a rake task. **Before public
-  deployment** a practical notification or retrieval solution must be chosen (Phase 4 gate).
+  deployment** a practical notification or retrieval solution must be chosen (a Phase 4 prerequisite in docs/ROADMAP.md).
 
 ## Implemented (Step 2.5, 2026-10-26)
 
@@ -116,5 +116,5 @@ a fresh look at whether a challenge (e.g. a privacy-friendly CAPTCHA) is needed.
 - Little personal data is held, and none forever.
 - The Phase 2 rate limiter is fine for development and tests but not sufficient for production
   until the store and proxy settings above are in place.
-- The contact form in Phase 3 must show a short privacy note (what is stored, why, for how
-  long).
+- The contact form shows a short privacy note (what is stored, why, for how long), added in
+  Phase 3, Step 3.4; it is reviewed against the production setup before deployment (Phase 4).

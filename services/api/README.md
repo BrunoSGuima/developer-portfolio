@@ -171,7 +171,7 @@ the form hides from people. Responses never contain an id or any submitted value
   ```
 
 - **No email notification yet:** a notification or retrieval solution is required before public
-  deployment (Phase 4 gate).
+  deployment (a Phase 4 prerequisite, docs/ROADMAP.md).
 
 **Unexpected errors:** in **development** Rails shows its detailed error response (exception and
 backtrace) to help debugging. In **production** `config.exceptions_app` (`Api::ErrorsController`)
@@ -198,9 +198,10 @@ messages and backtraces never reach the client. The full error is always in the 
 
 ### Seeds
 
-`db/seeds.rb` holds the site's projects, copied from the shell's
-`apps/shell/src/content/projects.ts` (update both together until Phase 3 switches the shell to
-the API). It is idempotent and transactional: projects are matched by slug, their links are
+`db/seeds.rb` holds the site's projects, the same content as the shell's
+`apps/shell/src/content/projects.ts`, which the static build keeps using (ADR-0014). Change both
+in the same commit: the full-stack E2E suite compares the API's projects with the static data
+after normalising both to the shell's `Project` model, and fails on any drift. It is idempotent and transactional: projects are matched by slug, their links are
 replaced by the seeded list, and a failure rolls everything back. Projects not in the file are
 left alone. The test database is never seeded (`seeds: false` in `config/database.yml`).
 
@@ -253,6 +254,9 @@ tasks in the `e2e` environment only act on its database.
   environment with a file store), so serial end-to-end specs can reset them between tests by
   deleting that directory (`e2e/support/rateLimits.ts`). No endpoint resets them; the limits
   themselves are unchanged.
+- **Reading back stored messages:** the real-API contact specs check what was stored through
+  `e2e/support/contact_messages.rb` (run with `bin/rails runner`), a read-only query that aborts
+  unless `RAILS_ENV` is `e2e` and the connected database is `portfolio_api_e2e`.
 - **Cleanup:** `RAILS_ENV=e2e bin/rails db:drop` drops only `portfolio_api_e2e` (it's recreated on
   the next run).
 

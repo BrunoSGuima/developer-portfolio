@@ -69,9 +69,9 @@ export const ptBR: Messages = {
     evolution: 'Como ele vai evoluir',
     timelineNote: {
       static:
-        'A API em Rails (v2) está construída e testada de forma independente; esta versão do site é estática e não a utiliza. O deploy vem depois da integração (v3). A ordem das etapas seguintes (v5–v8) é provisória.',
+        'A API em Rails (v2) e a sua integração com este site (v3) estão construídas e testadas; esta é a versão estática, que funciona sem a API e sem banco de dados. O deploy (v4) é a próxima etapa. A ordem das etapas seguintes (v5–v8) é provisória.',
       fullstack:
-        'A API em Rails (v2) está construída e testada; a página de Projetos carrega seus dados dela e o formulário de contato envia mensagens para ela. A validação dessa integração conclui a v3; o deploy vem depois dela. A ordem das etapas seguintes (v5–v8) é provisória.',
+        'A página de Projetos carrega seus dados da API em Rails e o formulário de contato envia mensagens para ela, o que conclui a integração (v3). O deploy (v4) é a próxima etapa. A ordem das etapas seguintes (v5–v8) é provisória.',
     },
     decisions: 'Principais decisões',
   },

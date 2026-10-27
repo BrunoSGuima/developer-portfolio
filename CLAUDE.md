@@ -17,15 +17,17 @@ illustrated Home, responsive layout, i18n en + pt-BR, transitions & polish, Play
 CI is green on GitHub; Architecture page updated). Phase 1 is **not** the MVP.
 
 **Phase 2 — Ruby on Rails API + PostgreSQL: done** (Steps 2.0–2.6; GitHub Actions green on
-`5f9eb59`). **Phase 3 — Frontend/backend integration and MVP completion: in progress** (Steps
-3.0–3.3 done; Step 3.4, the contact form (full-stack only), ready for review; plan, decisions and
-acceptance criteria in `docs/ROADMAP.md`). **Long-term requirement:** one codebase builds a
+`5f9eb59`). **Phase 3 — Frontend/backend integration and MVP completion: validated, awaiting
+CI** (Steps 3.0–3.4 done; Step 3.5, the final validation, passed locally in both modes; Phase 3
+and the MVP are Done once that commit is green on all four CI jobs; evidence, decisions and
+acceptance criteria in `docs/ROADMAP.md`). **Next: Phase 4 (deployment), only when the owner
+starts it**, from the prerequisites checklist in ROADMAP. **Long-term requirement:** one codebase builds a
 **full-stack** site (Rails API + PostgreSQL) or a **static** site (local data, no backend),
 chosen at build time by `VITE_APP_MODE` (`static` by default, `fullstack` explicitly; ADR-0014).
 Read the mode only through `src/config/mode.ts`; per-section differences go in the registry's
 `fullstack` overrides (`sectionInMode()`); full-stack-only code must stay behind the mode so the
-static build contains none of it (the static E2E run checks). Phase 3
-rules:
+static build contains none of it (the static E2E run checks). Integration rules (Phase 3,
+still in force):
 
 - API calls are same-origin `/api` through the Vite proxies (no CORS).
 - The shell's API types (`apps/shell/src/api/schema.ts`) are generated from
@@ -34,7 +36,9 @@ rules:
 - Pages and components render the shell's own models (e.g. `Project` in
   `apps/shell/src/projects/model.ts`), fed by the static data or by the API mapping in
   `apps/shell/src/api/`; `src/components/` and `src/sections/` never import `src/api/`
-  (ESLint-enforced). The static data (`content/projects.ts`) stays for static mode.
+  (ESLint-enforced). The static data (`content/projects.ts`) stays permanently for static mode;
+  `services/api/db/seeds.rb` holds the same projects: change both in the same commit (the
+  full-stack E2E compares them after normalising both to `Project`).
 - In full-stack mode an API failure is shown as an error, never replaced by static data; the
   contact form exists only in full-stack mode (`sections/contact/ContactForm.tsx`, loaded lazily
   behind the mode check, submitting through the registry `action` in `src/contact/action.ts`,
@@ -43,14 +47,17 @@ rules:
   retry a contact submission automatically, and keep the privacy note truthful (no automatic
   deletion promise until the purge is scheduled, Phase 4).
 - Keep the design, responsiveness and bilingual routing unchanged.
-  Phase 2 is complete when the API, persistence, endpoints, security and RSpec suite work on their
-  own (no frontend required). **The MVP is complete only at the end of Phase 3** (integration and
-  full-stack validation). **Deployment is postponed** to Phase 4; do not add hosting, CD or
-  production infrastructure before it. The roadmap, step list, acceptance criteria and recorded
-  decisions live in **`docs/ROADMAP.md`** (version-controlled source of truth; keep it current).
+- Architecture milestones describe the project (the same in both builds); each build's timeline
+  note says whether that build uses the API (`content/architecture.test.ts`).
 
-The API runs Ruby 4.0.9, Rails 8.1.4 and PostgreSQL 18.6 (ADR-0011). Do not add Python, Redis, Sidekiq or Vue until their phase. The shell keeps its
-static project data until Step 3.3 retires it.
+Phase 2 is complete when the API, persistence, endpoints, security and RSpec suite work on their
+own (no frontend required). **The MVP is complete only at the end of Phase 3** (integration and
+full-stack validation). **Deployment is postponed** to Phase 4; do not add hosting, CD or
+production infrastructure before it. The roadmap, step list, acceptance criteria and recorded
+decisions live in **`docs/ROADMAP.md`** (version-controlled source of truth; keep it current).
+
+The API runs Ruby 4.0.9, Rails 8.1.4 and PostgreSQL 18.6 (ADR-0011). Do not add Python, Redis,
+Sidekiq or Vue until their phase.
 
 ## Architecture
 
@@ -119,8 +126,8 @@ static project data until Step 3.3 retires it.
 ## Conventions
 
 - TypeScript `strict` mode (plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`).
-- Minimal dependencies. Phase 1 runtime deps: `react`, `react-dom`, `react-router` (v8), and
-  `@fontsource-variable/inter` (self-hosted font). Adding a dependency requires a stated reason.
+- Minimal dependencies. The shell's runtime deps (unchanged since Phase 1): `react`, `react-dom`,
+  `react-router` (v8), and `@fontsource-variable/inter` (self-hosted font). Adding a dependency requires a stated reason.
 - Styling (ADR-0003): CSS Modules next to each component; global styles only in
   `apps/shell/src/styles/` (`reset.css`, `tokens.css`, `global.css`, plus the `.container`
   utility). Components use **purpose-named tokens only** (`--color-text`, `--color-accent`, ...),

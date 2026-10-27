@@ -11,14 +11,14 @@ vi.mock('../../config/mode.ts', () => ({
 }));
 
 describe('ArchitecturePage, full-stack build', () => {
-  it('says the Projects page and the contact form use the API', () => {
+  it('says the Projects page and the contact form use the API, completing v3', () => {
     renderPage(ArchitecturePage);
 
     const region = screen.getByRole('region', { name: 'How it will evolve' });
+    expect(region).toHaveTextContent(/Frontend\/backend integration \(MVP\)\s*Done/);
     expect(region).toHaveTextContent(
-      /the Projects page loads from it and the contact form sends to it/,
+      /Projects page loads from the Rails API and the contact form sends messages to it, completing the integration \(v3\)/,
     );
-    expect(region).toHaveTextContent(/Validating that integration completes v3/);
     expect(region).not.toHaveTextContent(/static/);
   });
 });

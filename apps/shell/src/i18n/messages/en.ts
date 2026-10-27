@@ -74,9 +74,9 @@ export const en = {
     /** Depends on the build's mode (src/config/mode.ts). */
     timelineNote: {
       static:
-        "The Rails API (v2) is built and tested on its own; this build of the site is static and doesn't use it. Deployment comes after the integration (v3). The order of the later steps (v5–v8) is provisional.",
+        'The Rails API (v2) and its integration with this site (v3) are built and tested; this build is the static version, which runs without the API or a database. Deployment (v4) comes next. The order of the later steps (v5–v8) is provisional.',
       fullstack:
-        'The Rails API (v2) is built and tested; the Projects page loads from it and the contact form sends to it. Validating that integration completes v3; deployment comes after it. The order of the later steps (v5–v8) is provisional.',
+        'The Projects page loads from the Rails API and the contact form sends messages to it, completing the integration (v3). Deployment (v4) comes next. The order of the later steps (v5–v8) is provisional.',
     },
     decisions: 'Key decisions',
   },

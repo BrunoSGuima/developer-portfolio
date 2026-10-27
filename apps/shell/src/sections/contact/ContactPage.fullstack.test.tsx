@@ -194,7 +194,9 @@ describe('ContactPage, full-stack build', () => {
     await user.click(send());
 
     expect(await screen.findByText('Enter an email address like name@example.com.')).toBeVisible();
-    expect(screen.getByLabelText('Email')).toHaveFocus();
+    // The errors render with the result; focus moves once the submission is idle again (after
+    // React Router's revalidation), so wait for it rather than assume the same tick.
+    await waitFor(() => expect(screen.getByLabelText('Email')).toHaveFocus());
     expect(screen.getByLabelText('Message')).toHaveValue('Hello, shall we talk about a role?');
   });
 

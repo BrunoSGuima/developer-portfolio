@@ -31,8 +31,8 @@ that read TypeScript files.
 - **The contract is a handwritten OpenAPI document** (`services/api/docs/openapi.yaml`;
   **3.0.3**, see "Implemented" below).
   Rails request specs validate every request and response against it (`committee`), so it
-  cannot drift from the implementation. In Phase 3 the shell checks its types and test
-  fixtures against **the same document**. Neither side's tests import the other's source;
+  cannot drift from the implementation. Since Phase 3 (Step 3.2) the shell checks its types and
+  test fixtures against **the same document**. Neither side's tests import the other's source;
   the document is the only coupling.
 - Closed vocabularies shared with the shell (technology ids, status words) are **enums in the
   OpenAPI document**. In the API they live in `Project::TECHNOLOGIES` and `Project::STATUSES`
@@ -84,5 +84,5 @@ that read TypeScript files.
   read whole).
 - Changing the contract means editing the OpenAPI document first; both sides' tests then show
   what breaks.
-- The technology and status vocabularies exist in the shell and in the OpenAPI document; Phase 3
-  adds a shell-side check that they agree.
+- The technology and status vocabularies exist in the shell and in the OpenAPI document; a
+  shell-side, compile-time check that they agree exists since Step 3.2 (`api/contract.ts`).

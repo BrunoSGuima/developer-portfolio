@@ -1,6 +1,7 @@
 # ADR-0010: Continuous integration with GitHub Actions (no deployment yet)
 
-- **Status:** Accepted (Phase 1, Step 12; the `api` job added in Phase 2, Step 2.2)
+- **Status:** Accepted (Phase 1, Step 12; the `api` job added in Phase 2, Step 2.2; the `e2e` job
+  became full stack in Step 3.1 and `e2e-static` was added in Step 3.3)
 - **Date:** 2026-10-24
 
 ## Context
@@ -82,7 +83,7 @@ One workflow, `.github/workflows/ci.yml`, on `push` to `main` and on `pull_reque
 - Pinned SHAs don't update themselves. Dependabot (`github-actions` ecosystem) was considered
   and **deferred** by the owner (2026-10-25); until then, update SHA and release comment together
   by hand when bumping an action.
-- Phase 3 adds full-stack E2E (shell + API + database). Deployment (Phase 4) will be a separate
-  workflow.
+- Phase 3 added full-stack E2E (shell + API + database, Step 3.1) and the static-build E2E job
+  (Step 3.3). Deployment (Phase 4) will be a separate workflow.
 - Validated before the first push: `actionlint` + `shellcheck` on the workflow, and both jobs
   rehearsed in a clean copy of the repository with `CI=true`.

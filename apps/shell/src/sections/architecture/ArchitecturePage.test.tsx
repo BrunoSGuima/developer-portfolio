@@ -65,13 +65,14 @@ describe('ArchitecturePage', () => {
     expect(items[0]).toHaveTextContent('Done');
   });
 
-  it('says, in a static build, that the API exists but this build does not use it', () => {
+  it('says, in a static build, that the integration is done but this build does not use it', () => {
     renderPage(ArchitecturePage);
 
     const region = screen.getByRole('region', { name: 'How it will evolve' });
-    expect(region).toHaveTextContent(/Rails API \(v2\) is built and tested on its own/);
-    expect(region).toHaveTextContent(/this build of the site is static and doesn't use it/);
-    expect(region).toHaveTextContent(/Deployment comes after the integration/);
+    expect(region).toHaveTextContent(/Frontend\/backend integration \(MVP\)\s*Done/);
+    expect(region).toHaveTextContent(/its integration with this site \(v3\) are built and tested/);
+    expect(region).toHaveTextContent(/runs without the API or a database/);
+    expect(region).toHaveTextContent(/Deployment \(v4\) comes next/);
     expect(region).toHaveTextContent(/provisional/);
   });
 
@@ -118,7 +119,7 @@ describe('ArchitecturePage', () => {
     const region = screen.getByRole('region', { name: 'Key decisions' });
     const items = within(region).getAllByRole('listitem');
     expect(items).toHaveLength(decisions.length);
-    expect(decisions.at(-1)?.id).toBe('ADR-0013');
+    expect(decisions.at(-1)?.id).toBe('ADR-0014');
     items.forEach((item, index) =>
       expect(item).toHaveTextContent(`ADR-${String(index + 1).padStart(4, '0')}`),
     );
