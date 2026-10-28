@@ -16,7 +16,9 @@ the real technology stack behind each section.
 > messages in [`services/api`](./services/api/README.md), tested on their own. Phase 3
 > (integration) is done, and with it the MVP: in a full-stack build the Projects page loads from
 > the API and the Contact page sends messages to it; a static build runs with no backend at all.
-> Phase 4 (deployment) is in progress; nothing is deployed yet. See
+> Phase 4 (deployment) is in progress; nothing is deployed yet. The plan
+> ([ADR-0015](./docs/adr/0015-deployment-architecture.md)): the full stack for about three months,
+> then the static site on free hosting, on the same domain. See
 > [`docs/ROADMAP.md`](./docs/ROADMAP.md).
 
 ## Roadmap
@@ -38,7 +40,7 @@ the real technology stack behind each section.
 apps/        Frontend applications (React shell in Phase 1, Vue app in Phase 5)
 services/    Backend services (Rails API in services/api since Phase 2, FastAPI in Phase 6)
 e2e/         Playwright end-to-end tests spanning all apps
-infra/       Docker Compose (PostgreSQL for development); reverse proxy in Phase 4
+infra/       Docker Compose (PostgreSQL for development); production hosting: ADR-0015
 .github/     GitHub Actions CI (lint, types, unit, build, E2E + axe)
 docs/adr/    Architecture Decision Records
 docs/assets/ Design references (mascot reference image)

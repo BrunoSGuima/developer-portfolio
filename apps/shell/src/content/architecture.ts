@@ -351,4 +351,17 @@ export const decisions: readonly Decision[] = [
         'Um único código gera um site full-stack (API em Rails e PostgreSQL) ou um estático (dados locais, sem back-end); o modo é escolhido no build, e falhas da API são mostradas, nunca escondidas.',
     },
   },
+  {
+    // A decision, not a deployment: the timeline's v4 stays planned until the site is live.
+    id: 'ADR-0015',
+    title: {
+      en: 'Deployment in two stages',
+      'pt-BR': 'Deploy em duas etapas',
+    },
+    summary: {
+      en: 'Deployment in two stages: the full stack on one origin for a limited period, then the static site on free hosting, on the same domain.',
+      'pt-BR':
+        'Deploy em duas etapas: a versão full-stack em uma única origem por um período limitado e, depois, o site estático em hospedagem gratuita, no mesmo domínio.',
+    },
+  },
 ];

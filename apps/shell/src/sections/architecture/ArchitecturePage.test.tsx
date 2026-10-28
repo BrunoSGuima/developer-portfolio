@@ -119,7 +119,7 @@ describe('ArchitecturePage', () => {
     const region = screen.getByRole('region', { name: 'Key decisions' });
     const items = within(region).getAllByRole('listitem');
     expect(items).toHaveLength(decisions.length);
-    expect(decisions.at(-1)?.id).toBe('ADR-0014');
+    expect(decisions.at(-1)?.id).toBe('ADR-0015');
     items.forEach((item, index) =>
       expect(item).toHaveTextContent(`ADR-${String(index + 1).padStart(4, '0')}`),
     );

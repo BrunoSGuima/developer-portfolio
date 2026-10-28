@@ -41,7 +41,8 @@ installed into the shell without overriding that peer.
 ### The API layer (`apps/shell/src/api/`)
 
 - `client.ts`: `getJson` / `postJson` with relative, same-origin paths (`/api/v1/...`; the Vite
-  proxies and, later, the production proxy forward them, so no base URL and no CORS), an
+  proxies forward them; in production Rails serves the shell and the API from one origin,
+  ADR-0015; so no base URL and no CORS), an
   optional `AbortSignal`, and one error type, `ApiError` (`status`, `code`, `message`, `details`,
   `retryAfter`). The API's error envelope keeps its status, code, message and details; a
   network failure is `network`, an abort `aborted` (with the original reason as `cause`), and a

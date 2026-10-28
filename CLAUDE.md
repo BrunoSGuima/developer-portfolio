@@ -19,10 +19,15 @@ CI is green on GitHub; Architecture page updated). Phase 1 is **not** the MVP.
 **Phase 2 — Ruby on Rails API + PostgreSQL: done** (Steps 2.0–2.6; GitHub Actions green on
 `5f9eb59`). **Phase 3 — Frontend/backend integration and MVP completion: done** (Steps 3.0–3.5;
 GitHub Actions green on `f66efbf`; the MVP is complete). **Phase 4 — Deployment: in progress**
-(Step 4.0, the Home layout fix, ready for review; the approved direction, step outline and
-prerequisites are in `docs/ROADMAP.md`). Phase 4 rules: one step at a time; **never create
-cloud resources, buy anything or incur charges without the owner's explicit approval**; keep
-one repository, one `main` branch and both build modes. **Long-term requirement:** one codebase builds a
+(Step 4.0, the Home layout fix, done in `13938b0`; Step 4.1, the deployment architecture,
+ADR-0015, ready for review; steps, prerequisites and the spending log are in `docs/ROADMAP.md`).
+Phase 4 rules: one step at a time; **never create cloud resources, buy anything or incur charges
+without the owner's explicit approval** (record approved expenses in the ROADMAP's spending log;
+US$ 20/month is a planning ceiling for Stage A, not a provider limit); keep one repository, one
+`main` branch and both build modes, and keep all four CI jobs after the static cutover;
+`Dockerfile` and `render.yaml` never contain secrets; operational docs read contact messages with
+`bin/rails contact_messages:list` (personal data: a private provider shell only, never copied
+elsewhere); never claim automatic deletion of messages unless a purge is actually scheduled. **Long-term requirement:** one codebase builds a
 **full-stack** site (Rails API + PostgreSQL) or a **static** site (local data, no backend),
 chosen at build time by `VITE_APP_MODE` (`static` by default, `fullstack` explicitly; ADR-0014).
 Read the mode only through `src/config/mode.ts`; per-section differences go in the registry's
@@ -109,9 +114,13 @@ Sidekiq or Vue until their phase.
   Rate limits key on `client_ip`, which ignores forwarded headers from untrusted peers. Every
   response documented in `openapi.yaml` must be asserted by a request spec (a complete RSpec
   run fails otherwise).
-- **Hosting**: not deployed yet (owner's decision). The first release is Phase 4, after the Rails
-  API and PostgreSQL are integrated (Phases 2–3); then a single VPS with Docker Compose behind
-  Caddy, path-routed same-origin, is the current plan. No Kubernetes in the MVP.
+- **Hosting** (ADR-0015; not deployed yet): two stages on one custom domain. **Stage A**
+  (temporary, about three months): the full-stack build on Render (preferred, to be verified),
+  as **one Docker service** in which Rails serves the shell's files, the SPA fallback and `/api`
+  from one origin (no separate proxy, no CORS), with managed PostgreSQL 18 on the private network.
+  **Stage B** (permanent): the static build on Cloudflare Pages (SPA fallback, `_headers`), no
+  backend. The static site is deployed and tested on a preview before Stage A, as a fallback. No
+  Kubernetes. (An earlier plan, a VPS with Docker Compose and Caddy, was dropped in Step 4.1.)
 - **CI** (ADR-0010, `.github/workflows/ci.yml`): on pushes to `main` and pull requests, four
   parallel jobs: `quality` (`npm ci`, format, lint, typecheck, unit tests, `content:check`,
   build), `e2e` (full stack since Step 3.1: PostgreSQL service and Ruby, then Playwright + axe

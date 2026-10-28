@@ -3,8 +3,8 @@
 The portfolio's backend (Phase 2, ADR-0011): an **API-only** Rails application with PostgreSQL,
 tested with RSpec. It is independent of the npm workspaces and of the React shell: it runs and
 is tested on its own. Public endpoints will live under `/api/v1` (ADR-0012), served same-origin
-with the shell through a proxy (Phase 3 Vite proxy, Phase 4 reverse proxy), so there is no CORS
-configuration.
+with the shell (through the Vite proxy in development; in production Rails serves the shell and the
+API from one origin, ADR-0015), so there is no CORS configuration.
 
 **Status (Phase 2 complete, Step 2.6):** the toolchain, the database, the test setup, Rails'
 `GET /up` health check, the **Projects domain** (models, constraints, seeds), the read-only
