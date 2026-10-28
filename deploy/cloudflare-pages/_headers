@@ -1,0 +1,24 @@
+# Cloudflare Pages headers for the static site (Stage B, ADR-0015, Phase 4 Step 4.4).
+# Copied into apps/shell/dist by `npm run build:pages` (scripts/prepare-pages.mjs); not in
+# apps/shell/public, so the production image and vite preview never serve it.
+# Same policy as Stage A (services/api/lib/middleware/security_headers.rb): the parity spec
+# (services/api/spec/deploy/static_headers_parity_spec.rb) fails if they drift. Pages cannot
+# vary headers by content type, so the CSP is on every response (it has no effect on scripts,
+# styles, fonts and images) and is removed from the PDF, which browsers show in a built-in viewer.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+  X-Permitted-Cross-Domain-Policies: none
+  Strict-Transport-Security: max-age=86400
+
+# Vite-hashed files never change: cached for a year (Pages default: revalidate every time).
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/Bruno_Guimaraes_Resume.pdf
+  ! Content-Security-Policy

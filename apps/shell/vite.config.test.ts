@@ -3,8 +3,8 @@ import { createServer as createHttpServer, type IncomingMessage, type Server } f
 import type { AddressInfo } from 'node:net';
 import { fileURLToPath } from 'node:url';
 import { createServer, type ViteDevServer } from 'vite';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import config, { apiProxy, checkAppMode } from './vite.config.ts';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import config, { apiProxy, buildModeFile, checkAppMode } from './vite.config.ts';
 
 describe('the build mode (VITE_APP_MODE)', () => {
   it('defaults to static', () => {
@@ -24,6 +24,27 @@ describe('the build mode (VITE_APP_MODE)', () => {
       );
     }
   });
+});
+
+describe('the build-mode file (dist/build-mode.json)', () => {
+  it.each(['static', 'fullstack'] as const)(
+    'records a %s build explicitly, in builds only',
+    (mode) => {
+      const plugin = buildModeFile(mode);
+      const emitFile = vi.fn();
+
+      (plugin.generateBundle as unknown as (this: { emitFile: typeof emitFile }) => void).call({
+        emitFile,
+      });
+
+      expect(plugin.apply).toBe('build');
+      expect(emitFile).toHaveBeenCalledWith({
+        type: 'asset',
+        fileName: 'build-mode.json',
+        source: `{"mode":"${mode}"}\n`,
+      });
+    },
+  );
 });
 
 describe('the /api proxy configuration', () => {

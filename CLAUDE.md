@@ -21,7 +21,8 @@ CI is green on GitHub; Architecture page updated). Phase 1 is **not** the MVP.
 GitHub Actions green on `f66efbf`; the MVP is complete). **Phase 4 — Deployment: in progress**
 (Step 4.0, the Home layout fix, done in `13938b0`; Step 4.1, the deployment architecture,
 ADR-0015, done in `2653ba5`; Step 4.2, the production image, done in `6b9c9ed`; Step 4.3,
-production hardening, ready for review; steps, prerequisites and the spending log are in `docs/ROADMAP.md`).
+production hardening, done in `35beb2d`; Step 4.4, static-host readiness for Cloudflare Pages,
+ready for review; steps, prerequisites and the spending log are in `docs/ROADMAP.md`).
 Phase 4 rules: one step at a time; **never create cloud resources, buy anything or incur charges
 without the owner's explicit approval** (record approved expenses in the ROADMAP's spending log;
 US$ 20/month is a planning ceiling for Stage A, not a provider limit); keep one repository, one
@@ -133,6 +134,15 @@ Sidekiq or Vue until their phase.
   plain 404. **Never migrate on web startup:** `services/api/bin/release` (migrate + seed,
   production only, stops at the first failure) runs once per deploy as a separate command.
   `scripts/smoke-image.sh` tests an image on a throwaway `portfolio_smoke` database only.
+- **Static hosting** (Stage B, Step 4.4; `deploy/cloudflare-pages/README.md`): Cloudflare Pages
+  serves `npm run build:pages` (the static build plus `deploy/cloudflare-pages`: `_headers` and
+  `assets/404.html`; never put them in `apps/shell/public`). Every build writes
+  `build-mode.json`; `scripts/prepare-pages.mjs` refuses anything but `static` and validates
+  `_headers`. **`_headers` must equal Stage A's `SecurityHeaders`** (the parity spec in
+  `services/api/spec/deploy/` fails otherwise): change both together. No top-level `404.html`
+  (it would switch Pages' SPA mode off). The static E2E suite runs under the pinned Pages
+  emulator (`tools/pages-emulator`, `npm run pages:emulator:install`; dev and CI only);
+  `E2E_STATIC_SERVER=preview` uses `vite preview`. Nothing is on Cloudflare yet (Step 4.5).
 - **Production hardening** (Step 4.3): `ALLOWED_HOSTS` (exact hostnames) is required in
   production, validated by `lib/production_settings.rb` (boot fails otherwise; `/up` exempt);
   optional `TRUSTED_PROXIES` replaces Rails' default proxy list (the provider's value is a Step
@@ -337,6 +347,8 @@ Run from the repository root (after `nvm use`):
 | `npm run favicon -w apps/shell`          | Rebuild the favicons (mascot head crop) in `public/`                                  |
 | `npm run test:e2e`                       | Full-stack E2E: the e2e API plus the preview                                          |
 | `npm run test:e2e:static`                | Static E2E: the static build alone, no API                                            |
+| `npm run build:pages`                    | Static build prepared for Cloudflare Pages (Step 4.4)                                 |
+| `npm run pages:emulator:install`         | Install the Pages emulator once (the static E2E suite needs it)                       |
 | `docker build -t portfolio:local .`      | Build the production image (Step 4.2)                                                 |
 | `scripts/smoke-image.sh portfolio:local` | Smoke-test an image (needs `PG*` variables; `SMOKE_BROWSER=1` adds the browser smoke) |
 | `npm run report -w e2e`                  | Open the last E2E HTML report                                                         |

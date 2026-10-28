@@ -1,4 +1,4 @@
-import { expect, type Page, test } from '@playwright/test';
+import { type APIRequestContext, expect, type Page, test } from '@playwright/test';
 import { about } from '../../apps/shell/src/content/profile.ts';
 import { contactStatus, contactSubmit, fillContact } from '../support/contact.ts';
 import { clickLanguage, clickNav } from '../support/shell.ts';
@@ -7,9 +7,18 @@ import { languageOf, messages, pages } from '../support/site.ts';
 // Checks that the deployed site works in a real browser, under its real headers and Content
 // Security Policy (playwright.smoke.config.ts): every page in both languages loads with all its
 // assets and fonts, navigation and the language switch work, and nothing is blocked or fails.
-// Read-only by default; SMOKE_WRITE=1 (only against a throwaway database) also submits the
-// contact form.
+// It works on either build: the site's own build-mode.json says whether to expect the contact
+// form (full-stack) or only the channels (static). Read-only by default; SMOKE_WRITE=1 (only
+// against a throwaway database) also submits the contact form on a full-stack site.
 const writes = process.env['SMOKE_WRITE'] === '1';
+
+/** The deployed build's mode, as the build itself records it (build-mode.json). */
+async function siteMode(request: APIRequestContext): Promise<'static' | 'fullstack'> {
+  const { mode } = (await (await request.get('/build-mode.json')).json()) as { mode: unknown };
+  if (mode !== 'static' && mode !== 'fullstack')
+    throw new Error(`Unknown build mode: ${String(mode)}`);
+  return mode;
+}
 
 /** Fails the test on CSP violations, console errors, page errors and failed same-origin requests. */
 async function watch(page: Page) {
@@ -63,16 +72,18 @@ test('the main navigation and the language switch work under the CSP', async ({ 
   expect(problems).toEqual([]);
 });
 
-test('the Projects page shows the API data; Contact has its channels and form', async ({
+test('the Projects page shows its data; Contact has its channels (and the form when full-stack)', async ({
   page,
+  request,
 }) => {
   const problems = await watch(page);
+  const mode = await siteMode(request);
 
   await page.goto('/pt-br/projects');
   await expect(page.getByRole('article').first()).toBeVisible();
   await page.goto('/contact');
   await expect(page.getByRole('link', { name: /linkedin\.com/ })).toBeVisible();
-  await expect(page.locator('[data-contact-form]')).toBeVisible();
+  await expect(page.locator('[data-contact-form]')).toHaveCount(mode === 'fullstack' ? 1 : 0);
   await page.waitForLoadState('networkidle');
   expect(problems).toEqual([]);
 });
@@ -98,8 +109,12 @@ test('an unknown page shows the shell’s 404 page', async ({ page }) => {
   ).toBeVisible();
 });
 
-test('the contact form sends a message under the CSP (SMOKE_WRITE=1 only)', async ({ page }) => {
+test('the contact form sends a message under the CSP (SMOKE_WRITE=1 only)', async ({
+  page,
+  request,
+}) => {
   test.skip(!writes, 'Read-only by default: writes only against a throwaway database.');
+  test.skip((await siteMode(request)) === 'static', 'A static site has no contact form.');
   const problems = await watch(page);
   await page.goto('/contact');
 

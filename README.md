@@ -115,13 +115,16 @@ page say which mode a build is.
 
 The static build is a complete site: no API, no database and no environment variables.
 
-1. `npm ci && npm run build` (any commit; static is the default mode).
+1. `npm ci && npm run build` (any commit; static is the default mode), or `npm run build:pages`
+   for Cloudflare Pages, the chosen host: it adds the Pages headers and 404 handling
+   (`deploy/cloudflare-pages`, see its README) and refuses any build that isn't static.
 2. Serve `apps/shell/dist/` from any static host, with an **SPA fallback**: every path that is
    not a file serves `index.html` (deep links such as `/pt-br/contact` and the in-app 404 page
    need it).
 3. Check it: every page loads in both languages, the Contact page shows the channels and no
    form, and the browser makes no `/api` request (`npm run test:e2e:static` checks the same
-   things against the local build).
+   things against the local build, served as Cloudflare Pages would; install its emulator once
+   with `npm run pages:emulator:install`).
 
 ## Production image
 

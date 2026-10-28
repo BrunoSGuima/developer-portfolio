@@ -1,0 +1,11 @@
+{
+  "name": "@portfolio/pages-emulator",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Serves the static build locally as Cloudflare Pages would (wrangler pages dev) for the static E2E suite. A development and CI tool only: isolated from the npm workspaces, never part of the shell or the production image, locked by its own package-lock.json. See ADR-0015.",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "wrangler": "4.154.0"
+  }
+}

@@ -45,6 +45,7 @@ test.describe('navigating between sections', () => {
     await open(page, home.path);
     await markShell(page);
     await clickNav(page, about.label);
+    await expect(page.locator('main h1')).toHaveText(about.heading);
     await clickNav(page, projects.label);
     await expect(page.locator('main h1')).toHaveText(projects.heading);
 

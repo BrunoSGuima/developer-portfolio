@@ -16,7 +16,8 @@ production infrastructure, no secrets.
 
 One workflow, `.github/workflows/ci.yml`, on `push` to `main` and on `pull_request`:
 
-- **Five parallel jobs** on `ubuntu-24.04`, each with a timeout:
+- **Five parallel jobs** on `ubuntu-24.04`, each with a timeout (since Step 4.4 `quality` builds
+  with `npm run build:pages`: the static build, its explicit mode check and the Pages files):
   - `quality`: `npm ci` → `format:check` → `lint` → `typecheck` → `test` → `content:check` →
     `build`. Fast feedback (≈ 1 minute of work).
   - `e2e`: `npm ci` → Ruby with the API's cached gems → Chromium (+ system libraries) →
@@ -24,7 +25,9 @@ One workflow, `.github/workflows/ci.yml`, on `push` to `main` and on `pull_reque
     throwaway database password as `api`; Playwright starts the Rails API in its `e2e`
     environment and the shell's `vite preview`, which proxies `/api` to it) → uploads the HTML
     report as an artifact (14 days), also when tests fail. Timeout 25 minutes.
-  - `e2e-static` (Step 3.3, ADR-0014): the same steps without PostgreSQL or Ruby, running
+  - `e2e-static` (Step 3.3, ADR-0014; since Step 4.4 served as Cloudflare Pages would, under the
+    isolated `wrangler pages dev` installed by `npm run pages:emulator:install`): the same steps
+    without PostgreSQL or Ruby, running
     `npm run test:e2e:static` against the static build; its report is `playwright-report-static`.
   - `image` (Step 4.2, ADR-0015): `docker build` of the production image, then
     `scripts/smoke-image.sh` (with the read-only browser smoke) against a disposable

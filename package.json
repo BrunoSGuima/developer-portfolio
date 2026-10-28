@@ -16,6 +16,7 @@
     "dev:fullstack": "npm run dev:fullstack --workspace=apps/shell",
     "build": "npm run build --workspaces --if-present",
     "build:fullstack": "npm run build:fullstack --workspace=apps/shell",
+    "build:pages": "VITE_APP_MODE=static npm run build --workspace=apps/shell && node scripts/prepare-pages.mjs",
     "lint": "npm run lint --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
@@ -27,7 +28,8 @@
     "content:check": "npm run content:check --workspace=apps/shell",
     "api:types:install": "npm ci --prefix tools/openapi-types --ignore-scripts --no-audit --no-fund",
     "api:types": "node tools/openapi-types/generate.mjs",
-    "api:types:check": "node tools/openapi-types/generate.mjs --check"
+    "api:types:check": "node tools/openapi-types/generate.mjs --check",
+    "pages:emulator:install": "npm ci --prefix tools/pages-emulator --ignore-scripts --no-audit --no-fund"
   },
   "devDependencies": {
     "prettier": "^3.9.10"

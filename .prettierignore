@@ -3,6 +3,7 @@ dist
 coverage
 playwright-report
 test-results
+.wrangler
 package-lock.json
 
 # The Rails API has its own tooling (RuboCop); Prettier only checks its README. Its YAML

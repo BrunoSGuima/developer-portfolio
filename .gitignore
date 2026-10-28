@@ -38,3 +38,6 @@ docs/assets/*.pdf
 # Exception: the public, phone-free résumé served by the site (checked for phone numbers,
 # including PDF metadata, before publishing). Re-check any replacement the same way.
 !apps/shell/public/Bruno_Guimaraes_Resume.pdf
+
+# Cloudflare Pages emulator (wrangler pages dev, Step 4.4): local working files.
+.wrangler/

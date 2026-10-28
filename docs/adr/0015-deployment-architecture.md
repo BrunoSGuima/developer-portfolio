@@ -1,7 +1,8 @@
 # ADR-0015: Deployment architecture: a temporary full stack, then a permanent static site
 
 - **Status:** Accepted (Phase 4, Step 4.1; implemented in Steps 4.2–4.11, see `docs/ROADMAP.md`;
-  Step 4.2 built the image: `Dockerfile`, `ShellAssets`, `bin/release`; Step 4.3 hardened it:
+  Step 4.4 prepared Stage B: `deploy/cloudflare-pages`, `build:pages`, the static suite under
+  the Pages emulator; Step 4.2 built the image: `Dockerfile`, `ShellAssets`, `bin/release`; Step 4.3 hardened it:
   required `ALLOWED_HOSTS`, optional `TRUSTED_PROXIES`, `SecurityHeaders` with an enforced CSP,
   IP-free request logs, a database-aware `/up`)
 - **Date:** 2026-10-27
@@ -57,10 +58,13 @@ provisioned (Step 4.5), and every expense needs the owner's explicit approval.
      provider's dashboard. The app reads no Rails credentials, so `RAILS_MASTER_KEY` is not
      needed and `config/master.key` is never uploaded.
 3. **Stage B: the static build on Cloudflare Pages.**
-   - Pages builds `npm ci && npm run build` (static is the default mode) from `main`, output
-     `apps/shell/dist`, Node 22.
-   - The SPA fallback is Pages' default (no `404.html`); security headers come from a `_headers`
-     file. No API, no database, no secrets.
+   - Pages builds `npm ci --ignore-scripts && npm run build:pages` from `main` (with
+     `SKIP_DEPENDENCY_INSTALL=1` and `VITE_APP_MODE=static`), output `apps/shell/dist`, Node
+     from `.nvmrc`; automatic branch and pull-request previews are off.
+   - The SPA fallback is Pages' default (no top-level `404.html`); `assets/404.html` gives
+     missing assets a real 404; security headers come from `deploy/cloudflare-pages/_headers`,
+     identical to Stage A (parity-tested). No API, no database, no secrets. Prepared in Step 4.4,
+     emulated in CI with `wrangler pages dev`; see `deploy/cloudflare-pages/README.md`.
    - It is deployed and tested on a `*.pages.dev` preview **before** Stage A starts, so it is a
      ready fallback throughout.
 4. **One codebase, both modes, kept.** Both builds come from the same commit. The full-stack

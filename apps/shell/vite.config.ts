@@ -1,6 +1,6 @@
 /// <reference types="vitest/config" />
 import react from '@vitejs/plugin-react';
-import { defineConfig, loadEnv, type ProxyOptions } from 'vite';
+import { defineConfig, loadEnv, type Plugin, type ProxyOptions } from 'vite';
 
 /**
  * The Rails API is served same-origin under /api (ADR-0011): the dev server and `vite preview`
@@ -24,6 +24,25 @@ export function checkAppMode(env: Record<string, string>): 'static' | 'fullstack
   throw new Error(`VITE_APP_MODE must be "static" or "fullstack" (got "${value}").`);
 }
 
+/**
+ * Records the build's mode in the build itself (`dist/build-mode.json`, Step 4.4), so deploy
+ * scripts check it explicitly instead of inferring it from the bundle: the Cloudflare Pages
+ * preparation (scripts/prepare-pages.mjs) accepts only a static build.
+ */
+export function buildModeFile(appMode: 'static' | 'fullstack'): Plugin {
+  return {
+    name: 'portfolio-build-mode',
+    apply: 'build',
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'build-mode.json',
+        source: `${JSON.stringify({ mode: appMode })}\n`,
+      });
+    },
+  };
+}
+
 // https://vite.dev/config/
 export default defineConfig(({ mode, command }) => {
   const appMode = checkAppMode({
@@ -33,7 +52,7 @@ export default defineConfig(({ mode, command }) => {
   if (mode !== 'test') console.info(`Shell mode: ${appMode} (VITE_APP_MODE).`);
 
   return {
-    plugins: [react()],
+    plugins: [react(), buildModeFile(appMode)],
     // Builds get the validated mode as a literal (src/config/mode.ts), so a static build drops
     // every full-stack-only branch, including the API client. The dev server and tests keep it
     // a normal env value (tests switch it with vi.stubEnv).

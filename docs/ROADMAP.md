@@ -32,7 +32,8 @@ and GitHub Actions ran green on the final Step 2.6 commit (`5f9eb59`, 2026-10-26
 (`f66efbf`); all four GitHub Actions jobs passed on `f66efbf` ([run 40561117258](https://github.com/BrunoSGuima/developer-portfolio/actions/runs/40561117258)).
 **Phase 4 (deployment) is in progress:** Step 4.0 (the Home layout fix) is done (`13938b0`);
 Step 4.1 (the deployment architecture, ADR-0015) is done (`2653ba5`); Step 4.2 (the production
-image) is done (`6b9c9ed`); Step 4.3 (production hardening) is ready for review; see "Phase 4 — Deployment" below. Nothing is deployed and nothing has been purchased. In a full-stack build the Projects page loads from the Rails API and the Contact page has a form
+image) is done (`6b9c9ed`); Step 4.3 (production hardening) is done (`35beb2d`); Step 4.4 (static-host readiness for
+Cloudflare Pages) is ready for review; see "Phase 4 — Deployment" below. Nothing is deployed and nothing has been purchased. In a full-stack build the Projects page loads from the Rails API and the Contact page has a form
 that sends to it; a static build uses local data and keeps the channels only. **Long-term
 requirement (2026-10-26):** the same codebase builds a **full-stack** site (React + Rails API +
 PostgreSQL) or a **static** site (local data, no backend), so the portfolio can stay public
@@ -664,20 +665,20 @@ approval, recorded in the spending log below. **US$ 20/month** is the planning c
 A, excluding the domain; it is a budget, not a limit any provider enforces. Prices and provider
 capabilities are verified in Step 4.5 before anything is provisioned.
 
-| #    | Step                                                                                                                                                               | Cost              | Status           |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------- | ---------------- |
-| 4.0  | Home layout shift under reduced motion (separate from infrastructure)                                                                                              | —                 | Done (`13938b0`) |
-| 4.1  | Deployment architecture: ADR-0015 and documentation                                                                                                                | —                 | Done (`2653ba5`) |
-| 4.2  | Production container: Dockerfile, Rails serves the shell (SPA fallback), CI image build and smoke test                                                             | —                 | Done (`6b9c9ed`) |
-| 4.3  | Production hardening: `config.hosts`, `trusted_proxies`, security headers and CSP, IP-free request logs, database-aware `/up`                                      | —                 | Ready for review |
-| 4.4  | Static-host readiness: `_headers`, a Cloudflare Pages preview (`*.pages.dev`), static E2E against it                                                               | Free              | Planned          |
-| 4.5  | Provider verification (no paid resources): prices, billing alerts, cancellation, rollback, region, PostgreSQL 18, backups, scheduled jobs, proxy headers; go/no-go | Free              | Planned          |
-| 4.6  | Provision Stage A on the provider's URL; verify the client-IP chain; production smoke                                                                              | Paid (approved)   | Planned          |
-| 4.7  | Operations: backups and a restore drill, the retention procedure (scheduled or manual, decided here), the monthly review runbook, monitoring                       | Within budget     | Planned          |
-| 4.8  | Privacy and logging review: the privacy note checked against the real setup                                                                                        | —                 | Planned          |
-| 4.9  | Go live: domain purchase (approved), DNS, production smoke; Architecture v4 updated                                                                                | Domain (approved) | Planned          |
-| 4.10 | Stage B cutover: DNS to Cloudflare Pages, static E2E against the domain; 7-day rollback window                                                                     | —                 | Planned          |
-| 4.11 | Retire the backend: message review (export or delete), resources deleted, $0 bill confirmed, deployment history                                                    | Ends costs        | Planned          |
+| #    | Step                                                                                                                                                                                                                                                     | Cost              | Status           |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | ---------------- |
+| 4.0  | Home layout shift under reduced motion (separate from infrastructure)                                                                                                                                                                                    | —                 | Done (`13938b0`) |
+| 4.1  | Deployment architecture: ADR-0015 and documentation                                                                                                                                                                                                      | —                 | Done (`2653ba5`) |
+| 4.2  | Production container: Dockerfile, Rails serves the shell (SPA fallback), CI image build and smoke test                                                                                                                                                   | —                 | Done (`6b9c9ed`) |
+| 4.3  | Production hardening: `config.hosts`, `trusted_proxies`, security headers and CSP, IP-free request logs, database-aware `/up`                                                                                                                            | —                 | Done (`35beb2d`) |
+| 4.4  | Static-host readiness: `_headers`, `assets/404.html`, `build:pages` with an explicit static guard, the static E2E suite under the Pages emulator                                                                                                         | —                 | Ready for review |
+| 4.5  | Provider verification (no paid resources): the first Cloudflare Pages preview (`*.pages.dev`, approved) and its platform checks; prices, billing alerts, cancellation, rollback, region, PostgreSQL 18, backups, scheduled jobs, proxy headers; go/no-go | Free              | Planned          |
+| 4.6  | Provision Stage A on the provider's URL; verify the client-IP chain; production smoke                                                                                                                                                                    | Paid (approved)   | Planned          |
+| 4.7  | Operations: backups and a restore drill, the retention procedure (scheduled or manual, decided here), the monthly review runbook, monitoring                                                                                                             | Within budget     | Planned          |
+| 4.8  | Privacy and logging review: the privacy note checked against the real setup                                                                                                                                                                              | —                 | Planned          |
+| 4.9  | Go live: domain purchase (approved), DNS, production smoke; Architecture v4 updated                                                                                                                                                                      | Domain (approved) | Planned          |
+| 4.10 | Stage B cutover: DNS to Cloudflare Pages, static E2E against the domain; 7-day rollback window                                                                                                                                                           | —                 | Planned          |
+| 4.11 | Retire the backend: message review (export or delete), resources deleted, $0 bill confirmed, deployment history                                                                                                                                          | Ends costs        | Planned          |
 
 Each step is planned in detail and approved before it starts.
 
@@ -808,6 +809,40 @@ strict-origin-when-cross-origin`, a `Permissions-Policy` disabling camera, micro
   `ALLOWED_HOSTS`, logging the IP, `/up` 200 without a database, trusting every peer, a dropped
   CSP directive or header, and a too-strict CSP (`connect-src 'none'`, caught by the browser
   smoke) each fail a test.
+
+### Step 4.4 — Static host readiness (Cloudflare Pages)
+
+- **Files** (`deploy/cloudflare-pages/`, outside `apps/shell/public` so no other build or server
+  serves them): `_headers` (Stage A's headers and enforced CSP on every response, immutable
+  `/assets/*`, no CSP on the résumé PDF, HSTS one day) and `assets/404.html` (real 404s for
+  missing assets; no top-level `404.html`, which would switch SPA mode off). `npm run build:pages`
+  builds the static site and copies them in (`scripts/prepare-pages.mjs`).
+- **Explicit build-mode guard:** every build now writes `build-mode.json` (`{"mode": …}`, from the
+  validated `VITE_APP_MODE`, `apps/shell/vite.config.ts`); `prepare-pages.mjs` refuses anything but
+  `static`. Behavioural tests complement it: the static suite asserts no `/api` request on any
+  page and no form on Contact.
+- **Parity with Stage A:** `services/api/spec/deploy/static_headers_parity_spec.rb` requires the
+  Pages headers and CSP to equal `SecurityHeaders` and the HSTS to equal Stage A's; the PDF and
+  asset rules are checked too. `prepare-pages.mjs` validates the file against Pages' documented
+  syntax and limits.
+- **Emulation:** `wrangler pages dev` (pinned 4.154.0 in the isolated `tools/pages-emulator`,
+  `npm run pages:emulator:install`, no install scripts, metrics off; never in the shell or the
+  image). The **whole static E2E suite** now runs under it (CI `e2e-static`; `vite preview`
+  remains with `E2E_STATIC_SERVER=preview`), plus `e2e/tests/static-host.spec.ts`: direct
+  navigation to every English and Portuguese route with and without a trailing slash, the
+  client-side 404 page, the headers on the document, assets and PDF, missing assets (404), the
+  Pages files not served, every page under the CSP with its font and no `/api` request, and the
+  static Contact page's external channels with no form. The browser smoke is mode-aware (it reads
+  `build-mode.json`). Emulated behaviour vs what Pages must confirm: `deploy/cloudflare-pages/README.md`.
+- **Found under the real CSP:** the contrast test decoded its screenshot in the page with
+  `fetch()` of a `data:` URL, which `connect-src 'self'` rightly blocks; the test now decodes it
+  with `atob` (the CSP is unchanged).
+- **Pages build reproduced** on a clean copy: `npm ci --ignore-scripts && npm run build:pages`
+  with Node from `.nvmrc`. The `quality` job now builds with `build:pages`.
+- **Owner's decisions (2026-10-28):** files in `deploy/cloudflare-pages/`; parity with Step 4.3;
+  the isolated, pinned emulator; the static suite under it in `e2e-static`; `assets/404.html`
+  adopted because the emulator confirmed it (to re-check on Pages); automatic branch and pull
+  request previews **off**; the first real Pages preview moves to Step 4.5, with approval.
 
 ## Phase 4 prerequisites (before public deployment)
 

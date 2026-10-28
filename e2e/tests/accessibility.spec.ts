@@ -55,9 +55,10 @@ async function contrastBehindText(page: Page, selector: string) {
   const image = (await page.screenshot()).toString('base64');
   return page.evaluate(
     async ({ image, targets }) => {
-      const bitmap = await createImageBitmap(
-        await (await fetch(`data:image/png;base64,${image}`)).blob(),
-      );
+      // Decoded without fetch(): the site's Content Security Policy (connect-src 'self') rightly
+      // blocks fetching a data: URL, and the static suite runs under it (Cloudflare Pages).
+      const bytes = Uint8Array.from(atob(image), (char) => char.charCodeAt(0));
+      const bitmap = await createImageBitmap(new Blob([bytes], { type: 'image/png' }));
       const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
       const context = canvas.getContext('2d')!;
       context.drawImage(bitmap, 0, 0);

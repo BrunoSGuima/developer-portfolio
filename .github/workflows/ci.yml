@@ -62,8 +62,11 @@ jobs:
       - name: No unconfirmed content (placeholders)
         run: npm run content:check
 
-      - name: Production build
-        run: npm run build
+      # The static build prepared for Cloudflare Pages (Stage B, ADR-0015): it also checks that the
+      # build is explicitly static (build-mode.json) and that deploy/cloudflare-pages/_headers is
+      # valid. The full-stack build is covered by the e2e and image jobs.
+      - name: Production build (static, prepared for Cloudflare Pages)
+        run: npm run build:pages
 
   e2e:
     name: End-to-end and accessibility (Playwright + axe)
@@ -156,9 +159,17 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            tools/pages-emulator/package-lock.json
 
       - name: Install dependencies
         run: npm ci
+
+      # The Cloudflare Pages emulator (wrangler pages dev, tools/pages-emulator): its own
+      # lockfile, no install scripts; it serves the static suite as Pages would (Step 4.4).
+      - name: Install the Cloudflare Pages emulator
+        run: npm run pages:emulator:install
 
       # The browser build is tied to the Playwright version: cache it under that version.
       - name: Read the Playwright version
@@ -183,7 +194,7 @@ jobs:
 
       # Builds the static site and serves it with `vite preview` (no API), then runs every spec
       # that applies to it (CI mode: two workers, two retries, GitHub annotations).
-      - name: End-to-end tests (static build)
+      - name: End-to-end tests (static build, served as Cloudflare Pages)
         run: npm run test:e2e:static
 
       - name: Upload the Playwright report

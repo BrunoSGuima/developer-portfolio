@@ -57,6 +57,11 @@ since Step 3.4: a second file in another worker could reset the store mid-test),
 specs stub such endpoints with `page.route`. No
 test-only endpoints exist and no limits are changed.
 
+**Static runs served as Cloudflare Pages (Phase 4, Step 4.4):** the static suite runs on the Pages
+build under `wrangler pages dev` (tools/pages-emulator), so the static site's `_headers`, SPA
+fallback and 404s are tested too (`e2e/tests/static-host.spec.ts`); `E2E_STATIC_SERVER=preview`
+uses `vite preview` instead.
+
 **Both modes (Phase 3, Step 3.3):** `npm run test:e2e` tests the full-stack build;
 `npm run test:e2e:static` (`E2E_MODE=static`) tests the static build served alone, with `/api`
 proxied to a closed port, and checks that no page requests `/api` and that the built files
