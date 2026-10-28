@@ -41,7 +41,7 @@ apps/        Frontend applications (React shell in Phase 1, Vue app in Phase 5)
 services/    Backend services (Rails API in services/api since Phase 2, FastAPI in Phase 6)
 e2e/         Playwright end-to-end tests spanning all apps
 infra/       Docker Compose (PostgreSQL for development); production hosting: ADR-0015
-.github/     GitHub Actions CI (lint, types, unit, build, E2E + axe)
+.github/     GitHub Actions CI (lint, types, unit, build, E2E + axe, production image)
 docs/adr/    Architecture Decision Records
 docs/assets/ Design references (mascot reference image)
 ```
@@ -122,6 +122,24 @@ The static build is a complete site: no API, no database and no environment vari
 3. Check it: every page loads in both languages, the Contact page shows the channels and no
    form, and the browser makes no `/api` request (`npm run test:e2e:static` checks the same
    things against the local build).
+
+## Production image
+
+The full-stack site runs as one container (ADR-0015): Rails serves the shell's full-stack build,
+its page URLs and `/api` from one origin; PostgreSQL is external.
+
+```bash
+docker build -t portfolio:local .
+# Once per deploy (never on web startup): migrations and the site's projects.
+docker run --rm -e DATABASE_URL -e SECRET_KEY_BASE portfolio:local bin/release
+# The web service (Puma on $PORT, default 3000).
+docker run -p 3000:3000 -e DATABASE_URL -e SECRET_KEY_BASE portfolio:local
+```
+
+`DATABASE_URL` and `SECRET_KEY_BASE` come from the environment; nothing secret is in the image.
+`scripts/smoke-image.sh portfolio:local` tests an image against a PostgreSQL server given by the
+`PG*` variables, on a throwaway `portfolio_smoke` database only (CI's `image` job runs it). It is
+not deployed anywhere yet (Phase 4).
 
 This is how the portfolio stays online after the full-stack hosting period ends; the steps for
 retiring the backend (including what happens to stored contact messages) are in

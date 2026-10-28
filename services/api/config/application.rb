@@ -1,5 +1,6 @@
 require_relative "boot"
 require_relative "../lib/middleware/json_body_guard"
+require_relative "../lib/middleware/shell_assets"
 
 require "rails"
 # Pick the frameworks you want:
@@ -56,6 +57,12 @@ module Api
     # Request bodies sent to /api are handled before Rails parses them: checked (JSON, size, valid
     # object) for the routes that take one, discarded for every other route.
     config.middleware.use JsonBodyGuard
+
+    # The production image serves the React shell's build from the same origin (ADR-0015):
+    # SHELL_ROOT points at it. Unset in development, test and e2e, which serve no shell.
+    if ENV["SHELL_ROOT"].present?
+      config.middleware.use ShellAssets, root: ENV["SHELL_ROOT"]
+    end
 
     # Counters for rate limits (Api::V1::ContactMessagesController). In memory and per process:
     # fine for Phase 2; Phase 4 replaces it with a store shared by all API processes (ADR-0013).

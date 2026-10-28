@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# The release command (ADR-0015, Phase 4 Step 4.2): run once per deploy, as a separate one-off
+# container or the host's pre-deploy command, never on web startup. Migrates the schema, then loads
+# the site's projects (db/seeds.rb is idempotent and transactional). Stops at the first failure,
+# so a failed migration never reaches the seeds and the deploy is aborted (non-zero exit).
+#
+#   docker run --rm --env-file … <image> bin/release
+#
+# Production only: it refuses any other RAILS_ENV unless ALLOW_RELEASE=1 is set, so it can't be
+# pointed at a development, test or e2e database by mistake.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+if [ "${RAILS_ENV:-}" != "production" ] && [ "${ALLOW_RELEASE:-}" != "1" ]; then
+  echo "bin/release runs with RAILS_ENV=production only (got '${RAILS_ENV:-unset}'); set ALLOW_RELEASE=1 to override." >&2
+  exit 1
+fi
+
+bin/rails db:migrate
+bin/rails db:seed
+echo "bin/release: migrations and seeds applied (RAILS_ENV=${RAILS_ENV:-unset})."

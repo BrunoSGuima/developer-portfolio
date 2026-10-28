@@ -1,6 +1,7 @@
 # ADR-0015: Deployment architecture: a temporary full stack, then a permanent static site
 
-- **Status:** Accepted (Phase 4, Step 4.1; implemented in Steps 4.2–4.11, see `docs/ROADMAP.md`)
+- **Status:** Accepted (Phase 4, Step 4.1; implemented in Steps 4.2–4.11, see `docs/ROADMAP.md`;
+  Step 4.2 built the image: `Dockerfile`, `ShellAssets`, `bin/release`)
 - **Date:** 2026-10-27
 
 ## Context

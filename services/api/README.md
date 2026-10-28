@@ -260,6 +260,16 @@ tasks in the `e2e` environment only act on its database.
 - **Cleanup:** `RAILS_ENV=e2e bin/rails db:drop` drops only `portfolio_api_e2e` (it's recreated on
   the next run).
 
+## Production (the Docker image)
+
+The repository root's `Dockerfile` (ADR-0015, Phase 4 Step 4.2) runs this API in production with
+the React shell's full-stack build in `/rails/shell`; `SHELL_ROOT` enables `ShellAssets`
+(`lib/middleware/shell_assets.rb`), which serves the shell from the same origin while `/api` and
+`/up` stay with Rails. Settings come from the environment only: `DATABASE_URL`,
+`SECRET_KEY_BASE` (the app reads no credentials, so no master key), `PORT`. **`bin/release`**
+(migrate, then seed; production only; stops at the first failure) runs once per deploy as a
+separate command; the web command never migrates.
+
 ## Continuous integration
 
 GitHub Actions' `api` job (`.github/workflows/ci.yml`, ADR-0010) runs **`bin/ci`**, the same

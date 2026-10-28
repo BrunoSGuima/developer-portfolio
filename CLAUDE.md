@@ -20,11 +20,11 @@ CI is green on GitHub; Architecture page updated). Phase 1 is **not** the MVP.
 `5f9eb59`). **Phase 3 — Frontend/backend integration and MVP completion: done** (Steps 3.0–3.5;
 GitHub Actions green on `f66efbf`; the MVP is complete). **Phase 4 — Deployment: in progress**
 (Step 4.0, the Home layout fix, done in `13938b0`; Step 4.1, the deployment architecture,
-ADR-0015, ready for review; steps, prerequisites and the spending log are in `docs/ROADMAP.md`).
+ADR-0015, done in `2653ba5`; Step 4.2, the production image, ready for review; steps, prerequisites and the spending log are in `docs/ROADMAP.md`).
 Phase 4 rules: one step at a time; **never create cloud resources, buy anything or incur charges
 without the owner's explicit approval** (record approved expenses in the ROADMAP's spending log;
 US$ 20/month is a planning ceiling for Stage A, not a provider limit); keep one repository, one
-`main` branch and both build modes, and keep all four CI jobs after the static cutover;
+`main` branch and both build modes, and keep all five CI jobs after the static cutover;
 `Dockerfile` and `render.yaml` never contain secrets; operational docs read contact messages with
 `bin/rails contact_messages:list` (personal data: a private provider shell only, never copied
 elsewhere); never claim automatic deletion of messages unless a purge is actually scheduled. **Long-term requirement:** one codebase builds a
@@ -121,13 +121,26 @@ Sidekiq or Vue until their phase.
   **Stage B** (permanent): the static build on Cloudflare Pages (SPA fallback, `_headers`), no
   backend. The static site is deployed and tested on a preview before Stage A, as a fallback. No
   Kubernetes. (An earlier plan, a VPS with Docker Compose and Caddy, was dropped in Step 4.1.)
-- **CI** (ADR-0010, `.github/workflows/ci.yml`): on pushes to `main` and pull requests, four
+- **Production image** (Step 4.2; root `Dockerfile` and allowlist `.dockerignore`): three
+  stages (the shell's `build:fullstack` on Node 22, production gems, then a `ruby:4.0.9-slim`
+  runtime with no Node and no development gems), base images pinned by tag **and** digest
+  (update together), a non-root user, `CMD` = Puma only. The shell is served by the
+  `ShellAssets` middleware (`services/api/lib/middleware/shell_assets.rb`), enabled only when
+  `SHELL_ROOT` is set (the image sets it): `/api`, `/api/…` and `/up` always go to Rails, so the
+  SPA fallback can never swallow API errors; hashed `/assets/*` are cached for a year,
+  `index.html` is revalidated; missing files, `*.map`, dot segments and server-side names are a
+  plain 404. **Never migrate on web startup:** `services/api/bin/release` (migrate + seed,
+  production only, stops at the first failure) runs once per deploy as a separate command.
+  `scripts/smoke-image.sh` tests an image on a throwaway `portfolio_smoke` database only.
+- **CI** (ADR-0010, `.github/workflows/ci.yml`): on pushes to `main` and pull requests, five
   parallel jobs: `quality` (`npm ci`, format, lint, typecheck, unit tests, `content:check`,
   build), `e2e` (full stack since Step 3.1: PostgreSQL service and Ruby, then Playwright + axe
   against the e2e API and the shell's full-stack preview; HTML report artifact), `e2e-static`
   (the same suite against the static build, no API; since Step 3.3) and `api` (`ruby/setup-ruby` from
   `services/api/.ruby-version` with the Bundler cache, a `postgres:18.6-trixie` service container,
-  then `bin/ci`). Read-only token, actions pinned to commit SHAs (update SHA and release comment
+  then `bin/ci`), and `image` (since Step 4.2: builds the production `Dockerfile` and runs
+  `scripts/smoke-image.sh` with the browser smoke against a disposable PostgreSQL service; the
+  image is never pushed). Read-only token, actions pinned to commit SHAs (update SHA and release comment
   together), no secrets (the `api` job's database password is a documented throwaway). Keep CI
   calling root npm scripts and `bin/ci` so it never drifts from local commands: new API checks
   go into `services/api/config/ci.rb`, not the workflow. Keep the PostgreSQL image tag identical
@@ -290,28 +303,30 @@ before the app uses its own router.
 
 Run from the repository root (after `nvm use`):
 
-| Command                               | Purpose                                                |
-| ------------------------------------- | ------------------------------------------------------ |
-| `npm install`                         | Install all workspace dependencies                     |
-| `npm run dev`                         | Start the shell dev server (static mode, port 5173)    |
-| `npm run dev:fullstack`               | Dev server in full-stack mode (needs `bin/rails s`)    |
-| `npm run build`                       | Type-check and build all workspaces (static site)      |
-| `npm run build:fullstack`             | Build the full-stack shell (`VITE_APP_MODE=fullstack`) |
-| `npm run lint`                        | ESLint (type-aware) in all workspaces                  |
-| `npm run typecheck`                   | `tsc -b` in all workspaces                             |
-| `npm test`                            | Vitest unit/component tests in all workspaces          |
-| `npm run format`                      | Format the whole repo with Prettier                    |
-| `npm run format:check`                | Check formatting (no writes)                           |
-| `npm run content:todo`                | List content placeholders still awaiting confirmation  |
-| `npm run content:check`               | Fail if any content placeholder remains (CI gate)      |
-| `npm run api:types:install`           | Install the locked OpenAPI type generator (once)       |
-| `npm run api:types`                   | Regenerate `apps/shell/src/api/schema.ts`              |
-| `npm run api:types:check`             | Fail if the generated API types are stale (CI gate)    |
-| `npm run illustrations -w apps/shell` | Rebuild WebP derivatives from `docs/assets/source/`    |
-| `npm run favicon -w apps/shell`       | Rebuild the favicons (mascot head crop) in `public/`   |
-| `npm run test:e2e`                    | Full-stack E2E: the e2e API plus the preview           |
-| `npm run test:e2e:static`             | Static E2E: the static build alone, no API             |
-| `npm run report -w e2e`               | Open the last E2E HTML report                          |
+| Command                                  | Purpose                                                                               |
+| ---------------------------------------- | ------------------------------------------------------------------------------------- |
+| `npm install`                            | Install all workspace dependencies                                                    |
+| `npm run dev`                            | Start the shell dev server (static mode, port 5173)                                   |
+| `npm run dev:fullstack`                  | Dev server in full-stack mode (needs `bin/rails s`)                                   |
+| `npm run build`                          | Type-check and build all workspaces (static site)                                     |
+| `npm run build:fullstack`                | Build the full-stack shell (`VITE_APP_MODE=fullstack`)                                |
+| `npm run lint`                           | ESLint (type-aware) in all workspaces                                                 |
+| `npm run typecheck`                      | `tsc -b` in all workspaces                                                            |
+| `npm test`                               | Vitest unit/component tests in all workspaces                                         |
+| `npm run format`                         | Format the whole repo with Prettier                                                   |
+| `npm run format:check`                   | Check formatting (no writes)                                                          |
+| `npm run content:todo`                   | List content placeholders still awaiting confirmation                                 |
+| `npm run content:check`                  | Fail if any content placeholder remains (CI gate)                                     |
+| `npm run api:types:install`              | Install the locked OpenAPI type generator (once)                                      |
+| `npm run api:types`                      | Regenerate `apps/shell/src/api/schema.ts`                                             |
+| `npm run api:types:check`                | Fail if the generated API types are stale (CI gate)                                   |
+| `npm run illustrations -w apps/shell`    | Rebuild WebP derivatives from `docs/assets/source/`                                   |
+| `npm run favicon -w apps/shell`          | Rebuild the favicons (mascot head crop) in `public/`                                  |
+| `npm run test:e2e`                       | Full-stack E2E: the e2e API plus the preview                                          |
+| `npm run test:e2e:static`                | Static E2E: the static build alone, no API                                            |
+| `docker build -t portfolio:local .`      | Build the production image (Step 4.2)                                                 |
+| `scripts/smoke-image.sh portfolio:local` | Smoke-test an image (needs `PG*` variables; `SMOKE_BROWSER=1` adds the browser smoke) |
+| `npm run report -w e2e`                  | Open the last E2E HTML report                                                         |
 
 The Rails API (`services/api`, Ruby from `.ruby-version` via asdf) is outside the npm
 workspaces; its setup and commands are in `services/api/README.md`:

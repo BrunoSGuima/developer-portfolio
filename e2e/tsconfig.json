@@ -24,5 +24,12 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["playwright.config.ts", "support", "tests", "../apps/shell/src/env.d.ts"]
+  "include": [
+    "playwright.config.ts",
+    "playwright.smoke.config.ts",
+    "support",
+    "tests",
+    "smoke",
+    "../apps/shell/src/env.d.ts"
+  ]
 }

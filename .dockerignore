@@ -1,0 +1,31 @@
+# The production image's build context (Dockerfile, ADR-0015) is an allowlist: everything is
+# excluded, then only what the image needs is re-included, so a new or stray file (a secret, test
+# output, a local build) can never slip into the build by accident.
+*
+
+!package.json
+!package-lock.json
+!.nvmrc
+!e2e/package.json
+!apps/shell/
+!services/api/
+
+# Excluded again inside the re-included directories.
+**/node_modules
+**/.env*
+**/*.map
+**/.DS_Store
+**/*:Zone.Identifier
+apps/shell/dist
+apps/shell/coverage
+services/api/config/master.key
+services/api/config/credentials.yml.enc
+services/api/config/credentials/
+services/api/log/*
+services/api/tmp/*
+services/api/storage/*
+services/api/spec
+services/api/docs
+services/api/coverage
+services/api/.bundle
+services/api/vendor/bundle

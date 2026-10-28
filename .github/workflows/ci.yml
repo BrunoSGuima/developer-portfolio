@@ -239,3 +239,69 @@ jobs:
       # RuboCop, bundler-audit, Brakeman and RSpec. Any failing step fails the job.
       - name: API checks (bin/ci)
         run: bin/ci
+
+  # The production image (ADR-0015, Phase 4 Step 4.2): built from the Dockerfile and smoke-tested
+  # against a disposable PostgreSQL service on a throwaway database (portfolio_smoke): the image's
+  # contents, the release command, single-origin serving of the shell and the API, then a
+  # read-only browser smoke. The image is never pushed anywhere.
+  image:
+    name: Production image (build and smoke test)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18.6-trixie
+        env:
+          POSTGRES_USER: portfolio
+          POSTGRES_PASSWORD: ci-throwaway-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U portfolio -d postgres"
+          --health-interval 5s --health-timeout 3s --health-retries 10 --health-start-period 10s
+    # The disposable service above; scripts/smoke-image.sh only ever uses portfolio_smoke on it.
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: portfolio
+      PGPASSWORD: ci-throwaway-password
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build the production image
+        run: docker build -t portfolio:ci .
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies (for the browser smoke)
+        run: npm ci
+
+      - name: Read the Playwright version
+        id: playwright
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache the Playwright browser
+        id: browser-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}-chromium
+
+      - name: Install Chromium and its system libraries
+        if: steps.browser-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Install the system libraries (browser restored from cache)
+        if: steps.browser-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      # SECRET_KEY_BASE is generated inside the script for the throwaway container, never stored.
+      - name: Smoke test the image (HTTP and browser)
+        env:
+          SMOKE_BROWSER: '1'
+        run: scripts/smoke-image.sh portfolio:ci

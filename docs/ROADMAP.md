@@ -31,8 +31,8 @@ and GitHub Actions ran green on the final Step 2.6 commit (`5f9eb59`, 2026-10-26
 (`84b4e4c`), 3.1 (`c922ddc`), 3.2 (`1b6bca1`), 3.3 (`4b3f833`), 3.4 (`9d7b47b`) and 3.5
 (`f66efbf`); all four GitHub Actions jobs passed on `f66efbf` ([run 40561117258](https://github.com/BrunoSGuima/developer-portfolio/actions/runs/40561117258)).
 **Phase 4 (deployment) is in progress:** Step 4.0 (the Home layout fix) is done (`13938b0`);
-Step 4.1 (the deployment architecture, ADR-0015) is ready for review; see "Phase 4 — Deployment"
-below. Nothing is deployed and nothing has been purchased. In a full-stack build the Projects page loads from the Rails API and the Contact page has a form
+Step 4.1 (the deployment architecture, ADR-0015) is done (`2653ba5`); Step 4.2 (the production
+image) is ready for review; see "Phase 4 — Deployment" below. Nothing is deployed and nothing has been purchased. In a full-stack build the Projects page loads from the Rails API and the Contact page has a form
 that sends to it; a static build uses local data and keeps the channels only. **Long-term
 requirement (2026-10-26):** the same codebase builds a **full-stack** site (React + Rails API +
 PostgreSQL) or a **static** site (local data, no backend), so the portfolio can stay public
@@ -667,8 +667,8 @@ capabilities are verified in Step 4.5 before anything is provisioned.
 | #    | Step                                                                                                                                                               | Cost              | Status           |
 | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------- | ---------------- |
 | 4.0  | Home layout shift under reduced motion (separate from infrastructure)                                                                                              | —                 | Done (`13938b0`) |
-| 4.1  | Deployment architecture: ADR-0015 and documentation                                                                                                                | —                 | Ready for review |
-| 4.2  | Production container: Dockerfile, Rails serves the shell (SPA fallback), CI image build and smoke test                                                             | —                 | Planned          |
+| 4.1  | Deployment architecture: ADR-0015 and documentation                                                                                                                | —                 | Done (`2653ba5`) |
+| 4.2  | Production container: Dockerfile, Rails serves the shell (SPA fallback), CI image build and smoke test                                                             | —                 | Ready for review |
 | 4.3  | Production hardening: `config.hosts`, `trusted_proxies`, security headers and CSP, IP-free request logs, database-aware `/up`                                      | —                 | Planned          |
 | 4.4  | Static-host readiness: `_headers`, a Cloudflare Pages preview (`*.pages.dev`), static E2E against it                                                               | Free              | Planned          |
 | 4.5  | Provider verification (no paid resources): prices, billing alerts, cancellation, rollback, region, PostgreSQL 18, backups, scheduled jobs, proxy headers; go/no-go | Free              | Planned          |
@@ -731,6 +731,38 @@ _None yet._
   4.7 (a verified procedure is required before going public either way); the spending log.
 - Documentation corrected for the decision: `CLAUDE.md` (hosting, Phase 4 rules), ADR-0002,
   0011 and 0014, both READMEs; the prerequisites below rewritten for the approved architecture.
+
+### Step 4.2 — Production container and single-origin serving
+
+- **Image** (root `Dockerfile`, allowlist `.dockerignore`): three stages: the shell's
+  `build:fullstack` on `node:22.23.3-slim` (`npm ci` for the shell workspace, `--ignore-scripts`;
+  the build fails if any source map appears), the production gems on `ruby:4.0.9-slim` (without
+  `development`, `test`, `e2e`; bootsnap precompiled), and a runtime with `libpq5` only, no Node,
+  no compilers, no specs, no secrets; a non-root user (uid 1000) that can write only `tmp/` and
+  `log/`; base images pinned by tag and digest; about 310 MB. `CMD` runs Puma only.
+- **Single origin:** the `ShellAssets` Rack middleware (enabled by `SHELL_ROOT`; no new gem)
+  serves the shell: `/api`, `/api/…` and `/up` always reach Rails (API errors stay JSON);
+  other methods go to Rails; files are served with correct types (`text/javascript`,
+  `font/woff2`, …), `/assets/*` immutable for a year, `index.html` with `no-cache`, root files
+  for an hour; page URLs get `index.html` (200, the shell routes them, as on Cloudflare Pages);
+  missing files, `*.map`, dot segments (`/.env`), server-side names (`/Gemfile`,
+  `/config/…`) and traversal attempts are a plain 404; only files inside `SHELL_ROOT` (after
+  symlinks) are ever served. Rails' own static server is off in production.
+- **Release command:** `services/api/bin/release` (`db:migrate` then `db:seed`; production
+  only unless `ALLOW_RELEASE=1`; stops at the first failure) runs once per deploy as a separate
+  command, never on web startup.
+- **Tests:** RSpec for the middleware (types, caching, fallback, refused and sensitive paths,
+  traversal, symlinks, methods) and for the API behind it (unchanged JSON errors);
+  `scripts/smoke-image.sh` (image contents, release fail-fast and success as the non-root user,
+  no migration on start, shell deep links, caching, MIME types, HEAD, 304, missing assets,
+  source maps, sensitive paths, API data and errors, contact 202/422) on a throwaway
+  `portfolio_smoke` database it creates and drops; a read-only browser smoke (`e2e/smoke`,
+  `SMOKE_BASE_URL`) reusable against the real URLs in 4.6 and 4.9.
+- **CI:** a fifth job, `image`, builds the image and runs the smoke test with the browser smoke
+  against a disposable PostgreSQL service; the image is never pushed. The four existing jobs are
+  unchanged.
+- **Not in this step (4.3):** `config.hosts`, `trusted_proxies`, the CSP and security headers,
+  IP-free request logs, a database-aware `/up`; no compression yet.
 
 ## Phase 4 prerequisites (before public deployment)
 
