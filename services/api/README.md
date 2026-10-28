@@ -266,7 +266,17 @@ The repository root's `Dockerfile` (ADR-0015, Phase 4 Step 4.2) runs this API in
 the React shell's full-stack build in `/rails/shell`; `SHELL_ROOT` enables `ShellAssets`
 (`lib/middleware/shell_assets.rb`), which serves the shell from the same origin while `/api` and
 `/up` stay with Rails. Settings come from the environment only: `DATABASE_URL`,
-`SECRET_KEY_BASE` (the app reads no credentials, so no master key), `PORT`. **`bin/release`**
+`SECRET_KEY_BASE` (the app reads no credentials, so no master key), `PORT`, and since Step 4.3:
+
+| Variable                   | Required | Meaning                                                                                                                                                  |
+| -------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ALLOWED_HOSTS`            | yes      | The exact hostnames the site answers to, comma-separated (no wildcards, ports or schemes); boot fails without it.                                        |
+| `TRUSTED_PROXIES`          | no       | IPs or CIDRs whose `X-Forwarded-For` is believed (replaces Rails' loopback and private defaults); set from the verified proxy chain before going public. |
+| `DATABASE_CONNECT_TIMEOUT` | no       | Seconds before a database connection attempt fails (default 5; `/up` answers 503).                                                                       |
+
+Every response carries the security headers and, for the shell's document and the API's JSON, a
+Content Security Policy (`lib/middleware/security_headers.rb`); request logs have no client IPs
+(`lib/middleware/request_logger.rb`). **`bin/release`**
 (migrate, then seed; production only; stops at the first failure) runs once per deploy as a
 separate command; the web command never migrates.
 

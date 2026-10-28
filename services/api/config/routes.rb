@@ -1,9 +1,9 @@
 Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
-  get "up" => "rails/health#show", as: :rails_health_check
+  # The health check for platforms and uptime monitors: 200 when the app can reach PostgreSQL,
+  # 503 otherwise (HealthController, Step 4.3).
+  get "up" => "health#show", as: :rails_health_check
 
   # Public, read-only endpoints (ADR-0012), served same-origin with the shell through a proxy, so
   # there is no CORS configuration (ADR-0011). Contract: docs/openapi.yaml.

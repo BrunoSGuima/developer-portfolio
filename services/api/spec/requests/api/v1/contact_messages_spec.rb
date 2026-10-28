@@ -210,6 +210,18 @@ RSpec.describe "Contact messages API" do
         expect(response).to have_http_status(:too_many_requests)
       end
 
+      # Through one trusted proxy that appends the client's address, a client's own forged entries
+      # come first in the header; the right-most untrusted address (the real one) is the key.
+      it "keys on the address the trusted proxy appended, not the client's forged entries" do
+        5.times { |n| send_forged({ "X-Forwarded-For" => "198.51.100.#{n}, 203.0.113.50" }, ip: "10.0.0.2") }
+
+        send_forged({ "X-Forwarded-For" => "198.51.100.99, 203.0.113.50" }, ip: "10.0.0.2")
+        expect(response).to have_http_status(:too_many_requests)
+
+        send_forged({ "X-Forwarded-For" => "203.0.113.51" }, ip: "10.0.0.2")
+        expect(response).to have_http_status(:accepted)
+      end
+
       it "still uses the forwarded address behind a local reverse proxy (a trusted peer)" do
         5.times { send_forged({ "X-Forwarded-For" => "198.51.100.1" }, ip: "127.0.0.1") }
 

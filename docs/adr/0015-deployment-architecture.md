@@ -1,7 +1,9 @@
 # ADR-0015: Deployment architecture: a temporary full stack, then a permanent static site
 
 - **Status:** Accepted (Phase 4, Step 4.1; implemented in Steps 4.2–4.11, see `docs/ROADMAP.md`;
-  Step 4.2 built the image: `Dockerfile`, `ShellAssets`, `bin/release`)
+  Step 4.2 built the image: `Dockerfile`, `ShellAssets`, `bin/release`; Step 4.3 hardened it:
+  required `ALLOWED_HOSTS`, optional `TRUSTED_PROXIES`, `SecurityHeaders` with an enforced CSP,
+  IP-free request logs, a database-aware `/up`)
 - **Date:** 2026-10-27
 
 ## Context
@@ -134,6 +136,10 @@ provisioned (Step 4.5), and every expense needs the owner's explicit approval.
 
 ### Production prerequisites (summary)
 
+HSTS for the first deployment is one day without `includeSubDomains` or `preload` (Step 4.3,
+owner's decision), revisited before the public go-live (Step 4.9) once the domain and its
+subdomains are known.
+
 The checklist, with the step that delivers each item, lives in `docs/ROADMAP.md` ("Phase 4
 prerequisites"): secrets only in the provider's environment; `config.hosts`; `trusted_proxies`
 for the verified proxy hop; security headers and a CSP in both stages; request logs without
@@ -144,7 +150,11 @@ alerts if available, one instance, spending log); the privacy review.
 
 ### To verify before provisioning (Step 4.5)
 
-Open items, not claims: current prices and taxes; billing alerts, spend limits and how to cancel
+Open items, not claims: the provider's proxy chain (what `REMOTE_ADDR` and `X-Forwarded-For`
+look like to Rails) and the `TRUSTED_PROXIES` value that makes `client_ip` correct (**mandatory
+gate before going public, verified on the provisioned service in Step 4.6**; Rails' default
+private-network trust is not assumed safe); how health checks gate deploys and whether failing
+checks restart the service; current prices and taxes; billing alerts, spend limits and how to cancel
 and delete every resource; the "deploy only after checks pass" option; deploy rollback; the
 `X-Forwarded-For` format and the proxy's address ranges; backup, point-in-time recovery and
 restore behaviour on the chosen plan; whether scheduled jobs reach the private database; the

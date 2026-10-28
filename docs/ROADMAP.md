@@ -32,7 +32,7 @@ and GitHub Actions ran green on the final Step 2.6 commit (`5f9eb59`, 2026-10-26
 (`f66efbf`); all four GitHub Actions jobs passed on `f66efbf` ([run 40561117258](https://github.com/BrunoSGuima/developer-portfolio/actions/runs/40561117258)).
 **Phase 4 (deployment) is in progress:** Step 4.0 (the Home layout fix) is done (`13938b0`);
 Step 4.1 (the deployment architecture, ADR-0015) is done (`2653ba5`); Step 4.2 (the production
-image) is ready for review; see "Phase 4 — Deployment" below. Nothing is deployed and nothing has been purchased. In a full-stack build the Projects page loads from the Rails API and the Contact page has a form
+image) is done (`6b9c9ed`); Step 4.3 (production hardening) is ready for review; see "Phase 4 — Deployment" below. Nothing is deployed and nothing has been purchased. In a full-stack build the Projects page loads from the Rails API and the Contact page has a form
 that sends to it; a static build uses local data and keeps the channels only. **Long-term
 requirement (2026-10-26):** the same codebase builds a **full-stack** site (React + Rails API +
 PostgreSQL) or a **static** site (local data, no backend), so the portfolio can stay public
@@ -668,8 +668,8 @@ capabilities are verified in Step 4.5 before anything is provisioned.
 | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------- | ---------------- |
 | 4.0  | Home layout shift under reduced motion (separate from infrastructure)                                                                                              | —                 | Done (`13938b0`) |
 | 4.1  | Deployment architecture: ADR-0015 and documentation                                                                                                                | —                 | Done (`2653ba5`) |
-| 4.2  | Production container: Dockerfile, Rails serves the shell (SPA fallback), CI image build and smoke test                                                             | —                 | Ready for review |
-| 4.3  | Production hardening: `config.hosts`, `trusted_proxies`, security headers and CSP, IP-free request logs, database-aware `/up`                                      | —                 | Planned          |
+| 4.2  | Production container: Dockerfile, Rails serves the shell (SPA fallback), CI image build and smoke test                                                             | —                 | Done (`6b9c9ed`) |
+| 4.3  | Production hardening: `config.hosts`, `trusted_proxies`, security headers and CSP, IP-free request logs, database-aware `/up`                                      | —                 | Ready for review |
 | 4.4  | Static-host readiness: `_headers`, a Cloudflare Pages preview (`*.pages.dev`), static E2E against it                                                               | Free              | Planned          |
 | 4.5  | Provider verification (no paid resources): prices, billing alerts, cancellation, rollback, region, PostgreSQL 18, backups, scheduled jobs, proxy headers; go/no-go | Free              | Planned          |
 | 4.6  | Provision Stage A on the provider's URL; verify the client-IP chain; production smoke                                                                              | Paid (approved)   | Planned          |
@@ -764,6 +764,51 @@ _None yet._
 - **Not in this step (4.3):** `config.hosts`, `trusted_proxies`, the CSP and security headers,
   IP-free request logs, a database-aware `/up`; no compression yet.
 
+### Step 4.3 — Production hardening
+
+- **Allowed hosts:** `ALLOWED_HOSTS` (exact hostnames, comma-separated) is **required** in
+  production: missing or invalid entries (wildcards, leading dots, ports, schemes, paths) stop
+  the boot (`lib/production_settings.rb`). `/up` is exempt (platform health checks); a blocked
+  host gets a 403 JSON envelope (`forbidden_host`) that lists no hosts.
+- **Trusted proxies:** optional `TRUSTED_PROXIES` (IPs or CIDRs, validated at boot) replaces
+  Rails' default list (loopback and private networks) in production; development and test are
+  unchanged, and so are `client_ip` and the rate limits. **Owner's decision: the default
+  private-network trust is not assumed safe for the public deployment; verifying the provider's
+  proxy chain and setting a secure production configuration is a mandatory Step 4.6 gate.**
+- **Security headers and CSP** (`lib/middleware/security_headers.rb`, first in the stack, every
+  environment): `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy:
+strict-origin-when-cross-origin`, a `Permissions-Policy` disabling camera, microphone,
+  geolocation, payment, USB and topics, `Cross-Origin-Opener-Policy` and
+  `Cross-Origin-Resource-Policy: same-origin`, `X-Permitted-Cross-Domain-Policies: none`. An
+  **enforced** CSP: the shell's document gets `default-src 'self'; script-src 'self'; style-src
+'self'; img-src 'self'; font-src 'self'; connect-src 'self'; manifest-src 'self'; object-src
+'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'` (no inline code, nothing
+  external); JSON (the API, `/up`) gets `default-src 'none'; frame-ancestors 'none'`; other files
+  (scripts, styles, fonts, images, the résumé PDF) get none. Verified in a browser against the
+  production image: every page in both languages, fonts, navigation, the language switch, the
+  PDF and a contact submission, with no violation.
+- **HSTS (owner's decision):** HTTPS stays enforced (`force_ssl`), but the first deployment sends
+  `max-age=86400` (one day) **without** `includeSubDomains` or `preload`, until the domain and its
+  subdomains are verified. Rails' default (two years, `includeSubDomains`) would commit every
+  subdomain to HTTPS for two years. **Revisit before public go-live (Step 4.9).**
+- **Logs:** production request logs have no client IP (`RequestLogger`: `Started GET "/path" at
+…`, paths filtered), static files aren't logged, contact values stay filtered; `/up` stays
+  silenced.
+- **Database-aware `/up`** (`HealthController`): 200 `{"status":"ok"}` when PostgreSQL answers,
+  503 `{"status":"unavailable"}` otherwise, `Cache-Control: no-store`, never any error details
+  (the failure is logged by exception class only); `connect_timeout` 5 s in production
+  (`DATABASE_CONNECT_TIMEOUT`). **The provider's health-check and restart behaviour must be
+  verified before provisioning (Step 4.5).**
+- **Tests:** RSpec (settings parsing, host rules, headers and policies, logger, health, a forged
+  `X-Forwarded-For` chain through a trusted proxy); the image smoke test (exact headers and
+  policies, HSTS, a foreign host, logs without IPs or contact contents, `/up` and the API with
+  the database down, boot refused without `ALLOWED_HOSTS`, forged headers ignored with
+  `TRUSTED_PROXIES` excluding the client) and the browser smoke (`SMOKE_WRITE=1` only in CI's
+  and the local throwaway database). Mutation checks: allowing every host, a missing
+  `ALLOWED_HOSTS`, logging the IP, `/up` 200 without a database, trusting every peer, a dropped
+  CSP directive or header, and a too-strict CSP (`connect-src 'none'`, caught by the browser
+  smoke) each fail a test.
+
 ## Phase 4 prerequisites (before public deployment)
 
 Rewritten in Step 4.1 for the approved architecture (ADR-0015; the first version, recorded in
@@ -776,14 +821,20 @@ verified before the site is public; each names the step that delivers it.
   provider's environment; the app reads no Rails credentials, so no `RAILS_MASTER_KEY`, and
   `config/master.key` is never uploaded; nothing secret in the image, `render.yaml` or the
   repository.
-- **Hosts and client IPs (mandatory, 4.3, verified on the provider in 4.6):** `config.hosts`
-  limited to the domain(s); `config.action_dispatch.trusted_proxies` set to the **verified**
-  provider proxy hop, so `client_ip` keys rate limits on the visitor's address; a test that a
-  forged `X-Forwarded-For` from outside can't change the key; Cloudflare DNS stays DNS-only in
-  Stage A (one proxy hop).
-- **Security headers (mandatory, 4.3 and 4.4):** HSTS (from `force_ssl`), a Content Security
-  Policy designed for the shell, `X-Content-Type-Options`, `Referrer-Policy`,
-  `Permissions-Policy` and `frame-ancestors`, the same in both stages (`_headers` on Pages).
+- **Hosts and client IPs (mandatory; code done in 4.3, gate in 4.6):** `ALLOWED_HOSTS` set to the
+  exact hostnames (required, done in 4.3). **Step 4.6 gate:** verify the provider's proxy chain
+  (`REMOTE_ADDR` and `X-Forwarded-For` as Rails sees them) and set `TRUSTED_PROXIES` to the
+  verified proxy addresses, so `client_ip` keys rate limits on the visitor's address; Rails'
+  default private-network trust is not assumed safe. A forged `X-Forwarded-For` from an untrusted
+  peer can't change the key (tested in 4.3); Cloudflare DNS stays DNS-only in Stage A (one proxy
+  hop).
+- **Security headers (mandatory; Stage A done in 4.3, Stage B in 4.4):** the headers and the
+  enforced CSP of `SecurityHeaders`, the same in both stages (`_headers` on Pages, with a parity
+  test). **HSTS:** one day, no `includeSubDomains` or `preload` for the first deployment;
+  **revisit before go-live (4.9)** once the domain and subdomains are verified.
+- **Health checks (mandatory, 4.5):** `/up` answers 503 when PostgreSQL is unreachable (4.3);
+  verify how the provider uses health checks (deploy gating, restarts during an outage) before
+  provisioning.
 - The database is reachable on the provider's private network only; dependency audits stay in
   CI; one instance and one Puma process (the in-memory rate limits depend on it, ADR-0013).
 
@@ -827,8 +878,9 @@ contact_messages:purge` (12 months; `DRY_RUN=1` first). Whether it runs as a sch
 
 **Privacy and logging (mandatory review, 4.8)**
 
-- Production request logs without client IPs (the "Started … for <ip>" line; 4.3); contact
-  values stay filtered (ADR-0013); errors are reported through the provider's logs only.
+- Production request logs without client IPs and without static-file requests (done in 4.3);
+  contact values stay filtered (ADR-0013); errors are reported through the provider's logs only
+  (exception messages can name the database host, never contact data).
 - The privacy note checked against the real setup: host and region, what is stored, logs and
   their retention, backups, the retention procedure; updated if needed.
 - No new third-party services (email delivery, error tracking, CAPTCHA) unless approved.

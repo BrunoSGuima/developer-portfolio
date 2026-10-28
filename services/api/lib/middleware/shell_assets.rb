@@ -98,6 +98,8 @@ class ShellAssets
 
   def serve(env, segments)
     relative = segments.join("/")
+    # The shell's HTML document: SecurityHeaders (outside) gives it the document CSP.
+    env[SecurityHeaders::SHELL_DOCUMENT] = true if relative == "index.html"
     status, headers, body = @files.call(env.merge("PATH_INFO" => "/#{relative}"))
     headers = headers.merge(
       "cache-control" => cache_control(relative),

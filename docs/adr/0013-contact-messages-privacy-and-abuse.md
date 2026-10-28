@@ -83,7 +83,10 @@ it together.
 
 - Rails' `rate_limit` counts in the cache store. The default store is **per process and in
   memory**: counts reset on restart and aren't shared between processes or servers.
-- It is keyed by client IP. Behind a reverse proxy the proxy must be a trusted peer (it is when
+- It is keyed by client IP. Since Phase 4, Step 4.3, production can name its trusted proxies
+  explicitly (`TRUSTED_PROXIES`, which replaces Rails' default loopback and private networks);
+  the provider's value is a mandatory Step 4.6 verification (ADR-0015).
+- Behind a reverse proxy the proxy must be a trusted peer (it is when
   it runs on the same host or private network) and must overwrite `X-Forwarded-For` with the
   real client address and drop `Client-IP`; the API must never be reachable directly. Otherwise
   every visitor shares the proxy's IP, or clients behind it can forge their address.

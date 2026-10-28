@@ -1,6 +1,7 @@
 require_relative "boot"
 require_relative "../lib/middleware/json_body_guard"
 require_relative "../lib/middleware/shell_assets"
+require_relative "../lib/middleware/security_headers"
 
 require "rails"
 # Pick the frameworks you want:
@@ -57,6 +58,11 @@ module Api
     # Request bodies sent to /api are handled before Rails parses them: checked (JSON, size, valid
     # object) for the routes that take one, discarded for every other route.
     config.middleware.use JsonBodyGuard
+
+    # Security headers and the Content Security Policy on every response (Step 4.3): first in the
+    # stack (before host authorization and SSL), so early answers such as a blocked host get them.
+    # Production applies the document policy to every HTML response (see the class).
+    config.middleware.insert_before 0, SecurityHeaders, all_html: Rails.env.production?
 
     # The production image serves the React shell's build from the same origin (ADR-0015):
     # SHELL_ROOT points at it. Unset in development, test and e2e, which serve no shell.

@@ -36,3 +36,6 @@ e2e:
 production:
   <<: *default
   url: <%= ENV["DATABASE_URL"] %>
+  # Bounded waits (Step 4.3): an unreachable database fails fast (health checks, requests)
+  # instead of holding a Puma thread.
+  connect_timeout: <%= ENV.fetch("DATABASE_CONNECT_TIMEOUT", 5) %>

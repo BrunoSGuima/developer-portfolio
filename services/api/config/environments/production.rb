@@ -1,4 +1,6 @@
 require "active_support/core_ext/integer/time"
+require_relative "../../lib/production_settings"
+require_relative "../../lib/middleware/request_logger"
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
@@ -25,8 +27,11 @@ Rails.application.configure do
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = true
 
-  # Skip http-to-https redirect for the default health check endpoint.
-  # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
+  # HSTS for the first deployment (Step 4.3, owner's decision): HTTPS is enforced, but for a short
+  # time and only for the exact host, until the domain and its subdomains are verified. Rails'
+  # default (2 years, includeSubDomains) would commit every subdomain to HTTPS for two years.
+  # Revisit before public go-live (Step 4.9).
+  config.ssl_options = { hsts: { expires: ProductionSettings::HSTS_MAX_AGE, subdomains: false, preload: false } }
 
   # Log to STDOUT with the current request id as a default log tag.
   config.log_tags = [ :request_id ]
@@ -37,6 +42,9 @@ Rails.application.configure do
 
   # Prevent health checks from clogging up the logs.
   config.silence_healthcheck_path = "/up"
+
+  # Request logs without client IPs, and without static-file requests (lib/middleware/request_logger.rb).
+  config.middleware.swap Rails::Rack::Logger, RequestLogger
 
   # Don't log any deprecations.
   config.active_support.report_deprecations = false
@@ -73,12 +81,19 @@ Rails.application.configure do
   # Only use :id for inspections in production.
   config.active_record.attributes_for_inspect = [ :id ]
 
-  # Enable DNS rebinding protection and other `Host` header attacks.
-  # config.hosts = [
-  #   "example.com",     # Allow requests from example.com
-  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
-  # ]
-  #
-  # Skip DNS rebinding protection for the default health check endpoint.
-  # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  # Host header protection (Step 4.3): only the exact hostnames in ALLOWED_HOSTS, required (boot
+  # fails without it, lib/production_settings.rb). /up is exempt, because platform health checks
+  # call it on an internal address; a blocked host gets the API's JSON error envelope (403).
+  config.hosts = ProductionSettings.allowed_hosts(ENV["ALLOWED_HOSTS"])
+  config.host_authorization = {
+    exclude: ProductionSettings::HOST_CHECK_EXCLUDED,
+    response_app: ProductionSettings::BLOCKED_HOST_RESPONSE
+  }
+
+  # Whose forwarded headers (X-Forwarded-For) are believed, for the contact form's rate limits
+  # (client_ip, ADR-0013). Unset: Rails' default (loopback and private networks). The production
+  # value must be verified on the provider before going public (Step 4.6 gate, ADR-0015).
+  if (proxies = ProductionSettings.trusted_proxies(ENV["TRUSTED_PROXIES"]))
+    config.action_dispatch.trusted_proxies = proxies
+  end
 end

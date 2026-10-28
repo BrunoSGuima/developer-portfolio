@@ -20,7 +20,8 @@ CI is green on GitHub; Architecture page updated). Phase 1 is **not** the MVP.
 `5f9eb59`). **Phase 3 — Frontend/backend integration and MVP completion: done** (Steps 3.0–3.5;
 GitHub Actions green on `f66efbf`; the MVP is complete). **Phase 4 — Deployment: in progress**
 (Step 4.0, the Home layout fix, done in `13938b0`; Step 4.1, the deployment architecture,
-ADR-0015, done in `2653ba5`; Step 4.2, the production image, ready for review; steps, prerequisites and the spending log are in `docs/ROADMAP.md`).
+ADR-0015, done in `2653ba5`; Step 4.2, the production image, done in `6b9c9ed`; Step 4.3,
+production hardening, ready for review; steps, prerequisites and the spending log are in `docs/ROADMAP.md`).
 Phase 4 rules: one step at a time; **never create cloud resources, buy anything or incur charges
 without the owner's explicit approval** (record approved expenses in the ROADMAP's spending log;
 US$ 20/month is a planning ceiling for Stage A, not a provider limit); keep one repository, one
@@ -132,6 +133,18 @@ Sidekiq or Vue until their phase.
   plain 404. **Never migrate on web startup:** `services/api/bin/release` (migrate + seed,
   production only, stops at the first failure) runs once per deploy as a separate command.
   `scripts/smoke-image.sh` tests an image on a throwaway `portfolio_smoke` database only.
+- **Production hardening** (Step 4.3): `ALLOWED_HOSTS` (exact hostnames) is required in
+  production, validated by `lib/production_settings.rb` (boot fails otherwise; `/up` exempt);
+  optional `TRUSTED_PROXIES` replaces Rails' default proxy list (the provider's value is a Step
+  4.6 gate; development and test unchanged). `SecurityHeaders` (first in the stack, every
+  environment) sets the security headers and the **enforced CSP**: the shell's document is
+  same-origin only with **no inline scripts or styles** (keep it that way; a feature that needs
+  more changes the policy in that one place, and Cloudflare Pages' `_headers` must match), JSON
+  gets `default-src 'none'`. HSTS is one day without `includeSubDomains` until the domain is
+  verified (revisit in 4.9). Production request logs never include client IPs
+  (`RequestLogger`); `/up` (`HealthController`) checks PostgreSQL and never returns error
+  details. The browser smoke fails on any CSP violation; `SMOKE_WRITE=1` only against a
+  throwaway database.
 - **CI** (ADR-0010, `.github/workflows/ci.yml`): on pushes to `main` and pull requests, five
   parallel jobs: `quality` (`npm ci`, format, lint, typecheck, unit tests, `content:check`,
   build), `e2e` (full stack since Step 3.1: PostgreSQL service and Ruby, then Playwright + axe

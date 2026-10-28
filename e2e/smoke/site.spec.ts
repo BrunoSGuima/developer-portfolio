@@ -1,13 +1,25 @@
 import { expect, type Page, test } from '@playwright/test';
+import { about } from '../../apps/shell/src/content/profile.ts';
+import { contactStatus, contactSubmit, fillContact } from '../support/contact.ts';
+import { clickLanguage, clickNav } from '../support/shell.ts';
+import { languageOf, messages, pages } from '../support/site.ts';
 
-// Read-only checks that the deployed site works end to end: pages load with all their assets,
-// the full-stack data arrives from the API, and nothing fails in the browser.
-// (playwright.smoke.config.ts; never writes: the contact form is not submitted.)
+// Checks that the deployed site works in a real browser, under its real headers and Content
+// Security Policy (playwright.smoke.config.ts): every page in both languages loads with all its
+// assets and fonts, navigation and the language switch work, and nothing is blocked or fails.
+// Read-only by default; SMOKE_WRITE=1 (only against a throwaway database) also submits the
+// contact form.
+const writes = process.env['SMOKE_WRITE'] === '1';
 
-/** Fails the test on console errors, page errors and failed same-origin requests. */
-function watch(page: Page) {
+/** Fails the test on CSP violations, console errors, page errors and failed same-origin requests. */
+async function watch(page: Page) {
   const problems: string[] = [];
   const origin = new URL(test.info().project.use.baseURL ?? '').origin;
+  await page.addInitScript(() => {
+    document.addEventListener('securitypolicyviolation', (event) => {
+      console.error(`CSP violation: ${event.violatedDirective} blocked ${event.blockedURI}`);
+    });
+  });
   page.on('pageerror', (error) => problems.push(`page error: ${error.message}`));
   page.on('console', (message) => {
     if (message.type() === 'error') problems.push(`console: ${message.text()}`);
@@ -21,43 +33,83 @@ function watch(page: Page) {
   return problems;
 }
 
-for (const path of ['/', '/pt-br/']) {
-  test(`${path} renders with all its assets`, async ({ page }) => {
-    const problems = watch(page);
+for (const { path, heading } of pages) {
+  test(`${path} renders with its assets and fonts, under the CSP`, async ({ page }) => {
+    const problems = await watch(page);
 
-    await page.goto(path);
+    const response = await page.goto(path);
 
-    await expect(page.locator('main h1')).toBeVisible();
-    await expect(page.locator('#what-i-do')).toBeVisible();
+    expect(response?.headers()['content-security-policy']).toContain("default-src 'self'");
+    await expect(page.getByRole('heading', { level: 1, name: heading })).toBeVisible();
     await page.waitForLoadState('networkidle');
+    // The self-hosted Inter font loaded (font-src 'self').
+    expect(await page.evaluate(() => document.fonts.check('1em "Inter Variable"'))).toBe(true);
     expect(problems).toEqual([]);
   });
 }
 
-test('a deep link loads the Projects page with the API data', async ({ page }) => {
-  const problems = watch(page);
+test('the main navigation and the language switch work under the CSP', async ({ page }) => {
+  const problems = await watch(page);
+  await page.goto('/');
 
-  await page.goto('/pt-br/projects');
-
-  await expect(page.getByRole('article').first()).toBeVisible();
-  await page.waitForLoadState('networkidle');
+  for (const id of ['about', 'projects', 'architecture', 'contact']) {
+    const target = pages.find((candidate) => candidate.id === id && candidate.locale === 'en')!;
+    await clickNav(page, target.label);
+    await expect(page.getByRole('heading', { level: 1, name: target.heading })).toBeVisible();
+  }
+  await clickLanguage(page, languageOf('pt-BR').linkName);
+  await expect(page).toHaveURL(/\/pt-br\/contact$/);
+  await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
   expect(problems).toEqual([]);
 });
 
-test('the Contact page has its channels and, in a full-stack build, the form', async ({ page }) => {
-  const problems = watch(page);
+test('the Projects page shows the API data; Contact has its channels and form', async ({
+  page,
+}) => {
+  const problems = await watch(page);
 
+  await page.goto('/pt-br/projects');
+  await expect(page.getByRole('article').first()).toBeVisible();
   await page.goto('/contact');
-
   await expect(page.getByRole('link', { name: /linkedin\.com/ })).toBeVisible();
   await expect(page.locator('[data-contact-form]')).toBeVisible();
   await page.waitForLoadState('networkidle');
   expect(problems).toEqual([]);
 });
 
+test('the résumé PDF is served as a PDF, without a document policy', async ({ page, request }) => {
+  await page.goto('/about');
+  await expect(page.locator(`a[href="${about.resume.href}"]`).first()).toBeVisible();
+
+  const response = await request.get(about.resume.href);
+
+  expect(response.status()).toBe(200);
+  expect(response.headers()['content-type']).toBe('application/pdf');
+  expect(response.headers()['content-security-policy']).toBeUndefined();
+  expect((await response.body()).subarray(0, 5).toString()).toBe('%PDF-');
+});
+
 test('an unknown page shows the shell’s 404 page', async ({ page }) => {
   const response = await page.goto('/does-not-exist');
 
   expect(response?.status()).toBe(200);
-  await expect(page.locator('main h1')).toBeVisible();
+  await expect(
+    page.getByRole('heading', { level: 1, name: messages.en.notFound.title }),
+  ).toBeVisible();
+});
+
+test('the contact form sends a message under the CSP (SMOKE_WRITE=1 only)', async ({ page }) => {
+  test.skip(!writes, 'Read-only by default: writes only against a throwaway database.');
+  const problems = await watch(page);
+  await page.goto('/contact');
+
+  await fillContact(page, {
+    name: 'Browser Smoke',
+    email: 'browser-smoke@example.com',
+    message: 'A browser smoke-test message (throwaway database).',
+  });
+  await contactSubmit(page).click();
+
+  await expect(contactStatus(page)).toHaveText(messages.en.contact.form.sent);
+  expect(problems).toEqual([]);
 });

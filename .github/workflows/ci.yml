@@ -304,4 +304,6 @@ jobs:
       - name: Smoke test the image (HTTP and browser)
         env:
           SMOKE_BROWSER: '1'
+          # The browser smoke may submit the contact form here: a disposable service database.
+          SMOKE_WRITE: '1'
         run: scripts/smoke-image.sh portfolio:ci
