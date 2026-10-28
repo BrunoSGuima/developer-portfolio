@@ -1,9 +1,9 @@
-// Prepares apps/shell/dist for Cloudflare Pages (Stage B, ADR-0015, Phase 4 Step 4.4); run by
-// `npm run build:pages` right after the static build.
+// Prepares apps/shell/dist for Cloudflare Pages (the public site, ADR-0016, Phase 4 Step 4.4);
+// run by `npm run build:pages` right after the static build.
 //
 //   1. The build must be static, checked explicitly: dist/build-mode.json, written by the
 //      shell's Vite config from the validated VITE_APP_MODE, must say "static" (a full-stack
-//      build would call an API that Stage B doesn't have).
+//      build would call an API that the public site doesn't have).
 //   2. deploy/cloudflare-pages/_headers must follow Pages' documented syntax and limits.
 //   3. The Pages files (everything in deploy/cloudflare-pages except README.md) are copied into
 //      dist. They live outside apps/shell/public so no other build or server ever serves them.

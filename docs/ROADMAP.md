@@ -30,21 +30,24 @@ and GitHub Actions ran green on the final Step 2.6 commit (`5f9eb59`, 2026-10-26
 **Phase 3 (integration and MVP completion) is done, and with it the MVP:** Steps 3.0
 (`84b4e4c`), 3.1 (`c922ddc`), 3.2 (`1b6bca1`), 3.3 (`4b3f833`), 3.4 (`9d7b47b`) and 3.5
 (`f66efbf`); all four GitHub Actions jobs passed on `f66efbf` ([run 40561117258](https://github.com/BrunoSGuima/developer-portfolio/actions/runs/40561117258)).
-**Phase 4 (deployment) is in progress:** Step 4.0 (the Home layout fix) is done (`13938b0`);
-Step 4.1 (the deployment architecture, ADR-0015) is done (`2653ba5`); Step 4.2 (the production
-image) is done (`6b9c9ed`); Step 4.3 (production hardening) is done (`35beb2d`); Step 4.4 (static-host readiness for
-Cloudflare Pages) is ready for review; see "Phase 4 — Deployment" below. Nothing is deployed and nothing has been purchased. In a full-stack build the Projects page loads from the Rails API and the Contact page has a form
-that sends to it; a static build uses local data and keeps the channels only. **Long-term
-requirement (2026-10-26):** the same codebase builds a **full-stack** site (React + Rails API +
-PostgreSQL) or a **static** site (local data, no backend), so the portfolio can stay public
-after the paid backend is shut down (see "Two modes" below).
+**Phase 4 (deployment) is in progress:** Steps 4.0–4.4 are done (`13938b0`, `2653ba5`,
+`6b9c9ed`, `35beb2d`, `4bdf06a`). **Strategy changed on 2026-10-28 (owner's decision,
+[ADR-0016](adr/0016-static-first-deployment.md), superseding ADR-0015):** only the **static** build
+is published, on Cloudflare Pages Free; the Rails API and PostgreSQL stay implemented, tested and
+documented and run **locally** (full-stack mode), never as paid cloud services. Step 4.5 (the
+architecture and documentation revision) is ready for review; see "Phase 4 — Deployment" below.
+Nothing is deployed and nothing has been purchased. In a full-stack build the Projects page loads
+from the Rails API and the Contact page has a form that sends to it; a static build uses local
+data and keeps the channels only. **Long-term requirement (2026-10-26):** the same codebase
+builds a **full-stack** site (React + Rails API + PostgreSQL) or a **static** site (local data, no
+backend); the static site is the public one (see "Two modes" below).
 
 | Phase | Scope                                                                                                                                                                 | Status           |
 | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
 | 1     | **React frontend foundation**: React + TypeScript shell, static data, mascot, Fun Fact, responsive layout, en/pt-BR, unit + E2E tests, CI                             | Done             |
 | 2     | Ruby on Rails API + PostgreSQL: projects and contact messages, security, RSpec + FactoryBot, OpenAPI contract, its own CI job; works and is tested on its own         | Done (`5f9eb59`) |
 | 3     | Frontend/backend integration, full-stack validation and **MVP completion**: the shell reads projects and sends contact messages through the API, full-stack E2E in CI | Done (`f66efbf`) |
-| 4     | Production deployment (first public release): host and reverse proxy, CD, monitoring, prerendering/SEO                                                                | In progress      |
+| 4     | Public release of the static site (ADR-0016): dark mode, content updates, Cloudflare Pages verification, custom domain; the full stack stays local                    | In progress      |
 | 5     | Vue 3 microfrontend mounted by the React shell (order of 5–8 provisional)                                                                                             | Planned          |
 | 6     | Python FastAPI service + interactive quiz                                                                                                                             | Planned          |
 | 7     | Background jobs (Redis + Sidekiq)                                                                                                                                     | Planned          |
@@ -652,35 +655,86 @@ decided otherwise, the correction is noted in brackets.
 
 ## Phase 4 — Deployment
 
-Started 2026-10-27. **Architecture: [ADR-0015](adr/0015-deployment-architecture.md)** (accepted
-in Step 4.1): **Stage A**, the full-stack build for about three months on Render (preferred,
-subject to verification) as one Docker service in which Rails serves the shell and `/api` from
-one origin, with managed PostgreSQL; **Stage B**, the static build permanently on Cloudflare
-Pages; the same custom domain in both stages; one repository, one `main` branch, both build
-modes and all four CI jobs kept after the cutover. The static site is deployed and tested on a
-preview before Stage A, as a ready fallback.
+Started 2026-10-27. **Architecture: [ADR-0016](adr/0016-static-first-deployment.md)** (accepted
+in Step 4.5, 2026-10-28; it supersedes [ADR-0015](adr/0015-deployment-architecture.md)):
+
+- **The public site is the static build only**, on Cloudflare Pages Free, from `main`, with a
+  custom domain once it's published.
+- **The Rails API and PostgreSQL are never deployed or operated as paid services.** They stay
+  implemented, tested in CI and documented, and run locally in full-stack mode (development
+  servers, or the production image against a local PostgreSQL).
+- One repository, one `main` branch, both build modes and all five CI jobs are kept.
+
+**Why the change:** Step 4.5 verified Render's prices (about $13–15/month, no spend cap; details
+in the Step 4.5 entry). That recurring cost and the operating work aren't justified for a personal
+portfolio.
+
+**Steps 4.1–4.4** were planned under ADR-0015, and their records below keep its terms: Stage A is
+the full-stack deployment that won't happen; Stage B is the static site, now simply the
+production site. Everything they built stays.
 
 **Spending rule:** no cloud resource, purchase or plan change without the owner's explicit
-approval, recorded in the spending log below. **US$ 20/month** is the planning ceiling for Stage
-A, excluding the domain; it is a budget, not a limit any provider enforces. Prices and provider
-capabilities are verified in Step 4.5 before anything is provisioned.
+approval, recorded in the spending log below. The only expected cost is the domain (Step 4.12).
 
-| #    | Step                                                                                                                                                                                                                                                     | Cost              | Status           |
-| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | ---------------- |
-| 4.0  | Home layout shift under reduced motion (separate from infrastructure)                                                                                                                                                                                    | —                 | Done (`13938b0`) |
-| 4.1  | Deployment architecture: ADR-0015 and documentation                                                                                                                                                                                                      | —                 | Done (`2653ba5`) |
-| 4.2  | Production container: Dockerfile, Rails serves the shell (SPA fallback), CI image build and smoke test                                                                                                                                                   | —                 | Done (`6b9c9ed`) |
-| 4.3  | Production hardening: `config.hosts`, `trusted_proxies`, security headers and CSP, IP-free request logs, database-aware `/up`                                                                                                                            | —                 | Done (`35beb2d`) |
-| 4.4  | Static-host readiness: `_headers`, `assets/404.html`, `build:pages` with an explicit static guard, the static E2E suite under the Pages emulator                                                                                                         | —                 | Ready for review |
-| 4.5  | Provider verification (no paid resources): the first Cloudflare Pages preview (`*.pages.dev`, approved) and its platform checks; prices, billing alerts, cancellation, rollback, region, PostgreSQL 18, backups, scheduled jobs, proxy headers; go/no-go | Free              | Planned          |
-| 4.6  | Provision Stage A on the provider's URL; verify the client-IP chain; production smoke                                                                                                                                                                    | Paid (approved)   | Planned          |
-| 4.7  | Operations: backups and a restore drill, the retention procedure (scheduled or manual, decided here), the monthly review runbook, monitoring                                                                                                             | Within budget     | Planned          |
-| 4.8  | Privacy and logging review: the privacy note checked against the real setup                                                                                                                                                                              | —                 | Planned          |
-| 4.9  | Go live: domain purchase (approved), DNS, production smoke; Architecture v4 updated                                                                                                                                                                      | Domain (approved) | Planned          |
-| 4.10 | Stage B cutover: DNS to Cloudflare Pages, static E2E against the domain; 7-day rollback window                                                                                                                                                           | —                 | Planned          |
-| 4.11 | Retire the backend: message review (export or delete), resources deleted, $0 bill confirmed, deployment history                                                                                                                                          | Ends costs        | Planned          |
+| #    | Step                                                                                                                                             | Cost              | Status           |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------- | ---------------- |
+| 4.0  | Home layout shift under reduced motion (separate from infrastructure)                                                                            | —                 | Done (`13938b0`) |
+| 4.1  | Deployment architecture: ADR-0015 and documentation (superseded by ADR-0016)                                                                     | —                 | Done (`2653ba5`) |
+| 4.2  | Production container: Dockerfile, Rails serves the shell (SPA fallback), CI image build and smoke test                                           | —                 | Done (`6b9c9ed`) |
+| 4.3  | Production hardening: `config.hosts`, `trusted_proxies`, security headers and CSP, IP-free request logs, database-aware `/up`                    | —                 | Done (`35beb2d`) |
+| 4.4  | Static-host readiness: `_headers`, `assets/404.html`, `build:pages` with an explicit static guard, the static E2E suite under the Pages emulator | —                 | Done (`4bdf06a`) |
+| 4.5  | Static-first architecture and documentation revision: ADR-0016, README, CLAUDE.md, the Architecture page and Fun Facts in both languages         | —                 | Ready for review |
+| 4.6  | Dark mode, including a nighttime city scene on the Home page                                                                                     | —                 | Planned          |
+| 4.7  | Projects: add a personal finance app (work in progress, private repository), an auction house application and a team randomizer                  | —                 | Planned          |
+| 4.8  | Résumés: replace the outdated English and Portuguese PDFs                                                                                        | —                 | Planned          |
+| 4.9  | Public README review: improve it for visitors, remove unnecessary information                                                                    | —                 | Planned          |
+| 4.10 | Codebase comment review: remove redundant or outdated comments without changing behaviour                                                        | —                 | Planned          |
+| 4.11 | Real Cloudflare Pages verification on `*.pages.dev` (no domain, no paid services)                                                                | Free              | Planned          |
+| 4.12 | Custom domain and final publication                                                                                                              | Domain (approved) | Planned          |
 
-Each step is planned in detail and approved before it starts.
+Each step is planned in detail and approved before it starts. **Steps 4.6–4.10 come before
+publication.** Their exact content and requirements are reviewed separately when each step is
+planned; the notes below only record what is already known.
+
+- **4.6 Dark mode:**
+  - every token and component in both themes, with AA contrast, reduced motion and forced
+    colours kept
+  - the Home page's **nighttime city scene** needs new owner-approved raster artwork (approved
+    art is never redrawn with CSS or SVG: Conventions, `docs/assets/ART-BRIEF.md`)
+  - the theme choice and its persistence are decided in the step
+- **4.7 Projects:**
+  - three new projects: the personal finance app (work in progress; private repository, so no
+    public link unless the owner decides otherwise), the auction house application and the team
+    randomizer
+  - content from the owner only (never invented)
+  - `content/projects.ts` and `services/api/db/seeds.rb` change together (the full-stack E2E
+    compares them)
+  - Fun Facts re-checked
+- **4.8 Résumés:**
+  - done early, in Step 4.5: the owner's new English and Portuguese PDFs are in
+    `apps/shell/public/resumes/`, phone-free (text and metadata checked 2026-10-28), tracked
+    through two explicit `.gitignore` exceptions; the About page links each language to its own
+    PDF (`about.resume.href`)
+  - any replacement: check its text **and metadata** for a phone number first (Conventions)
+  - left for this step: the content review
+- **4.9 Public README:** written for visitors; the developer detail moves to `CLAUDE.md`,
+  `docs/` or the API README.
+- **4.10 Comments:** remove redundant or outdated comments only. No behaviour change; every check
+  stays green.
+- **4.11 Pages verification:**
+  - the owner creates the Pages project: Git integration limited to this repository (Direct
+    Upload can never switch to Git later), production branch `main`, **preview branches "None"**
+  - `X-Robots-Tag: noindex` for `*.pages.dev` (the absolute-URL `_headers` rule Cloudflare
+    documents)
+  - check Pages' default `Access-Control-Allow-Origin: *` against the parity rule
+  - a remote mode for the static suite and the browser smoke against the preview
+  - the "To confirm" rows in `deploy/cloudflare-pages/README.md`
+- **4.12 Publication:**
+  - the domain purchase (approved, logged below); DNS on Cloudflare; the static E2E suite and
+    browser smoke against the domain
+  - HSTS revisited for the domain
+  - the Architecture page: v4 `done`, its components `live`, the hosting card no longer
+    `planned`; the Fun Facts may name the host
 
 ### Spending log
 
@@ -844,97 +898,137 @@ strict-origin-when-cross-origin`, a `Permissions-Policy` disabling camera, micro
   adopted because the emulator confirmed it (to re-check on Pages); automatic branch and pull
   request previews **off**; the first real Pages preview moves to Step 4.5, with approval.
 
-## Phase 4 prerequisites (before public deployment)
+### Step 4.5 — Static-first architecture and documentation revision
 
-Rewritten in Step 4.1 for the approved architecture (ADR-0015; the first version, recorded in
-Step 3.5, assumed a VPS with Docker Compose and Caddy). Items marked **mandatory** are done and
-verified before the site is public; each names the step that delivers it.
+**Provider research (2026-10-28):** sources are render.com/pricing and the render.com/docs pages
+on free instances, Postgres creation, backups, deploys, health checks, rollbacks, cron jobs,
+regions, the private network, SSH, Docker, web services, outbound bandwidth, Blueprints and
+service previews; staff answers on feedback.render.com are marked as such.
 
-**Security**
+- **Prices:**
+  - Hobby workspace: $0/month.
+  - Starter web service (0.5 CPU, 512 MB): $7/month.
+  - Basic-256mb PostgreSQL: $6/month (storage $0.30/GB; "1 GB SSD storage included").
+  - Bandwidth: 5 GB/month included, then $0.15/GB.
+  - Build pipeline: 500 min/month included.
+  - Cron jobs: at least $1/month each.
+  - Compute prorated to the second.
+  - **No spend cap documented.**
+- **Estimate:** about **$13–15/month** with a Brazilian card's IOF, or **$40–45 for three months**.
+- **Technical findings:**
+  - PostgreSQL 13–18, 18 by default
+  - the database's IP allow list defaults to `0.0.0.0/0`
+  - point-in-time recovery: 3 days on Hobby; restores create a new database
+  - health checks stop routing after 15 s of failures and restart the instance after 60 s
+  - `preDeployCommand` fits `bin/release`
+  - `autoDeployTrigger: checksPass`
+  - service environment variables are passed to Docker builds as build arguments
+  - SSH into Docker images needs `~/.ssh` (0700) for the running user
+  - regions: Oregon, Ohio, Virginia, Frankfurt, Singapore
+  - **`X-Forwarded-For` behaviour isn't documented, and forum answers contradict each other**
+- **Owner's decision (2026-10-28):** the cost isn't justified for a personal portfolio. Publish
+  only the static build on Cloudflare Pages Free and keep the full stack local
+  (**ADR-0016**, superseding ADR-0015).
+- **Cloudflare Pages findings (for 4.11):**
+  - Free plan: 500 builds/month, 20,000 files, 25 MiB per file, 100 `_headers` rules; static
+    requests unlimited
+  - build image v3 (Node 22, honours `.nvmrc`)
+  - previews public and on by default (branch control "None" turns them off)
+  - `X-Robots-Tag: noindex` only on preview URLs, not on the production `*.pages.dev`
+  - Pages adds `Access-Control-Allow-Origin: *` and other default headers
+  - Direct Upload projects can't switch to Git integration
+- **Delivered:**
+  - **ADR-0016:** ADR-0015 marked superseded; pointer fixes in ADR-0002, 0010, 0011, 0013 and 0014.
+  - **This roadmap:** the Phase 4 sequence revised; the prerequisites split into the static site
+    and the "if ever deployed" checklist.
+  - **Docs:** the README (deployment, the optional full-stack mode and how to run it locally),
+    `CLAUDE.md`, the Pages README and the API README.
+  - **The Architecture page, in both languages:**
+    - components shown as **Done**, not Live: nothing is published
+    - a new "Two build modes" card
+    - a new **"Two ways to run it"** section: the static production build (hosting on
+      Cloudflare Pages, Planned) and the local full-stack mode ("Not deployed")
+    - v4 renamed **"Static site release"**, In progress
+    - ADR-0015 marked superseded; ADR-0016 added
+    - timeline notes revised
+  - **Fun Facts:**
+    - Architecture, static and a new full-stack version: the Rails API with PostgreSQL and RSpec,
+      run locally; no server to run or pay for
+    - Projects, static: the same cards come from the Rails API in the local full-stack version
+  - **Code comments** that cited Stage A/B or ADR-0015 updated (no logic change).
+  - **Tests:** `content/architecture.test.ts` now rejects any Architecture or Fun Fact text that
+    mentions Rails together with "hosted", "deployed", "in production" or "online" (both
+    languages), and checks that the full-stack mode is local and unhosted.
 
-- **Secrets (mandatory, 4.3 and 4.6):** `SECRET_KEY_BASE` and `DATABASE_URL` only in the
-  provider's environment; the app reads no Rails credentials, so no `RAILS_MASTER_KEY`, and
-  `config/master.key` is never uploaded; nothing secret in the image, `render.yaml` or the
-  repository.
-- **Hosts and client IPs (mandatory; code done in 4.3, gate in 4.6):** `ALLOWED_HOSTS` set to the
-  exact hostnames (required, done in 4.3). **Step 4.6 gate:** verify the provider's proxy chain
-  (`REMOTE_ADDR` and `X-Forwarded-For` as Rails sees them) and set `TRUSTED_PROXIES` to the
-  verified proxy addresses, so `client_ip` keys rate limits on the visitor's address; Rails'
-  default private-network trust is not assumed safe. A forged `X-Forwarded-For` from an untrusted
-  peer can't change the key (tested in 4.3); Cloudflare DNS stays DNS-only in Stage A (one proxy
-  hop).
-- **Security headers (mandatory; Stage A done in 4.3, Stage B in 4.4):** the headers and the
-  enforced CSP of `SecurityHeaders`, the same in both stages (`_headers` on Pages, with a parity
-  test). **HSTS:** one day, no `includeSubDomains` or `preload` for the first deployment;
-  **revisit before go-live (4.9)** once the domain and subdomains are verified.
-- **Health checks (mandatory, 4.5):** `/up` answers 503 when PostgreSQL is unreachable (4.3);
-  verify how the provider uses health checks (deploy gating, restarts during an outage) before
-  provisioning.
-- The database is reachable on the provider's private network only; dependency audits stay in
-  CI; one instance and one Puma process (the in-memory rate limits depend on it, ADR-0013).
+## Phase 4 prerequisites (before publication)
 
-**Backups and restore**
+Rewritten in Step 4.5 for ADR-0016. Earlier versions were for a VPS (Step 3.5) and for the
+two-stage plan (Step 4.1). Items marked **mandatory** are done and verified before the site is
+public; each names the step that delivers it.
 
-- **Backups (mandatory, verified in 4.5):** the managed database's daily backups and
-  point-in-time recovery, with their retention and behaviour confirmed on the chosen plan.
-- **Restore drill (mandatory, 4.7):** a backup restored into a scratch database and checked
-  before going public.
-- Backup retention must not keep deleted contact messages longer than the retention policy
-  allows.
+**The static production site**
 
-**Contact-message retention**
+- **No secrets, no API, no database, no personal data:** the static build has no form and makes
+  no `/api` request (checked by the static E2E suite and the `build-mode.json` guard,
+  `prepare-pages.mjs`).
+- **Security headers and an enforced CSP (mandatory; done in 4.4):**
+  - `deploy/cloudflare-pages/_headers`, identical to `SecurityHeaders` (the parity spec)
+  - confirmed on real Pages in 4.11, including Pages' own default headers
+- **HSTS (mandatory, 4.12):** one day without `includeSubDomains` or `preload` until the domain
+  and its subdomains are verified; revisited at publication.
+- **Previews and indexing (mandatory, 4.11):**
+  - preview branches "None" (pull requests from forks never get previews)
+  - `*.pages.dev` served with `X-Robots-Tag: noindex`
+  - the GitHub app limited to this repository
+- **Résumés (mandatory, 4.8):** each public PDF's text and metadata checked for a phone number.
+- **Cost controls:** Pages Free has no paid add-ons enabled; the domain is the only expense
+  (approved and logged in 4.12, its auto-renewal decided at purchase).
 
-- **A verified retention and deletion procedure (mandatory, 4.7):** `bin/rails
-contact_messages:purge` (12 months; `DRY_RUN=1` first). Whether it runs as a scheduled job
-  (about $1/month at research time) or as a documented manual procedure is decided in 4.7: with
-  a three-month Stage A no message reaches 12 months unless Stage A is extended.
-- **The privacy note never claims automatic deletion** unless a purge is actually scheduled and
-  working.
+**If the full stack is ever deployed** (requires a new ADR and the owner's approval; none is
+planned)
 
-**Operational review (monthly, owner, about 15 minutes; runbook in 4.7)**
+The full-stack image is production-ready as code (Steps 4.2–4.3), but running it publicly would
+also need everything below. It is kept here so Step 4.5's findings aren't lost.
 
-1. Read new messages in a **private** provider shell with `bin/rails contact_messages:list`
-   (`LIMIT=20`, `SINCE=YYYY-MM-DD`). It prints personal data: never copy it into tickets, chats,
-   logs or the repository. No automatic forwarding to a personal inbox.
-2. Check the retention procedure (purge output, or the manual run's date).
-3. Check the deploy and health status (`/up`).
-4. Check the bill and bandwidth against the budget.
-5. Confirm the backups are recent.
+1. **Secrets:**
+   - `SECRET_KEY_BASE` and `DATABASE_URL` only in the host's environment
+   - no `RAILS_MASTER_KEY`; `config/master.key` never uploaded
+   - no secret ever declared as a Docker `ARG` (Render, for one, passes service variables to the
+     build as build arguments)
+2. **Hosts and client IPs (gate):**
+   - `ALLOWED_HOSTS` set to the exact hostnames
+   - verify the host's proxy chain (`REMOTE_ADDR` and `X-Forwarded-For` as Rails sees them) and
+     set `TRUSTED_PROXIES`, so `client_ip` keys the rate limits on the visitor's address
+   - Rails' default private-network trust is not assumed safe
+   - if the host puts the client first in `X-Forwarded-For`, Rails' rightmost-untrusted rule
+     could pick a forged entry, so a code change and an ADR note may be needed
+3. **The database:** private network only (on Render, `ipAllowList: []`); PostgreSQL 18; no
+   storage autoscaling surprises.
+4. **Health checks:** `/up` is database-aware, so a host that restarts on failing checks takes
+   the whole site down during a database outage. Decide between `/up` and a liveness-only path.
+5. **Backups:** daily backups and point-in-time recovery confirmed; a restore drill into a
+   scratch database; backup retention compatible with ADR-0013.
+6. **Retention:** a verified procedure for `bin/rails contact_messages:purge` (12 months;
+   `DRY_RUN=1` first), scheduled or manual. The privacy note never claims automatic deletion
+   unless a purge is actually scheduled and working.
+7. **Operations:**
+   - Monthly: read messages only in a private host shell with `bin/rails contact_messages:list`;
+     never copy them elsewhere.
+   - Shell access: on Render, the image needs `~/.ssh` (0700) for the `rails` user.
+   - Also check: deploy and health status, the bill and bandwidth, recent backups.
+8. **Privacy and logging:**
+   - request logs without client IPs (done in 4.3); contact values filtered
+   - the privacy note checked against the real host, its region and the provider's DPA
+   - no new third-party services without approval
+9. **Cost:** one instance, no autoscaling, a budget and alerts where available, every expense in
+   the spending log.
 
-**Cost controls**
+**Open questions (decided in the steps named):**
 
-- **Budget (mandatory before provisioning, 4.5):** US$ 20/month planning ceiling for Stage A,
-  excluding the domain; billing alerts or limits configured if the provider offers them
-  (verified in 4.5; none assumed).
-- One instance, no autoscaling, no paid add-ons.
-- **Every expense approved and recorded** in the spending log (Phase 4 section).
-- The Stage A end date is in the runbook, with a reminder two weeks before it; the domain's
-  auto-renewal is decided at purchase (4.9).
-
-**Privacy and logging (mandatory review, 4.8)**
-
-- Production request logs without client IPs and without static-file requests (done in 4.3);
-  contact values stay filtered (ADR-0013); errors are reported through the provider's logs only
-  (exception messages can name the database host, never contact data).
-- The privacy note checked against the real setup: host and region, what is stored, logs and
-  their retention, backups, the retention procedure; updated if needed.
-- No new third-party services (email delivery, error tracking, CAPTCHA) unless approved.
-
-**Retiring the backend (4.10 and 4.11)**
-
-1. The static site, already validated on its preview, takes the domain (DNS); the static E2E
-   suite runs against it (no `/api` requests).
-2. **Review the stored contact messages** with `bin/rails contact_messages:list`: securely
-   export **only** legitimate messages that still need a follow-up (encrypted, outside the
-   repository, themselves deleted under the policy); delete everything else.
-3. After 7 days of a stable Stage B: delete the scheduled job (if any), the web service, the
-   database and its backups; confirm a $0 forecast.
-4. Record the deployment history (dates, what ran where) in the README and ROADMAP. The Fun
-   Facts and the Architecture note already follow the build mode.
-
-**Open questions (decided in the steps named):** the domain name (4.9); the region (4.5, affects
-the privacy note); the retention procedure (4.7); whether pages are prerendered for SEO (not
-planned in Phase 4).
+- the domain name (4.12)
+- the theme toggle and its persistence (4.6)
+- the content of the new projects and résumés (4.7, 4.8)
+- whether pages are prerendered for SEO (not planned in Phase 4)
 
 ## Step 12 — CI & automated quality checks
 

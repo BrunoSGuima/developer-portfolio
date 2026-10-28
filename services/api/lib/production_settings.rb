@@ -2,8 +2,8 @@ require "ipaddr"
 require "json"
 require "active_support/core_ext/integer/time"
 
-# Parses and validates the production settings that guard the edge of the app (Phase 4 Step 4.3,
-# ADR-0015), so a misconfigured deploy fails at boot instead of running unprotected.
+# Parses and validates the production settings that guard the edge of the app (Phase 4 Step 4.3),
+# so a misconfigured deploy fails at boot instead of running unprotected.
 #
 #   ALLOWED_HOSTS     required: the exact hostnames the site answers to, comma-separated
 #                     (e.g. "portfolio-xyz.onrender.com,example.dev"). No wildcards or leading
@@ -11,8 +11,8 @@ require "active_support/core_ext/integer/time"
 #                     schemes or paths. IPv4 literals are allowed (local smoke tests).
 #   TRUSTED_PROXIES   optional: the proxies whose forwarded headers are believed (IPs or CIDRs,
 #                     comma-separated). When set it replaces Rails' default list (loopback and
-#                     private networks); the production value must be verified on the provider
-#                     before going public (Step 4.6 gate).
+#                     private networks); the production value must be verified on the host
+#                     before any public deployment (ADR-0016).
 module ProductionSettings
   class Error < StandardError; end
 

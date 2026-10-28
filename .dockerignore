@@ -1,4 +1,4 @@
-# The production image's build context (Dockerfile, ADR-0015) is an allowlist: everything is
+# The production image's build context (Dockerfile, Phase 4 Step 4.2) is an allowlist: everything is
 # excluded, then only what the image needs is re-included, so a new or stray file (a secret, test
 # output, a local build) can never slip into the build by accident.
 *

@@ -100,7 +100,7 @@ function AboutPage() {
           {pick(about.background, locale)} <Text value={pick(about.backgroundDetail, locale)} />
         </p>
         <p className={styles.resume}>
-          <a href={about.resume.href} download>
+          <a href={pick(about.resume.href, locale)} download>
             {pick(about.resume.label, locale)}
           </a>
         </p>

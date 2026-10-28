@@ -1,9 +1,9 @@
 require "rails_helper"
 
-# Stage B (Cloudflare Pages, deploy/cloudflare-pages/_headers) must send the same security headers
-# and Content Security Policy as Stage A (SecurityHeaders, ProductionSettings), so both stages of
-# the site are protected alike (ADR-0015, Phase 4 Step 4.4).
-RSpec.describe "Cloudflare Pages headers (Stage B) match Stage A" do
+# The public static site (Cloudflare Pages, deploy/cloudflare-pages/_headers) must send the same
+# security headers and Content Security Policy as the full-stack image (SecurityHeaders,
+# ProductionSettings): one policy for both build modes (ADR-0016, Phase 4 Step 4.4).
+RSpec.describe "Cloudflare Pages headers match the full-stack image" do
   let(:file) { Rails.root.join("../../deploy/cloudflare-pages/_headers").read }
 
   # { "/*" => { "content-security-policy" => "…", … }, "/x.pdf" => { "!content-security-policy" => true } }
@@ -24,17 +24,17 @@ RSpec.describe "Cloudflare Pages headers (Stage B) match Stage A" do
 
   let(:site) { rules.fetch("/*") }
 
-  it "sends Stage A's document policy on every response" do
+  it "sends the image's document policy on every response" do
     expect(site["content-security-policy"]).to eq(SecurityHeaders::DOCUMENT_POLICY)
   end
 
-  it "sends every Stage A security header with the same value" do
+  it "sends every security header of the image with the same value" do
     SecurityHeaders::HEADERS.each do |name, value|
       expect(site[name]).to eq(value), name
     end
   end
 
-  it "sends the same HSTS as Stage A's first deployment (one day, this host only)" do
+  it "sends the same HSTS as the image (one day, this host only)" do
     expect(site["strict-transport-security"]).to eq("max-age=#{ProductionSettings::HSTS_MAX_AGE}")
   end
 
@@ -43,8 +43,8 @@ RSpec.describe "Cloudflare Pages headers (Stage B) match Stage A" do
     expect(site.keys).to match_array(expected)
   end
 
-  it "removes the policy from the résumé PDF and caches hashed assets for a year, like Stage A" do
-    expect(rules.fetch("/Bruno_Guimaraes_Resume.pdf")).to eq("!content-security-policy" => true)
+  it "removes the policy from the résumé PDFs and caches hashed assets for a year, like the image" do
+    expect(rules.fetch("/resumes/*")).to eq("!content-security-policy" => true)
     expect(rules.fetch("/assets/*")).to eq("cache-control" => ShellAssets::CACHE_HASHED)
   end
 end

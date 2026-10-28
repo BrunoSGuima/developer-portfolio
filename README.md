@@ -16,10 +16,11 @@ the real technology stack behind each section.
 > messages in [`services/api`](./services/api/README.md), tested on their own. Phase 3
 > (integration) is done, and with it the MVP: in a full-stack build the Projects page loads from
 > the API and the Contact page sends messages to it; a static build runs with no backend at all.
-> Phase 4 (deployment) is in progress; nothing is deployed yet. The plan
-> ([ADR-0015](./docs/adr/0015-deployment-architecture.md)): the full stack for about three months,
-> then the static site on free hosting, on the same domain. See
-> [`docs/ROADMAP.md`](./docs/ROADMAP.md).
+> Phase 4 (deployment) is in progress; nothing is published yet. The public site will be the
+> **static** build on Cloudflare Pages
+> ([ADR-0016](./docs/adr/0016-static-first-deployment.md)); the Rails API and PostgreSQL are
+> complete and tested, and run **locally** in the optional full-stack mode, so the portfolio has
+> no recurring server cost. See [`docs/ROADMAP.md`](./docs/ROADMAP.md).
 
 ## Roadmap
 
@@ -28,7 +29,7 @@ the real technology stack behind each section.
 | 1     | React frontend foundation: shell, static data, mascot, Fun Fact, en/pt-BR, tests, CI | Done        |
 | 2     | Ruby on Rails API + PostgreSQL: projects, contact messages, RSpec, OpenAPI           | Done        |
 | 3     | Frontend/backend integration, full-stack validation and MVP completion               | Done        |
-| 4     | Production deployment (full stack for a limited period, then static), monitoring     | In progress |
+| 4     | Public release of the static site on Cloudflare Pages; the full stack stays local    | In progress |
 | 5     | Vue 3 microfrontend mounted by the React shell                                       | Planned     |
 | 6     | Python FastAPI service + interactive quiz                                            | Planned     |
 | 7     | Background jobs (Redis + Sidekiq)                                                    | Planned     |
@@ -40,7 +41,8 @@ the real technology stack behind each section.
 apps/        Frontend applications (React shell in Phase 1, Vue app in Phase 5)
 services/    Backend services (Rails API in services/api since Phase 2, FastAPI in Phase 6)
 e2e/         Playwright end-to-end tests spanning all apps
-infra/       Docker Compose (PostgreSQL for development); production hosting: ADR-0015
+infra/       Docker Compose (PostgreSQL for local development)
+deploy/      Cloudflare Pages files for the static site (headers, asset 404)
 .github/     GitHub Actions CI (lint, types, unit, build, E2E + axe, production image)
 docs/adr/    Architecture Decision Records
 docs/assets/ Design references (mascot reference image)
@@ -92,12 +94,25 @@ Both ports must be free: running servers are never reused. During development, t
 proxies `/api` to `http://127.0.0.1:3000` (a `bin/rails server`); set `API_PROXY_TARGET` to change
 it. Root scripts delegate to npm workspaces.
 
+## Deployment
+
+The public site is the **static build only**, on Cloudflare Pages Free
+([ADR-0016](./docs/adr/0016-static-first-deployment.md)). **Nothing is published yet**: the Pages
+project is verified on a `*.pages.dev` address in Step 4.11, and the custom domain comes at
+publication (Step 4.12).
+
+The Rails API and PostgreSQL are **not deployed** and aren't operated as cloud services. They
+stay fully implemented and tested in CI, and run locally (see
+[Full-stack mode](#full-stack-mode-optional-runs-locally)). For a personal portfolio, a server
+running around the clock wasn't worth its recurring cost. Deploying the full stack would need a
+new ADR and the checklist in [`docs/ROADMAP.md`](./docs/ROADMAP.md#phase-4-prerequisites-before-publication).
+
 ## Two build modes
 
 One codebase builds either site, chosen at build time by `VITE_APP_MODE` (ADR-0014). The pages,
 design and languages are the same; only the data source and the contact form differ.
 
-|          | Static (default)                        | Full-stack                                                           |
+|          | Static (default, the public site)       | Full-stack (runs locally)                                            |
 | -------- | --------------------------------------- | -------------------------------------------------------------------- |
 | Projects | Local, typed data bundled with the page | The Rails API and PostgreSQL                                         |
 | Contact  | Email, LinkedIn and GitHub              | The same, plus a form that sends to the API                          |
@@ -126,27 +141,67 @@ The static build is a complete site: no API, no database and no environment vari
    things against the local build, served as Cloudflare Pages would; install its emulator once
    with `npm run pages:emulator:install`).
 
-## Production image
+## Full-stack mode (optional, runs locally)
 
-The full-stack site runs as one container (ADR-0015): Rails serves the shell's full-stack build,
-its page URLs and `/api` from one origin; PostgreSQL is external.
+The full-stack build shows the same site backed by a real API. It runs on your machine; it isn't
+deployed.
+
+**What it adds**
+
+- **A Ruby on Rails 8.1 API** (Ruby 4.0, API-only) in [`services/api`](./services/api/README.md):
+  - versioned under `/api/v1`, served from the same origin as the shell, with no CORS
+  - described by a handwritten **OpenAPI** document
+  - every request spec validates its responses against that document, and the shell's TypeScript
+    client is typed from it
+- **PostgreSQL 18:**
+  - bilingual project data stored as JSONB, with database constraints matching the model
+    validations
+  - the Projects page loads from it
+- **A contact form** (full-stack builds only):
+  - validated on both sides, rate-limited per client and guarded by a honeypot
+  - stored with minimal personal data, never logged, kept 12 months (ADR-0013)
+- **Tests:**
+  - RSpec with FactoryBot (models, constraints, requests, tasks), plus RuboCop, Brakeman and
+    dependency audits (`bin/ci`)
+  - the Playwright suite runs against the full stack too, with an end-to-end database
+- **A production Docker image:**
+  - Rails serves the shell and `/api` from one origin, with security headers, an enforced
+    Content Security Policy, IP-free logs and a database-aware `/up`
+  - built and smoke-tested in CI
+
+**Run it with development servers**
+
+Needs Ruby from `services/api/.ruby-version` (asdf), Docker, and the one-time API setup in
+[`services/api/README.md`](./services/api/README.md) (`.env` files from their `.env.example`).
+
+```bash
+docker compose -f infra/compose.yaml up -d --wait   # PostgreSQL on 127.0.0.1:5432
+(cd services/api && bin/setup --skip-server)          # gems, development and test databases
+(cd services/api && bin/rails server)                 # the API on http://localhost:3000
+npm run dev:fullstack                                 # the shell on http://localhost:5173, /api proxied
+npm run test:e2e                                      # the E2E suite against the full stack
+```
+
+**Or run the production image locally**
+
+Rails serves the shell's full-stack build, its page URLs and `/api` from one origin; PostgreSQL
+is external (here, the Compose one).
 
 ```bash
 docker build -t portfolio:local .
 # Once per deploy (never on web startup): migrations and the site's projects.
-docker run --rm -e DATABASE_URL -e SECRET_KEY_BASE portfolio:local bin/release
+docker run --rm --network host -e DATABASE_URL -e SECRET_KEY_BASE -e ALLOWED_HOSTS=localhost \
+  portfolio:local bin/release
 # The web service (Puma on $PORT, default 3000).
-docker run -p 3000:3000 -e DATABASE_URL -e SECRET_KEY_BASE portfolio:local
+docker run --rm --network host -e DATABASE_URL -e SECRET_KEY_BASE -e ALLOWED_HOSTS=localhost \
+  portfolio:local
 ```
 
-`DATABASE_URL` and `SECRET_KEY_BASE` come from the environment; nothing secret is in the image.
-`scripts/smoke-image.sh portfolio:local` tests an image against a PostgreSQL server given by the
-`PG*` variables, on a throwaway `portfolio_smoke` database only (CI's `image` job runs it). It is
-not deployed anywhere yet (Phase 4).
-
-This is how the portfolio stays online after the full-stack hosting period ends; the steps for
-retiring the backend (including what happens to stored contact messages) are in
-[`docs/ROADMAP.md`](./docs/ROADMAP.md#phase-4-prerequisites-before-public-deployment).
+`DATABASE_URL` points at a database of your choice; `SECRET_KEY_BASE` is any long random string
+(`openssl rand -hex 64`). `ALLOWED_HOSTS` is required in production mode. Nothing secret is in
+the image. `scripts/smoke-image.sh portfolio:local` tests an image against a PostgreSQL server
+given by the `PG*` variables, on a throwaway `portfolio_smoke` database only (CI's `image` job
+runs it).
 
 ## Documentation
 

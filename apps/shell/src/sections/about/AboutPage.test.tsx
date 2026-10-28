@@ -2,7 +2,9 @@ import { screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { experience } from '../../content/experience.ts';
 import { PHONE_PATTERN } from '../../test/privacy.ts';
+import { about } from '../../content/profile.ts';
 import { renderPage } from '../../test/renderPage.tsx';
+import { renderRoute } from '../../test/renderRoute.tsx';
 import page from '../Page.module.css';
 import aboutCss from './AboutPage.module.css?raw';
 import styles from './AboutPage.module.css';
@@ -41,16 +43,35 @@ describe('AboutPage', () => {
     expect(developing).toHaveTextContent(/Python and AI engineering/);
   });
 
-  it('offers the résumé as a download that exists in the public folder', () => {
+  // Lists the PDFs in apps/shell/public/resumes without importing them.
+  const publicResumes = Object.keys(import.meta.glob('../../../public/resumes/*.pdf'));
+
+  it('offers the English résumé as a download that exists in the public folder', () => {
     renderPage(AboutPage);
 
     const link = screen.getByRole('link', { name: /download my résumé/i });
     expect(link).toHaveAttribute('download');
     const href = link.getAttribute('href') ?? '';
-    expect(href).toMatch(/^\/[\w-]+\.pdf$/);
-    // Lists files in apps/shell/public without importing them.
-    const publicFiles = Object.keys(import.meta.glob('../../../public/*.pdf'));
-    expect(publicFiles).toContain(`../../../public${href}`);
+    expect(href).toBe(about.resume.href.en);
+    expect(href).toMatch(/^\/resumes\/[\w-]+\.pdf$/);
+    expect(publicResumes).toContain(`../../../public${href}`);
+  });
+
+  it('offers the Portuguese résumé on the Portuguese page', async () => {
+    renderRoute('/pt-br/about');
+
+    const link = await screen.findByRole('link', { name: 'Baixar meu currículo (PDF)' });
+    expect(link).toHaveAttribute('download');
+    expect(link).toHaveAttribute('href', about.resume.href['pt-BR']);
+    expect(publicResumes).toContain(`../../../public${about.resume.href['pt-BR']}`);
+  });
+
+  it('links each language to its own résumé, with no other PDF published', () => {
+    expect(about.resume.href.en).not.toBe(about.resume.href['pt-BR']);
+    expect(publicResumes.map((file) => file.replace('../../../public', '')).sort()).toEqual(
+      [about.resume.href.en, about.resume.href['pt-BR']].sort(),
+    );
+    expect(Object.keys(import.meta.glob('../../../public/*.pdf'))).toEqual([]);
   });
 
   it('has no pending placeholders and no phone number', () => {

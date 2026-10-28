@@ -34,10 +34,14 @@ Thumbs.db
 # Personal documents: résumés contain private contact details (e.g. phone number) and must never
 # be committed.
 docs/assets/*.pdf
-*[Rr]esume*.pdf
-# Exception: the public, phone-free résumé served by the site (checked for phone numbers,
-# including PDF metadata, before publishing). Re-check any replacement the same way.
-!apps/shell/public/Bruno_Guimaraes_Resume.pdf
+*[Rr][Ee][Ss][Uu][Mm][Ee]*.pdf
+*[Cc][Uu][Rr][Rr][IiÍí][Cc][Uu][Ll][Oo]*.pdf
+apps/shell/public/resumes/*.pdf
+# Exceptions: exactly the public, phone-free résumés served by the site, one per language
+# (content/profile.ts). Text and metadata checked for a phone number on 2026-10-28; re-check any
+# replacement the same way before committing it.
+!apps/shell/public/resumes/BRUNO_GUIMARAES_FULL_STACK_ENGINEER_RESUME.pdf
+!apps/shell/public/resumes/Curriculo_Bruno_Guimaraes_Port.pdf
 
 # Cloudflare Pages emulator (wrangler pages dev, Step 4.4): local working files.
 .wrangler/

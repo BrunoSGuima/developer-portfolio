@@ -19,17 +19,22 @@ CI is green on GitHub; Architecture page updated). Phase 1 is **not** the MVP.
 **Phase 2 — Ruby on Rails API + PostgreSQL: done** (Steps 2.0–2.6; GitHub Actions green on
 `5f9eb59`). **Phase 3 — Frontend/backend integration and MVP completion: done** (Steps 3.0–3.5;
 GitHub Actions green on `f66efbf`; the MVP is complete). **Phase 4 — Deployment: in progress**
-(Step 4.0, the Home layout fix, done in `13938b0`; Step 4.1, the deployment architecture,
-ADR-0015, done in `2653ba5`; Step 4.2, the production image, done in `6b9c9ed`; Step 4.3,
-production hardening, done in `35beb2d`; Step 4.4, static-host readiness for Cloudflare Pages,
-ready for review; steps, prerequisites and the spending log are in `docs/ROADMAP.md`).
-Phase 4 rules: one step at a time; **never create cloud resources, buy anything or incur charges
-without the owner's explicit approval** (record approved expenses in the ROADMAP's spending log;
-US$ 20/month is a planning ceiling for Stage A, not a provider limit); keep one repository, one
-`main` branch and both build modes, and keep all five CI jobs after the static cutover;
-`Dockerfile` and `render.yaml` never contain secrets; operational docs read contact messages with
-`bin/rails contact_messages:list` (personal data: a private provider shell only, never copied
-elsewhere); never claim automatic deletion of messages unless a purge is actually scheduled. **Long-term requirement:** one codebase builds a
+(Steps 4.0–4.4 done: `13938b0`, `2653ba5`, `6b9c9ed`, `35beb2d`, `4bdf06a`; Step 4.5, the
+static-first architecture and documentation revision, ready for review; then 4.6 dark mode,
+4.7 projects, 4.8 résumés, 4.9 public README, 4.10 comment review, 4.11 real Cloudflare Pages
+verification, 4.12 custom domain and publication; details, prerequisites and the spending log
+are in `docs/ROADMAP.md`). **Deployment strategy (ADR-0016, 2026-10-28, superseding ADR-0015):**
+only the **static** build is published, on Cloudflare Pages Free; the Rails API and PostgreSQL
+stay implemented, tested and documented and run **locally** (full-stack mode), never as paid
+cloud services. Phase 4 rules: one step at a time; **never create cloud resources, buy anything
+or incur charges without the owner's explicit approval** (record approved expenses in the
+ROADMAP's spending log; the domain is the only expected one); keep one repository, one `main`
+branch, both build modes, all backend code, Docker support and all five CI jobs; the `Dockerfile`
+never contains secrets; **never describe the backend as hosted, deployed or public** (the README,
+the Architecture page and the Fun Facts separate what the repository implements from what runs in
+production; `content/architecture.test.ts` checks it); deploying the full stack would need a new
+ADR and the ROADMAP's "If the full stack is ever deployed" checklist; never claim automatic
+deletion of contact messages unless a purge is actually scheduled. **Long-term requirement:** one codebase builds a
 **full-stack** site (Rails API + PostgreSQL) or a **static** site (local data, no backend),
 chosen at build time by `VITE_APP_MODE` (`static` by default, `fullstack` explicitly; ADR-0014).
 Read the mode only through `src/config/mode.ts`; per-section differences go in the registry's
@@ -116,14 +121,12 @@ Sidekiq or Vue until their phase.
   Rate limits key on `client_ip`, which ignores forwarded headers from untrusted peers. Every
   response documented in `openapi.yaml` must be asserted by a request spec (a complete RSpec
   run fails otherwise).
-- **Hosting** (ADR-0015; not deployed yet): two stages on one custom domain. **Stage A**
-  (temporary, about three months): the full-stack build on Render (preferred, to be verified),
-  as **one Docker service** in which Rails serves the shell's files, the SPA fallback and `/api`
-  from one origin (no separate proxy, no CORS), with managed PostgreSQL 18 on the private network.
-  **Stage B** (permanent): the static build on Cloudflare Pages (SPA fallback, `_headers`), no
-  backend. The static site is deployed and tested on a preview before Stage A, as a fallback. No
-  Kubernetes. (An earlier plan, a VPS with Docker Compose and Caddy, was dropped in Step 4.1.)
-- **Production image** (Step 4.2; root `Dockerfile` and allowlist `.dockerignore`): three
+- **Hosting** (ADR-0016; not published yet): the **static** build on Cloudflare Pages Free (SPA
+  fallback, `_headers`), no backend, a custom domain at publication (Step 4.12). The full stack
+  is not hosted anywhere: it runs locally. (ADR-0015's two-stage plan, Render for about three
+  months then Pages, was superseded in Step 4.5 on cost; an earlier VPS plan was dropped in 4.1.)
+- **Production image** (Step 4.2; root `Dockerfile` and allowlist `.dockerignore`; built and
+  smoke-tested in CI, run locally, not deployed): three
   stages (the shell's `build:fullstack` on Node 22, production gems, then a `ruby:4.0.9-slim`
   runtime with no Node and no development gems), base images pinned by tag **and** digest
   (update together), a non-root user, `CMD` = Puma only. The shell is served by the
@@ -134,24 +137,25 @@ Sidekiq or Vue until their phase.
   plain 404. **Never migrate on web startup:** `services/api/bin/release` (migrate + seed,
   production only, stops at the first failure) runs once per deploy as a separate command.
   `scripts/smoke-image.sh` tests an image on a throwaway `portfolio_smoke` database only.
-- **Static hosting** (Stage B, Step 4.4; `deploy/cloudflare-pages/README.md`): Cloudflare Pages
+- **Static hosting** (the production site, Step 4.4; `deploy/cloudflare-pages/README.md`): Cloudflare Pages
   serves `npm run build:pages` (the static build plus `deploy/cloudflare-pages`: `_headers` and
   `assets/404.html`; never put them in `apps/shell/public`). Every build writes
   `build-mode.json`; `scripts/prepare-pages.mjs` refuses anything but `static` and validates
-  `_headers`. **`_headers` must equal Stage A's `SecurityHeaders`** (the parity spec in
-  `services/api/spec/deploy/` fails otherwise): change both together. No top-level `404.html`
-  (it would switch Pages' SPA mode off). The static E2E suite runs under the pinned Pages
-  emulator (`tools/pages-emulator`, `npm run pages:emulator:install`; dev and CI only);
-  `E2E_STATIC_SERVER=preview` uses `vite preview`. Nothing is on Cloudflare yet (Step 4.5).
+  `_headers`. **`_headers` must equal the full-stack image's `SecurityHeaders`** (one policy for
+  both modes; the parity spec in `services/api/spec/deploy/` fails otherwise): change both
+  together. No top-level `404.html` (it would switch Pages' SPA mode off). The static E2E suite
+  runs under the pinned Pages emulator (`tools/pages-emulator`, `npm run pages:emulator:install`;
+  dev and CI only); `E2E_STATIC_SERVER=preview` uses `vite preview`. Nothing is on Cloudflare yet
+  (the real Pages verification is Step 4.11).
 - **Production hardening** (Step 4.3): `ALLOWED_HOSTS` (exact hostnames) is required in
   production, validated by `lib/production_settings.rb` (boot fails otherwise; `/up` exempt);
-  optional `TRUSTED_PROXIES` replaces Rails' default proxy list (the provider's value is a Step
-  4.6 gate; development and test unchanged). `SecurityHeaders` (first in the stack, every
+  optional `TRUSTED_PROXIES` replaces Rails' default proxy list (verifying a host's value is a
+  gate before the full stack is ever deployed; development and test unchanged). `SecurityHeaders` (first in the stack, every
   environment) sets the security headers and the **enforced CSP**: the shell's document is
   same-origin only with **no inline scripts or styles** (keep it that way; a feature that needs
-  more changes the policy in that one place, and Cloudflare Pages' `_headers` must match), JSON
+  more changes the policy here and in Cloudflare Pages' `_headers` together), JSON
   gets `default-src 'none'`. HSTS is one day without `includeSubDomains` until the domain is
-  verified (revisit in 4.9). Production request logs never include client IPs
+  verified (revisit in 4.12). Production request logs never include client IPs
   (`RequestLogger`); `/up` (`HealthController`) checks PostgreSQL and never returns error
   details. The browser smoke fails on any CSP violation; `SMOKE_WRITE=1` only against a
   throwaway database.
@@ -193,7 +197,9 @@ Sidekiq or Vue until their phase.
   duration such as 0.01ms: with `transition-property: all` it would delay every style change and
   make measured layouts jump; Step 4.0, `global.test.ts`, `e2e/tests/layout-stability.spec.ts`).
 - **Truthfulness:** the Fun Fact and Architecture page must only describe what is actually
-  implemented. Planned components are marked `planned`.
+  implemented. Planned components are marked `planned`. Until the site is published (4.12) the
+  Architecture components are `done`, not `live`; the backend is always described as running
+  locally, never as hosted (ADR-0016).
 - **Writing Fun Facts:** describe only what exists at the end of the current step; put future
   technologies in `plannedTech` (rendered with a visible "planned" label); when a section's
   framework differs from the shell's, say so (e.g. "built with Vue.js, mounted by the React
@@ -213,9 +219,11 @@ Sidekiq or Vue until their phase.
   professional work is not a portfolio project; Python and AI engineering are presented only as
   areas of ongoing development. **Never publish a phone number** (`privacy.test.ts` rejects
   phone-like text using a generic pattern; never write the real number into the repo, tests
-  included). Résumé PDFs are git-ignored, except the public phone-free copy
-  `apps/shell/public/Bruno_Guimaraes_Resume.pdf` (explicit `.gitignore` exception). Before
-  replacing it, check the new PDF's text **and metadata** for a phone number.
+  included). Résumé PDFs are git-ignored, except the public phone-free copies in
+  `apps/shell/public/resumes/` (one per language, linked by `about.resume.href` in
+  `content/profile.ts`; explicit `.gitignore` exceptions, Cloudflare's `/resumes/*` rule drops
+  the CSP for them). Before adding or replacing one, check its text **and metadata** for a phone
+  number.
 - **Placeholders:** unconfirmed copy is `todo('…')` (renders a "To confirm" chip, never a link).
   `npm run content:todo` lists pending ones; CI fails on any (`npm run content:check`).
 - **Mascot** (ADR-0005, `apps/shell/src/mascot/`): decorative only (`aria-hidden`,

@@ -85,7 +85,8 @@ it together.
   memory**: counts reset on restart and aren't shared between processes or servers.
 - It is keyed by client IP. Since Phase 4, Step 4.3, production can name its trusted proxies
   explicitly (`TRUSTED_PROXIES`, which replaces Rails' default loopback and private networks);
-  the provider's value is a mandatory Step 4.6 verification (ADR-0015).
+  the value for any real host is a mandatory verification before the full stack is ever deployed
+  (ADR-0016; the checklist is in `docs/ROADMAP.md`). The public site is static and has no form.
 - Behind a reverse proxy the proxy must be a trusted peer (it is when
   it runs on the same host or private network) and must overwrite `X-Forwarded-For` with the
   real client address and drop `Client-IP`; the API must never be reachable directly. Otherwise

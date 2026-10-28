@@ -1,4 +1,4 @@
-# Security headers on every response (Phase 4 Step 4.3, ADR-0015): Rails' own responses, the
+# Security headers on every response (Phase 4 Step 4.3): Rails' own responses, the
 # React shell's files (ShellAssets) and early answers such as a blocked host. It sits near the top
 # of the stack, inside Rails' SSL middleware (which adds HSTS in production).
 #

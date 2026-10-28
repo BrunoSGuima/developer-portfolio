@@ -103,5 +103,6 @@ Candidate fixes to evaluate in Phase 5:
   for cross-app navigation.
 - CSS leakage between apps is possible without Shadow DOM; mitigated by CSS Modules, Vue scoped
   styles and avoiding global element selectors beyond a shared reset.
-- Same-origin serving requires a reverse proxy or a combined deploy (Phase 4: Rails serves the shell
-  and its sections from one origin, ADR-0015; an earlier plan used Caddy).
+- Same-origin serving requires a reverse proxy or a combined deploy. The public site is static
+  (ADR-0016), so remote sections are served as static files beside the shell; the full-stack
+  production image (run locally) serves the shell and its sections from Rails on one origin.

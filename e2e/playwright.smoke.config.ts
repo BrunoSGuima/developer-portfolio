@@ -1,9 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * The browser smoke test (Phase 4, ADR-0015): a few read-only checks of an already-running site,
- * built to run against the production image in CI (scripts/smoke-image.sh) and later against the
- * provider's URL and the domain (Steps 4.6 and 4.9). It starts no server and writes nothing: it
+ * The browser smoke test (Phase 4): a few read-only checks of an already-running site, built to
+ * run against the production image in CI (scripts/smoke-image.sh) and later against the static
+ * site on Cloudflare Pages and its domain (Steps 4.11 and 4.12; ADR-0016). It starts no server and writes nothing: it
  * never submits the contact form.
  *
  *   SMOKE_BASE_URL=http://127.0.0.1:3999 npx playwright test -c e2e/playwright.smoke.config.ts

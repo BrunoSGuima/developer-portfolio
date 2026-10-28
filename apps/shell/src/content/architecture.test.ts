@@ -3,8 +3,8 @@ import { APP_MODES } from '../config/mode.ts';
 import { isPlaceholderArt } from '../mascot/assets.ts';
 import RemoteSection from '../microfrontends/RemoteSection.tsx';
 import { LOCALES } from '../i18n/locales.ts';
-import { remoteMount, sectionInMode, sections } from '../sections/registry.ts';
-import { components, timeline } from './architecture.ts';
+import { getSection, remoteMount, sectionInMode, sections } from '../sections/registry.ts';
+import { components, decisions, runModes, timeline } from './architecture.ts';
 
 function componentById(id: string) {
   const component = components.find((item) => item.id === id);
@@ -22,8 +22,9 @@ const finished = (id: string) => milestoneById(id).status === 'done';
 
 // The Architecture page must not claim anything that isn't built.
 describe('architecture truthfulness', () => {
-  it('"How it\'s built today" lists only implemented (live) components', () => {
-    expect(components.every((component) => component.status === 'live')).toBe(true);
+  // Implemented, but not yet published (ADR-0016): 'done' until the static site is live (4.12).
+  it('"How it\'s built today" lists only implemented (done) components', () => {
+    expect(components.every((component) => component.status === 'done')).toBe(true);
   });
 
   it('only marks the Vue.js milestone done if a section is built with Vue', () => {
@@ -99,15 +100,17 @@ describe('architecture timeline', () => {
     expect(timeline.filter((milestone) => milestone.status === 'in-progress').length).toBeLessThan(
       2,
     );
-    // A finished milestone is "done", never "live": the site isn't deployed yet (roadmap Phase 4).
+    // A finished milestone is "done", never "live": the site isn't published yet (Phase 4).
     expect(timeline.some((milestone) => milestone.status === 'live')).toBe(false);
   });
 
-  // End of Phase 3: the API (v2) and the integration (v3, the MVP) are done; deployment is next.
-  it('shows the Rails API and the integration done, and deployment not started', () => {
+  // Phase 4 (ADR-0016): the API (v2) and the integration (v3, the MVP) are done; the static
+  // site's release (v4) is in progress until it is published (Step 4.12).
+  it('shows the Rails API and the integration done, and the static release in progress', () => {
     expect(milestoneById('rails-api').status).toBe('done');
     expect(milestoneById('integration').status).toBe('done');
-    expect(milestoneById('deployment').status).toBe('planned');
+    expect(milestoneById('deployment').status).toBe('in-progress');
+    expect(milestoneById('deployment').name.en).toBe('Static site release');
   });
 
   it('deploys only after the Rails API and the frontend/backend integration', () => {
@@ -127,5 +130,67 @@ describe('architecture timeline', () => {
     for (const locale of LOCALES) {
       expect(milestoneById('integration').name[locale]).toMatch(/MVP/);
     }
+  });
+});
+
+// ADR-0016: the public site is the static build; the Rails API and PostgreSQL run locally only.
+// Nothing on the Architecture page or in a Fun Fact may say the backend is hosted.
+describe('static-first truthfulness (ADR-0016)', () => {
+  const HOSTED = {
+    en: /\b(hosted|deployed|in production|online)\b/i,
+    'pt-BR': /\b(hospedad[oa]|em produção|no ar|online)\b/i,
+  } as const;
+  const LOCAL = { en: /\blocally\b|\blocal\b/i, 'pt-BR': /\blocalmente\b|\blocal\b/i } as const;
+  const RAILS = /\bRails\b/;
+
+  const architecture = getSection('architecture')!;
+  const texts = [
+    ...components.map((item) => [`component ${item.id}`, item.description] as const),
+    ...decisions.map((item) => [`decision ${item.id}`, item.summary] as const),
+    ...runModes.flatMap((mode) =>
+      [mode.role, ...mode.points].map((value) => [`mode ${mode.id}`, value] as const),
+    ),
+    ...sections.flatMap((section) =>
+      (['static', 'fullstack'] as const).map(
+        (mode) =>
+          [`${section.id} Fun Fact (${mode})`, sectionInMode(section, mode).funFact.text] as const,
+      ),
+    ),
+  ];
+
+  it.each(texts)('%s never says the backend is hosted', (_where, value) => {
+    for (const locale of LOCALES) {
+      if (RAILS.test(value[locale])) expect(value[locale]).not.toMatch(HOSTED[locale]);
+    }
+  });
+
+  it.each(APP_MODES)(
+    'the Architecture Fun Fact (%s) names the Rails API and says it runs locally or not as a server',
+    (mode) => {
+      const { text } = sectionInMode(architecture, mode).funFact;
+      for (const locale of LOCALES) expect(text[locale]).toMatch(RAILS);
+      expect(text.en).toMatch(/static files/);
+      if (mode === 'static') {
+        for (const locale of LOCALES) expect(text[locale]).toMatch(LOCAL[locale]);
+      }
+    },
+  );
+
+  it('marks the full-stack mode as local and not deployed, and only the static site as hosted', () => {
+    const [staticSite, fullStack] = runModes;
+    expect(staticSite?.id).toBe('static');
+    expect(staticSite?.hosting).toEqual({ name: 'Cloudflare Pages', status: 'planned' });
+    expect(fullStack?.id).toBe('fullstack');
+    expect(fullStack?.hosting).toBeUndefined();
+    for (const locale of LOCALES) expect(fullStack?.role[locale]).toMatch(LOCAL[locale]);
+    expect(fullStack?.note?.en).toMatch(/^Not deployed/);
+    expect(fullStack?.note?.['pt-BR']).toMatch(/^Sem deploy/);
+  });
+
+  it('records ADR-0015 as superseded by ADR-0016', () => {
+    const adr15 = decisions.find((decision) => decision.id === 'ADR-0015');
+    expect(adr15?.summary.en).toMatch(/^Superseded by ADR-0016/);
+    expect(adr15?.summary['pt-BR']).toMatch(/^Substituída pela ADR-0016/);
+    expect(decisions.at(-1)?.id).toBe('ADR-0016');
   });
 });

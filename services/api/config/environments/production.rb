@@ -92,7 +92,7 @@ Rails.application.configure do
 
   # Whose forwarded headers (X-Forwarded-For) are believed, for the contact form's rate limits
   # (client_ip, ADR-0013). Unset: Rails' default (loopback and private networks). The production
-  # value must be verified on the provider before going public (Step 4.6 gate, ADR-0015).
+  # value must be verified on the host before any public deployment (ADR-0016; docs/ROADMAP.md).
   if (proxies = ProductionSettings.trusted_proxies(ENV["TRUSTED_PROXIES"]))
     config.action_dispatch.trusted_proxies = proxies
   end

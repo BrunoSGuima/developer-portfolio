@@ -2,7 +2,7 @@ require "rack/files"
 require "rack/utils"
 
 # Serves the React shell's production build (apps/shell/dist, built with VITE_APP_MODE=fullstack)
-# from the same origin as the API (ADR-0015, Phase 4 Step 4.2). Enabled only when SHELL_ROOT is
+# from the same origin as the API (Phase 4 Step 4.2). Enabled only when SHELL_ROOT is
 # set (the Docker image sets it), so development, test and e2e are unchanged.
 #
 #   /api, /api/… and /up    always passed to Rails (any method): API errors stay JSON envelopes

@@ -143,7 +143,7 @@ describe('Fun Fact in the shell', () => {
     await screen.findByRole('heading', { level: 1, name: 'Architecture' });
 
     expect(funFact()).toBe(aside);
-    expect(aside).toHaveTextContent(/one React app/);
+    expect(aside).toHaveTextContent(/built as static files/);
     expect(within(aside).getByText('planned')).toBeInTheDocument();
   });
 

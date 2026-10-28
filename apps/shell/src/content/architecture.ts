@@ -1,8 +1,11 @@
+import type { AppMode } from '../config/mode.ts';
 import type { Localized, Text } from '../i18n/localized.ts';
 import type { Status } from './status.ts';
 
 // Describe only what exists: anything not built yet is 'planned'. architecture.test.ts checks
-// these statuses against the section registry.
+// these statuses against the section registry. The public site is the static build only
+// (ADR-0016): the Rails API and PostgreSQL are built and tested but run locally, so nothing here
+// may say they are hosted.
 
 export interface ArchitectureComponent {
   id: string;
@@ -11,8 +14,9 @@ export interface ArchitectureComponent {
   status: Status;
 }
 
-// "How it's built today" lists only what is implemented (all live); planned work lives in the
-// timeline. Reading order: architecture foundations, then cross-cutting features, then quality.
+// "How it's built today" lists only what is implemented (all done; 'live' once the site is
+// published, Step 4.12); planned work lives in the timeline. Reading order: architecture
+// foundations, then cross-cutting features, then quality.
 export const components: readonly ArchitectureComponent[] = [
   {
     id: 'react-shell',
@@ -21,7 +25,7 @@ export const components: readonly ArchitectureComponent[] = [
       en: 'Layout, navigation and Fun Fact; stays mounted while sections change.',
       'pt-BR': 'Layout, navegação e Curiosidade; continua montado enquanto as seções mudam.',
     },
-    status: 'live',
+    status: 'done',
   },
   {
     id: 'section-registry',
@@ -30,7 +34,7 @@ export const components: readonly ArchitectureComponent[] = [
       en: 'Single source of truth for sections, routes and Fun Facts.',
       'pt-BR': 'Fonte única de verdade para seções, rotas e Curiosidades.',
     },
-    status: 'live',
+    status: 'done',
   },
   {
     id: 'routing',
@@ -40,7 +44,7 @@ export const components: readonly ArchitectureComponent[] = [
       'pt-BR':
         'O React Router carrega cada seção sob demanda; as trocas de página usam um fade suave com View Transitions, instantâneo com movimento reduzido.',
     },
-    status: 'live',
+    status: 'done',
   },
   {
     id: 'microfrontend-host',
@@ -50,7 +54,17 @@ export const components: readonly ArchitectureComponent[] = [
       'pt-BR':
         'O shell em React consegue carregar e montar aplicações construídas de forma independente por meio de um pequeno contrato de mount/unmount. Ele é testado com uma aplicação simulada em JavaScript puro; nenhuma seção remota real está montada ainda.',
     },
-    status: 'live',
+    status: 'done',
+  },
+  {
+    id: 'build-modes',
+    name: { en: 'Two build modes', 'pt-BR': 'Dois modos de build' },
+    description: {
+      en: 'One codebase builds a static site (local data, no backend) or a full-stack site (Rails API and PostgreSQL); the mode is chosen at build time.',
+      'pt-BR':
+        'Um único código gera um site estático (dados locais, sem back-end) ou um site full-stack (API em Rails e PostgreSQL); o modo é escolhido no build.',
+    },
+    status: 'done',
   },
   {
     id: 'internationalisation',
@@ -60,7 +74,7 @@ export const components: readonly ArchitectureComponent[] = [
       'pt-BR':
         'Inglês e português do Brasil, cada um com suas próprias URLs (/pt-br). O seletor de idioma mantém você na mesma página.',
     },
-    status: 'live',
+    status: 'done',
   },
   {
     id: 'responsive-layout',
@@ -70,7 +84,7 @@ export const components: readonly ArchitectureComponent[] = [
       'pt-BR':
         'De celulares de 320px a telas ultrawide: um container fluido e grades de cards que se adaptam ao espaço disponível.',
     },
-    status: 'live',
+    status: 'done',
   },
   {
     id: 'accessibility',
@@ -80,7 +94,7 @@ export const components: readonly ArchitectureComponent[] = [
       'pt-BR':
         'Feito seguindo a WCAG 2.2 AA: landmarks, link para pular ao conteúdo, navegação por teclado com foco visível, suporte a movimento reduzido e alto contraste.',
     },
-    status: 'live',
+    status: 'done',
   },
   {
     id: 'mascot',
@@ -90,7 +104,7 @@ export const components: readonly ArchitectureComponent[] = [
       'pt-BR':
         'O mascote da página inicial e da Curiosidade usa as ilustrações finais; o mascote que caminha pela navegação ainda usa uma arte provisória até que seus quadros finais fiquem prontos.',
     },
-    status: 'live',
+    status: 'done',
   },
   {
     id: 'automated-testing',
@@ -100,7 +114,7 @@ export const components: readonly ArchitectureComponent[] = [
       'pt-BR':
         'Vitest e React Testing Library para os componentes; Playwright com axe-core para testes ponta a ponta e de acessibilidade, nos dois idiomas; RSpec, com FactoryBot e verificação do contrato OpenAPI, para a API em Rails.',
     },
-    status: 'live',
+    status: 'done',
   },
   {
     id: 'continuous-integration',
@@ -110,7 +124,7 @@ export const components: readonly ArchitectureComponent[] = [
       'pt-BR':
         'A cada push e pull request, o GitHub Actions verifica formatação, lint, tipos, testes, conteúdo e o build, roda a suíte ponta a ponta tanto na versão full-stack quanto na versão estática, e roda as verificações da API em Rails (estilo, auditorias de segurança e RSpec com PostgreSQL).',
     },
-    status: 'live',
+    status: 'done',
   },
 ];
 
@@ -123,7 +137,7 @@ export interface Milestone {
 
 /**
  * In delivery order (docs/ROADMAP.md). The MVP is complete only with the integration (v3);
- * deployment comes after it; the order of v5–v8 is provisional (the page says so).
+ * the static site's release comes after it; the order of v5–v8 is provisional (the page says so).
  */
 export const timeline: readonly Milestone[] = [
   {
@@ -153,10 +167,11 @@ export const timeline: readonly Milestone[] = [
     status: 'done',
   },
   {
+    // In progress: Phase 4 (ADR-0016). Done once the static site is published (Step 4.12).
     id: 'deployment',
     version: 'v4',
-    name: { en: 'Production deployment', 'pt-BR': 'Deploy em produção' },
-    status: 'planned',
+    name: { en: 'Static site release', 'pt-BR': 'Publicação do site estático' },
+    status: 'in-progress',
   },
   {
     id: 'vue-microfrontend',
@@ -352,16 +367,92 @@ export const decisions: readonly Decision[] = [
     },
   },
   {
-    // A decision, not a deployment: the timeline's v4 stays planned until the site is live.
     id: 'ADR-0015',
     title: {
       en: 'Deployment in two stages',
       'pt-BR': 'Deploy em duas etapas',
     },
     summary: {
-      en: 'Deployment in two stages: the full stack on one origin for a limited period, then the static site on free hosting, on the same domain.',
+      en: 'Superseded by ADR-0016: the full stack on one origin for a limited period, then the static site on free hosting.',
       'pt-BR':
-        'Deploy em duas etapas: a versão full-stack em uma única origem por um período limitado e, depois, o site estático em hospedagem gratuita, no mesmo domínio.',
+        'Substituída pela ADR-0016: a versão full-stack em uma única origem por um período limitado e, depois, o site estático em hospedagem gratuita.',
+    },
+  },
+  {
+    // A decision, not a deployment: the timeline's v4 is done only once the site is published.
+    id: 'ADR-0016',
+    title: {
+      en: 'Static-first deployment',
+      'pt-BR': 'Deploy priorizando o site estático',
+    },
+    summary: {
+      en: 'The public site is the static build on free static hosting; the Rails API and PostgreSQL stay fully built and tested and run locally, avoiding a recurring server cost.',
+      'pt-BR':
+        'O site público é a versão estática, em hospedagem estática gratuita; a API em Rails e o PostgreSQL continuam completos e testados e rodam localmente, evitando um custo recorrente de servidor.',
+    },
+  },
+];
+
+export interface RunMode {
+  id: AppMode;
+  name: Localized<string>;
+  /** What this mode is for, shown under its name. */
+  role: Localized<string>;
+  points: readonly Localized<string>[];
+  /** Where this mode is hosted, and whether that exists yet. The full stack is never hosted. */
+  hosting?: { name: Text; status: Status };
+  note?: Localized<string>;
+}
+
+/** "Two ways to run it": the static production build and the local full-stack mode (ADR-0016). */
+export const runModes: readonly RunMode[] = [
+  {
+    id: 'static',
+    name: { en: 'Static site', 'pt-BR': 'Site estático' },
+    role: { en: 'The production build', 'pt-BR': 'A versão de produção' },
+    points: [
+      {
+        en: 'The React shell with typed local data, in English and Portuguese.',
+        'pt-BR': 'O shell em React com dados locais tipados, em inglês e português.',
+      },
+      {
+        en: 'No API, no database and no server: plain files, with security headers and a strict Content Security Policy prepared for the host.',
+        'pt-BR':
+          'Sem API, sem banco de dados e sem servidor: arquivos simples, com cabeçalhos de segurança e uma Content Security Policy rígida já preparados para a hospedagem.',
+      },
+      {
+        en: 'The Contact page links to email, LinkedIn and GitHub.',
+        'pt-BR': 'A página de Contato indica e-mail, LinkedIn e GitHub.',
+      },
+    ],
+    // Planned until the site is published (Step 4.12).
+    hosting: { name: 'Cloudflare Pages', status: 'planned' },
+  },
+  {
+    id: 'fullstack',
+    name: { en: 'Full-stack mode', 'pt-BR': 'Modo full-stack' },
+    role: { en: 'Runs locally', 'pt-BR': 'Executado localmente' },
+    points: [
+      {
+        en: 'Projects served by a Ruby on Rails 8 API from PostgreSQL 18, through an OpenAPI contract.',
+        'pt-BR':
+          'Projetos servidos por uma API em Ruby on Rails 8 a partir do PostgreSQL 18, por meio de um contrato OpenAPI.',
+      },
+      {
+        en: 'A contact form validated and stored in PostgreSQL, with rate limits and a honeypot.',
+        'pt-BR':
+          'Um formulário de contato validado e armazenado no PostgreSQL, com limites de envio e um honeypot.',
+      },
+      {
+        en: 'A production Docker image in which Rails serves the site and the API from one origin, built and smoke-tested in CI.',
+        'pt-BR':
+          'Uma imagem Docker de produção em que o Rails serve o site e a API em uma única origem, construída e testada no CI.',
+      },
+    ],
+    note: {
+      en: 'Not deployed: kept as a complete, tested demonstration, so the portfolio has no recurring server cost.',
+      'pt-BR':
+        'Sem deploy: mantido como uma demonstração completa e testada, para que o portfólio não tenha custo recorrente de servidor.',
     },
   },
 ];

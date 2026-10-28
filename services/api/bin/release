@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The release command (ADR-0015, Phase 4 Step 4.2): run once per deploy, as a separate one-off
+# The release command (Phase 4 Step 4.2): run once per deploy, as a separate one-off
 # container or the host's pre-deploy command, never on web startup. Migrates the schema, then loads
 # the site's projects (db/seeds.rb is idempotent and transactional). Stops at the first failure,
 # so a failed migration never reaches the seeds and the deploy is aborted (non-zero exit).

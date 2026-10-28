@@ -19,6 +19,18 @@ describe('ArchitecturePage, full-stack build', () => {
     expect(region).toHaveTextContent(
       /Projects page loads from the Rails API and the contact form sends messages to it, completing the integration \(v3\)/,
     );
-    expect(region).not.toHaveTextContent(/static/);
+    expect(region).toHaveTextContent(
+      /The public release \(v4\) will be the static build; this mode runs locally/,
+    );
+    expect(region).not.toHaveTextContent(/this build is the static version/);
+  });
+
+  it('still describes both ways to run it, the full stack as local and not deployed', () => {
+    renderPage(ArchitecturePage);
+
+    const region = screen.getByRole('region', { name: 'Two ways to run it' });
+    expect(region).toHaveTextContent(/Static site\s*The production build/);
+    expect(region).toHaveTextContent(/Full-stack mode\s*Runs locally/);
+    expect(region).toHaveTextContent(/Not deployed/);
   });
 });

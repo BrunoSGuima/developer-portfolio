@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Smoke test of the production image (ADR-0015, Phase 4 Step 4.2), locally and in CI:
+# Smoke test of the production image (Phase 4 Step 4.2; never deployed, ADR-0016), locally and in CI:
 #
 #   scripts/smoke-image.sh portfolio:local
 #
@@ -41,6 +41,8 @@ export SECRET_KEY_BASE
 export DATABASE_URL="postgres://${PGUSER}:${PGPASSWORD}@${PGHOST}:${PGPORT}/${DB}"
 # Production requires the exact hostnames it answers to (Step 4.3); locally that's the loopback.
 export ALLOWED_HOSTS="127.0.0.1,localhost"
+# The English résumé (apps/shell/public/resumes; the About page's link, content/profile.ts).
+RESUME=/resumes/BRUNO_GUIMARAES_FULL_STACK_ENGINEER_RESUME.pdf
 
 psql_admin() {
   docker run --rm --network host -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD "$PG_IMAGE" \
@@ -123,11 +125,11 @@ done
 check "the API's JSON → a policy that allows nothing" \
   '[ "$(header content-security-policy "$BASE/api/v1/projects")" = "default-src '"'"'none'"'"'; frame-ancestors '"'"'none'"'"'" ]'
 check "/up → the API policy" '[ "$(header content-security-policy "$BASE/up")" = "default-src '"'"'none'"'"'; frame-ancestors '"'"'none'"'"'" ]'
-for path in "/assets/$(docker exec "$WEB" sh -c 'ls /rails/shell/assets | grep "\.js$" | head -1')" /Bruno_Guimaraes_Resume.pdf; do
+for path in "/assets/$(docker exec "$WEB" sh -c 'ls /rails/shell/assets | grep "\.js$" | head -1')" "$RESUME"; do
   check "GET $path → no policy (files), still the other headers" \
     '[ -z "$(header content-security-policy "$BASE$path")" ] && [ "$(header x-frame-options "$BASE$path")" = DENY ]'
 done
-check "the résumé PDF is served as application/pdf" '[ "$(header content-type "$BASE/Bruno_Guimaraes_Resume.pdf")" = "application/pdf" ]'
+check "the résumé PDF is served as application/pdf" '[ "$(header content-type "$BASE$RESUME")" = "application/pdf" ]'
 for pair in "x-content-type-options|nosniff" "x-frame-options|DENY" "referrer-policy|strict-origin-when-cross-origin" \
             "cross-origin-opener-policy|same-origin" "cross-origin-resource-policy|same-origin" \
             "x-permitted-cross-domain-policies|none"; do
@@ -186,7 +188,7 @@ LOGS="$(docker logs "$WEB" 2>&1)"
 check "logs page and API requests" 'grep -q "Started GET \"/pt-br/contact\"" <<<"$LOGS" && grep -q "Started POST \"/api/v1/contact_messages\"" <<<"$LOGS"'
 check "logs no client IP" '! grep -qE " for (127\.0\.0\.1|::1|[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)" <<<"$LOGS"'
 check "logs no contact-message contents" '! grep -qE "Smoke Test|smoke@example.com|A smoke-test message" <<<"$LOGS"'
-check "doesn't log static files" '! grep -qE "Started (GET|HEAD) \"/(assets/|robots.txt|Bruno_Guimaraes_Resume.pdf)" <<<"$LOGS"'
+check "doesn't log static files" '! grep -qE "Started (GET|HEAD) \"/(assets/|robots.txt|resumes/)" <<<"$LOGS"'
 
 echo "== Database unavailable (a second container, unreachable database)"
 DATABASE_URL="postgres://smoke:smoke@127.0.0.1:1/${DB}" web_on "$DOWN" "$DOWN_PORT"

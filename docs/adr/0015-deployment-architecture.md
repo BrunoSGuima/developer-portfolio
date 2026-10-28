@@ -1,10 +1,11 @@
 # ADR-0015: Deployment architecture: a temporary full stack, then a permanent static site
 
-- **Status:** Accepted (Phase 4, Step 4.1; implemented in Steps 4.2–4.11, see `docs/ROADMAP.md`;
-  Step 4.4 prepared Stage B: `deploy/cloudflare-pages`, `build:pages`, the static suite under
-  the Pages emulator; Step 4.2 built the image: `Dockerfile`, `ShellAssets`, `bin/release`; Step 4.3 hardened it:
-  required `ALLOWED_HOSTS`, optional `TRUSTED_PROXIES`, `SecurityHeaders` with an enforced CSP,
-  IP-free request logs, a database-aware `/up`)
+- **Status:** Superseded by [ADR-0016](0016-static-first-deployment.md) (2026-10-28, Step 4.5:
+  the public site is the static build only; Stage A is never provisioned). Kept as the record of
+  the earlier plan. Accepted in Step 4.1; Steps 4.2–4.4 built what it needed, and all of it stays:
+  the image (`Dockerfile`, `ShellAssets`, `bin/release`), the hardening (`ALLOWED_HOSTS`,
+  `TRUSTED_PROXIES`, `SecurityHeaders` with an enforced CSP, IP-free request logs, a
+  database-aware `/up`) and the static site prepared for Cloudflare Pages.
 - **Date:** 2026-10-27
 
 ## Context

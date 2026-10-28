@@ -3,8 +3,9 @@
 The portfolio's backend (Phase 2, ADR-0011): an **API-only** Rails application with PostgreSQL,
 tested with RSpec. It is independent of the npm workspaces and of the React shell: it runs and
 is tested on its own. Public endpoints will live under `/api/v1` (ADR-0012), served same-origin
-with the shell (through the Vite proxy in development; in production Rails serves the shell and the
-API from one origin, ADR-0015), so there is no CORS configuration.
+with the shell (through the Vite proxy in development; in the full-stack production image Rails
+serves the shell and the API from one origin), so there is no CORS configuration. The API isn't
+deployed: the public site is the static build, and the full stack runs locally (ADR-0016).
 
 **Status (Phase 2 complete, Step 2.6):** the toolchain, the database, the test setup, Rails'
 `GET /up` health check, the **Projects domain** (models, constraints, seeds), the read-only
@@ -262,17 +263,18 @@ tasks in the `e2e` environment only act on its database.
 
 ## Production (the Docker image)
 
-The repository root's `Dockerfile` (ADR-0015, Phase 4 Step 4.2) runs this API in production with
+Built and smoke-tested in CI and runnable locally; not deployed anywhere (ADR-0016). The
+repository root's `Dockerfile` (Phase 4 Step 4.2) runs this API in production mode with
 the React shell's full-stack build in `/rails/shell`; `SHELL_ROOT` enables `ShellAssets`
 (`lib/middleware/shell_assets.rb`), which serves the shell from the same origin while `/api` and
 `/up` stay with Rails. Settings come from the environment only: `DATABASE_URL`,
 `SECRET_KEY_BASE` (the app reads no credentials, so no master key), `PORT`, and since Step 4.3:
 
-| Variable                   | Required | Meaning                                                                                                                                                  |
-| -------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ALLOWED_HOSTS`            | yes      | The exact hostnames the site answers to, comma-separated (no wildcards, ports or schemes); boot fails without it.                                        |
-| `TRUSTED_PROXIES`          | no       | IPs or CIDRs whose `X-Forwarded-For` is believed (replaces Rails' loopback and private defaults); set from the verified proxy chain before going public. |
-| `DATABASE_CONNECT_TIMEOUT` | no       | Seconds before a database connection attempt fails (default 5; `/up` answers 503).                                                                       |
+| Variable                   | Required | Meaning                                                                                                                                                    |
+| -------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ALLOWED_HOSTS`            | yes      | The exact hostnames the site answers to, comma-separated (no wildcards, ports or schemes); boot fails without it.                                          |
+| `TRUSTED_PROXIES`          | no       | IPs or CIDRs whose `X-Forwarded-For` is believed (replaces Rails' loopback and private defaults); set from the verified proxy chain before any public use. |
+| `DATABASE_CONNECT_TIMEOUT` | no       | Seconds before a database connection attempt fails (default 5; `/up` answers 503).                                                                         |
 
 Every response carries the security headers and, for the shell's document and the API's JSON, a
 Content Security Policy (`lib/middleware/security_headers.rb`); request logs have no client IPs

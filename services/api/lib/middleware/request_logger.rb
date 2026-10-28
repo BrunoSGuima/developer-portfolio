@@ -1,4 +1,4 @@
-# Production request logging (Phase 4 Step 4.3, ADR-0015, ADR-0013): Rails' request logger, minus
+# Production request logging (Phase 4 Step 4.3, ADR-0013): Rails' request logger, minus
 # what the logs don't need.
 #   - No client IP: "Started GET "/pt-br/contact" at …" (Rails writes "… for <ip> at …").
 #     The path stays filtered (request.filtered_path applies filter_parameters to the query).

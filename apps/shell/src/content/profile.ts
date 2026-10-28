@@ -75,8 +75,11 @@ export interface AboutContent {
   careerNote: Localized<string>;
   background: Localized<string>;
   backgroundDetail: Localized<Content>;
-  /** Phone-free public copy in apps/shell/public/ (see the .gitignore exception). */
-  resume: { label: Localized<string>; href: string };
+  /**
+   * One PDF per language in apps/shell/public/resumes/. Public copies must be phone-free (text and
+   * metadata checked before they are committed; see the .gitignore rules).
+   */
+  resume: { label: Localized<string>; href: Localized<string> };
 }
 
 export const about: AboutContent = {
@@ -101,9 +104,12 @@ export const about: AboutContent = {
   resume: {
     label: {
       en: 'Download my résumé (PDF)',
-      'pt-BR': 'Baixar meu currículo (PDF, em inglês)',
+      'pt-BR': 'Baixar meu currículo (PDF)',
     },
-    href: '/Bruno_Guimaraes_Resume.pdf',
+    href: {
+      en: '/resumes/BRUNO_GUIMARAES_FULL_STACK_ENGINEER_RESUME.pdf',
+      'pt-BR': '/resumes/Curriculo_Bruno_Guimaraes_Port.pdf',
+    },
   },
 };
 

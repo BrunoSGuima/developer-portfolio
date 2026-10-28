@@ -6,14 +6,15 @@ import { contact } from '../../apps/shell/src/content/contact.ts';
 import { servedAsPages } from '../support/mode.ts';
 import { languageOf, notFoundCase, pages, type Locale } from '../support/site.ts';
 
-// The static site as Cloudflare Pages serves it (Stage B, ADR-0015, Phase 4 Step 4.4), under the
-// Pages emulator (`wrangler pages dev`): the _headers rules, the SPA fallback for page URLs,
-// real 404s for missing assets, and the static Contact page. This is the emulator's behaviour;
-// docs/ROADMAP.md (Step 4.4) lists what still needs confirming on the real platform (Step 4.5).
+// The static site as Cloudflare Pages serves it (the public site, ADR-0016, Phase 4 Step 4.4),
+// under the Pages emulator (`wrangler pages dev`): the _headers rules, the SPA fallback for page
+// URLs, real 404s for missing assets, and the static Contact page. This is the emulator's
+// behaviour; docs/ROADMAP.md (Step 4.4) lists what still needs confirming on the real platform
+// (Step 4.11).
 test.skip(!servedAsPages, 'Only when the static build is served as Cloudflare Pages would.');
 
-// The expected headers come from the file the host applies; their parity with Stage A (Rails)
-// is checked by services/api/spec/deploy/static_headers_parity_spec.rb.
+// The expected headers come from the file the host applies; their parity with the full-stack
+// image (Rails) is checked by services/api/spec/deploy/static_headers_parity_spec.rb.
 const headersFile = readFileSync(
   fileURLToPath(new URL('../../deploy/cloudflare-pages/_headers', import.meta.url)),
   'utf8',
@@ -57,7 +58,7 @@ test.describe('the static site under the Cloudflare Pages emulator', () => {
 
         const response = await page.goto(unknown.path);
 
-        // Pages' SPA mode answers 200; the shell renders its own 404 page (as in Stage A).
+        // Pages' SPA mode answers 200; the shell renders its own 404 page (as the image does).
         expect(response?.status()).toBe(200);
         await expect(page.getByRole('heading', { level: 1, name: unknown.heading })).toBeVisible();
       });
@@ -88,15 +89,17 @@ test.describe('the static site under the Cloudflare Pages emulator', () => {
       expect(headers['x-frame-options']).toBe('DENY');
     });
 
-    test('the résumé PDF has the other headers but no CSP (built-in PDF viewers)', async ({
+    test('the résumé PDFs have the other headers but no CSP (built-in PDF viewers)', async ({
       request,
     }) => {
-      const response = await request.get(about.resume.href);
+      for (const href of [about.resume.href.en, about.resume.href['pt-BR']]) {
+        const response = await request.get(href);
 
-      expect(response.status()).toBe(200);
-      expect(response.headers()['content-type']).toBe('application/pdf');
-      expect(response.headers()['content-security-policy']).toBeUndefined();
-      expect(response.headers()['x-content-type-options']).toBe('nosniff');
+        expect(response.status(), href).toBe(200);
+        expect(response.headers()['content-type'], href).toBe('application/pdf');
+        expect(response.headers()['content-security-policy'], href).toBeUndefined();
+        expect(response.headers()['x-content-type-options'], href).toBe('nosniff');
+      }
     });
 
     test('the build is marked static (build-mode.json)', async ({ request }) => {

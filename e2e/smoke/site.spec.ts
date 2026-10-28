@@ -88,16 +88,21 @@ test('the Projects page shows its data; Contact has its channels (and the form w
   expect(problems).toEqual([]);
 });
 
-test('the résumé PDF is served as a PDF, without a document policy', async ({ page, request }) => {
-  await page.goto('/about');
-  await expect(page.locator(`a[href="${about.resume.href}"]`).first()).toBeVisible();
+test('each résumé PDF is served as a PDF, without a document policy', async ({ page, request }) => {
+  for (const [path, href] of [
+    ['/about', about.resume.href.en],
+    ['/pt-br/about', about.resume.href['pt-BR']],
+  ] as const) {
+    await page.goto(path);
+    await expect(page.locator(`a[href="${href}"]`).first()).toBeVisible();
 
-  const response = await request.get(about.resume.href);
+    const response = await request.get(href);
 
-  expect(response.status()).toBe(200);
-  expect(response.headers()['content-type']).toBe('application/pdf');
-  expect(response.headers()['content-security-policy']).toBeUndefined();
-  expect((await response.body()).subarray(0, 5).toString()).toBe('%PDF-');
+    expect(response.status(), href).toBe(200);
+    expect(response.headers()['content-type'], href).toBe('application/pdf');
+    expect(response.headers()['content-security-policy'], href).toBeUndefined();
+    expect((await response.body()).subarray(0, 5).toString(), href).toBe('%PDF-');
+  }
 });
 
 test('an unknown page shows the shell’s 404 page', async ({ page }) => {

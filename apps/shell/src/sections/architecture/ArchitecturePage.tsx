@@ -1,7 +1,7 @@
 import PageIntro from '../../components/PageIntro/PageIntro.tsx';
 import StatusTag from '../../components/StatusTag/StatusTag.tsx';
 import { appMode } from '../../config/mode.ts';
-import { components, decisions, timeline } from '../../content/architecture.ts';
+import { components, decisions, runModes, timeline } from '../../content/architecture.ts';
 import { useLocale, useMessages } from '../../i18n/context.ts';
 import { pick, text } from '../../i18n/localized.ts';
 import page from '../Page.module.css';
@@ -41,6 +41,32 @@ function ArchitecturePage() {
         </section>
       }
     >
+      <section className={page.section} aria-labelledby="run-modes">
+        <h2 id="run-modes">{messages.architecture.modes}</h2>
+        <ul className={`${page.cardGridFit} ${styles.modes}`}>
+          {runModes.map((mode) => (
+            <li key={mode.id} className={page.card} data-run-mode={mode.id}>
+              <h3>{pick(mode.name, locale)}</h3>
+              <p className={styles.role}>{pick(mode.role, locale)}</p>
+              <ul className={styles.points}>
+                {mode.points.map((point) => (
+                  <li key={point.en}>{pick(point, locale)}</li>
+                ))}
+              </ul>
+              {mode.hosting && (
+                <p className={styles.hosting}>
+                  <span>
+                    {messages.architecture.hosting}: {text(mode.hosting.name, locale)}
+                  </span>
+                  <StatusTag status={mode.hosting.status} />
+                </p>
+              )}
+              {mode.note && <p className={page.note}>{pick(mode.note, locale)}</p>}
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <section className={page.section} aria-labelledby="evolution">
         <h2 id="evolution">{messages.architecture.evolution}</h2>
         <ol className={`${page.cardGridFit} ${styles.timeline}`}>

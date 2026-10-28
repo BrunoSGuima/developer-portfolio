@@ -1,8 +1,9 @@
 # syntax=docker/dockerfile:1
 #
-# The production image for Stage A (ADR-0015, Phase 4 Step 4.2): one service that serves the
-# React shell's full-stack build and the Rails API from one origin. PostgreSQL is external
-# (DATABASE_URL). Portable: nothing here is specific to a hosting provider.
+# The full-stack production image (Phase 4 Step 4.2; built and tested in CI, run locally, not
+# deployed: ADR-0016): one service that serves the React shell's full-stack build and the Rails
+# API from one origin. PostgreSQL is external (DATABASE_URL). Portable: nothing here is specific
+# to a hosting provider.
 #
 #   docker build -t portfolio .
 #   docker run --rm -e DATABASE_URL=… -e SECRET_KEY_BASE=… portfolio bin/release   # once per deploy

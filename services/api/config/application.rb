@@ -64,7 +64,7 @@ module Api
     # Production applies the document policy to every HTML response (see the class).
     config.middleware.insert_before 0, SecurityHeaders, all_html: Rails.env.production?
 
-    # The production image serves the React shell's build from the same origin (ADR-0015):
+    # The production image serves the React shell's build from the same origin (Step 4.2):
     # SHELL_ROOT points at it. Unset in development, test and e2e, which serve no shell.
     if ENV["SHELL_ROOT"].present?
       config.middleware.use ShellAssets, root: ENV["SHELL_ROOT"]

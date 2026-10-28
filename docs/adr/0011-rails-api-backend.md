@@ -42,7 +42,7 @@ Deployment is Phase 4.
   Action Mailer and Active Job are kept as standard components, with no delivery, workers or
   queues configured.
 - **Same-origin under `/api`**: the Vite dev server and preview proxy `/api` to Rails (Phase 3),
-  and in production the shell and the API share one origin, served by Rails (ADR-0015). No CORS configuration and no
+  and the full-stack production image serves the shell and the API from one origin, with Rails (run locally; the public site is static, ADR-0016). No CORS configuration and no
   `rack-cors`. The API is stateless (no cookies or sessions), so there is no CSRF surface.
 - **Minimal gems**: `rspec-rails`, `factory_bot_rails`, `dotenv`, `committee` (OpenAPI
   contract checks, ADR-0012, from Step 2.4) and `bundler-audit`, all development/test only; plus what Rails generates

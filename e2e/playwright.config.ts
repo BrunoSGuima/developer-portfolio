@@ -44,8 +44,8 @@ const previewServer = {
   timeout: 180_000,
 };
 
-// Static runs are served as Cloudflare Pages would serve them (Stage B, ADR-0015): the Pages
-// build (`npm run build:pages`: the static build plus deploy/cloudflare-pages) under the
+// Static runs are served as Cloudflare Pages would serve them (the public site, ADR-0016): the
+// Pages build (`npm run build:pages`: the static build plus deploy/cloudflare-pages) under the
 // emulator (`wrangler pages dev`, tools/pages-emulator; install it once with
 // `npm run pages:emulator:install`), so its _headers rules and SPA fallback apply.
 // E2E_STATIC_SERVER=preview serves the plain static build with vite preview instead.

@@ -70,13 +70,15 @@ export const en = {
       "This portfolio is a learning project as much as a showcase. Here's how it's built today, and where it's going. Anything marked",
     leadAfterStatus: "doesn't exist yet.",
     builtToday: "How it's built today",
+    modes: 'Two ways to run it',
+    hosting: 'Hosting',
     evolution: 'How it will evolve',
     /** Depends on the build's mode (src/config/mode.ts). */
     timelineNote: {
       static:
-        'The Rails API (v2) and its integration with this site (v3) are built and tested; this build is the static version, which runs without the API or a database. Deployment (v4) comes next. The order of the later steps (v5–v8) is provisional.',
+        'The Rails API (v2) and its integration with this site (v3) are built and tested, and run locally in full-stack mode; this build is the static version, which runs without the API or a database. The public release (v4) will be this static build. The order of the later steps (v5–v8) is provisional.',
       fullstack:
-        'The Projects page loads from the Rails API and the contact form sends messages to it, completing the integration (v3). Deployment (v4) comes next. The order of the later steps (v5–v8) is provisional.',
+        "You're running the full-stack mode: the Projects page loads from the Rails API and the contact form sends messages to it, completing the integration (v3). The public release (v4) will be the static build; this mode runs locally. The order of the later steps (v5–v8) is provisional.",
     },
     decisions: 'Key decisions',
   },

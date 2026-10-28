@@ -29,7 +29,7 @@ One workflow, `.github/workflows/ci.yml`, on `push` to `main` and on `pull_reque
     isolated `wrangler pages dev` installed by `npm run pages:emulator:install`): the same steps
     without PostgreSQL or Ruby, running
     `npm run test:e2e:static` against the static build; its report is `playwright-report-static`.
-  - `image` (Step 4.2, ADR-0015): `docker build` of the production image, then
+  - `image` (Step 4.2; kept by ADR-0016, which runs the full stack locally only): `docker build` of the production image, then
     `scripts/smoke-image.sh` (with the read-only browser smoke) against a disposable
     `postgres:18.6-trixie` service on a throwaway database; the image is never pushed.
   - `api` (Step 2.2, ADR-0011): `ruby/setup-ruby` reads `services/api/.ruby-version` and caches

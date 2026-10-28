@@ -66,12 +66,14 @@ export const ptBR: Messages = {
       'Este portfólio é tanto um projeto de aprendizado quanto uma vitrine. Veja como ele é construído hoje e para onde está indo. Tudo o que estiver marcado como',
     leadAfterStatus: 'ainda não existe.',
     builtToday: 'Como ele é construído hoje',
+    modes: 'Duas formas de executar',
+    hosting: 'Hospedagem',
     evolution: 'Como ele vai evoluir',
     timelineNote: {
       static:
-        'A API em Rails (v2) e a sua integração com este site (v3) estão construídas e testadas; esta é a versão estática, que funciona sem a API e sem banco de dados. O deploy (v4) é a próxima etapa. A ordem das etapas seguintes (v5–v8) é provisória.',
+        'A API em Rails (v2) e a sua integração com este site (v3) estão construídas e testadas, e rodam localmente no modo full-stack; esta é a versão estática, que funciona sem a API e sem banco de dados. A publicação (v4) será esta versão estática. A ordem das etapas seguintes (v5–v8) é provisória.',
       fullstack:
-        'A página de Projetos carrega seus dados da API em Rails e o formulário de contato envia mensagens para ela, o que conclui a integração (v3). O deploy (v4) é a próxima etapa. A ordem das etapas seguintes (v5–v8) é provisória.',
+        'Você está usando o modo full-stack: a página de Projetos carrega seus dados da API em Rails e o formulário de contato envia mensagens para ela, o que conclui a integração (v3). A publicação (v4) será a versão estática; este modo roda localmente. A ordem das etapas seguintes (v5–v8) é provisória.',
     },
     decisions: 'Principais decisões',
   },
