@@ -7,7 +7,8 @@ independently developed applications. The portfolio demonstrates engineering ski
 architecture, testing, microfrontends, backend services — instead of just listing them.
 
 A chibi mascot guides visitors through the site, and a persistent **Fun Fact** banner explains
-the real technology stack behind each section.
+the real technology stack behind each section. Light and dark themes follow the system until the
+visitor picks one ([ADR-0017](./docs/adr/0017-light-and-dark-themes.md)).
 
 > **Status:** Phase 1, the React frontend foundation, is done (shell, routing, Fun Fact,
 > content, microfrontend host, illustrated Home and mascot, responsive layout, English and

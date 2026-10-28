@@ -8,6 +8,9 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="theme-color" content="#fcf5ed" />
+    <!-- The theme, before the first paint (no inline script: the Content Security Policy).
+         ADR-0017; keep it before the stylesheets. -->
+    <script src="/theme-init.js"></script>
     <!-- The description, canonical and language alternates are rendered per page and language by
          the app (app/Metadata.tsx); a static description here would shadow the localized one. -->
     <title>Bruno Guimarães — Full-Stack Software Engineer</title>

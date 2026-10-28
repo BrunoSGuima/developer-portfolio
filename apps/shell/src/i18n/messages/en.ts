@@ -13,6 +13,8 @@ export const en = {
     mainNav: 'Main',
     menu: 'Menu',
     languageNav: 'Language',
+    /** The light/dark toggle (a pressed button means the dark theme is on). */
+    themeToggle: 'Dark theme',
   },
   funFact: {
     region: 'Fun fact',

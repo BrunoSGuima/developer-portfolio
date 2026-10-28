@@ -53,6 +53,11 @@ export default defineConfig([
     extends: [js.configs.recommended],
     languageOptions: { globals: globals.node },
   },
+  {
+    // Classic scripts served as-is to the browser (public/theme-init.js, ADR-0017).
+    files: ['public/**/*.js'],
+    languageOptions: { globals: globals.browser, sourceType: 'script' },
+  },
   // Must stay last: turns off rules that conflict with Prettier formatting.
   prettier,
 ]);

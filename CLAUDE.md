@@ -20,8 +20,8 @@ CI is green on GitHub; Architecture page updated). Phase 1 is **not** the MVP.
 `5f9eb59`). **Phase 3 — Frontend/backend integration and MVP completion: done** (Steps 3.0–3.5;
 GitHub Actions green on `f66efbf`; the MVP is complete). **Phase 4 — Deployment: in progress**
 (Steps 4.0–4.4 done: `13938b0`, `2653ba5`, `6b9c9ed`, `35beb2d`, `4bdf06a`; Step 4.5, the
-static-first architecture and documentation revision, ready for review; then 4.6 dark mode,
-4.7 projects, 4.8 résumés, 4.9 public README, 4.10 comment review, 4.11 real Cloudflare Pages
+static-first architecture and documentation revision, done in `2db5e00`; Step 4.6a, dark mode
+without the night art, ready for review; then 4.6b the approved night art, 4.7 projects, 4.8 résumés, 4.9 public README, 4.10 comment review, 4.11 real Cloudflare Pages
 verification, 4.12 custom domain and publication; details, prerequisites and the spending log
 are in `docs/ROADMAP.md`). **Deployment strategy (ADR-0016, 2026-10-28, superseding ADR-0015):**
 only the **static** build is published, on Cloudflare Pages Free; the Rails API and PostgreSQL
@@ -184,6 +184,15 @@ Sidekiq or Vue until their phase.
   never raw palette values. Mobile first; breakpoints `40rem` / `48rem` / `64rem`.
 - Muted grey (`#9d928f`) and slate (`#738297`) are decorative only; use `--color-text-muted` /
   `--color-text-slate` for text.
+- **Themes** (ADR-0017): light (the approved design) and dark, on `<html data-theme>`, set
+  before the first paint by `public/theme-init.js` (no inline scripts: the CSP) and mirrored by
+  `src/theme/theme.ts` (keep them in step; a unit test runs the script). Dark remaps **colour
+  tokens only** in one `:root[data-theme='dark']` block of `tokens.css`; components never branch
+  on the theme. Every new colour token needs a dark value, and `styles/themes.test.ts` must keep
+  AA contrast in both themes. The toggle (`components/ThemeToggle`) shares the EN/PT pill
+  (`components/Preferences`) in all three header layouts; the desktop header must stay one row
+  from 1024px with classic scrollbars (`e2e/tests/theme.spec.ts`). The Home art is day/night pairs of approved rasters (never CSS-darkened;
+  the night pair is Step 4.6b, `ART-BRIEF.md` §9).
 - Accessibility is a requirement: semantic landmarks, keyboard navigation, visible focus,
   `prefers-reduced-motion` support, AA contrast. The mascot is decorative
   (`aria-hidden`, `pointer-events: none`) and must never block content. Step 10 audit

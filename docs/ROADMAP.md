@@ -35,7 +35,8 @@ and GitHub Actions ran green on the final Step 2.6 commit (`5f9eb59`, 2026-10-26
 [ADR-0016](adr/0016-static-first-deployment.md), superseding ADR-0015):** only the **static** build
 is published, on Cloudflare Pages Free; the Rails API and PostgreSQL stay implemented, tested and
 documented and run **locally** (full-stack mode), never as paid cloud services. Step 4.5 (the
-architecture and documentation revision) is ready for review; see "Phase 4 — Deployment" below.
+architecture and documentation revision) is done (`2db5e00`); Step 4.6a (dark mode without the
+night art, ADR-0017) is ready for review; see "Phase 4 — Deployment" below.
 Nothing is deployed and nothing has been purchased. In a full-stack build the Projects page loads
 from the Rails API and the Contact page has a form that sends to it; a static build uses local
 data and keeps the channels only. **Long-term requirement (2026-10-26):** the same codebase
@@ -683,8 +684,9 @@ approval, recorded in the spending log below. The only expected cost is the doma
 | 4.2  | Production container: Dockerfile, Rails serves the shell (SPA fallback), CI image build and smoke test                                           | —                 | Done (`6b9c9ed`) |
 | 4.3  | Production hardening: `config.hosts`, `trusted_proxies`, security headers and CSP, IP-free request logs, database-aware `/up`                    | —                 | Done (`35beb2d`) |
 | 4.4  | Static-host readiness: `_headers`, `assets/404.html`, `build:pages` with an explicit static guard, the static E2E suite under the Pages emulator | —                 | Done (`4bdf06a`) |
-| 4.5  | Static-first architecture and documentation revision: ADR-0016, README, CLAUDE.md, the Architecture page and Fun Facts in both languages         | —                 | Ready for review |
-| 4.6  | Dark mode, including a nighttime city scene on the Home page                                                                                     | —                 | Planned          |
+| 4.5  | Static-first architecture and documentation revision: ADR-0016, README, CLAUDE.md, the Architecture page and Fun Facts in both languages         | —                 | Done (`2db5e00`) |
+| 4.6a | Dark mode: themes (ADR-0017), accessible toggle, dark palette, persistence and system preference, every page                                     | —                 | Ready for review |
+| 4.6b | Dark mode: the approved nighttime Home artwork integrated (needs the owner's night art)                                                          | —                 | Planned          |
 | 4.7  | Projects: add a personal finance app (work in progress, private repository), an auction house application and a team randomizer                  | —                 | Planned          |
 | 4.8  | Résumés: replace the outdated English and Portuguese PDFs                                                                                        | —                 | Planned          |
 | 4.9  | Public README review: improve it for visitors, remove unnecessary information                                                                    | —                 | Planned          |
@@ -696,12 +698,15 @@ Each step is planned in detail and approved before it starts. **Steps 4.6–4.10
 publication.** Their exact content and requirements are reviewed separately when each step is
 planned; the notes below only record what is already known.
 
-- **4.6 Dark mode:**
-  - every token and component in both themes, with AA contrast, reduced motion and forced
-    colours kept
-  - the Home page's **nighttime city scene** needs new owner-approved raster artwork (approved
-    art is never redrawn with CSS or SVG: Conventions, `docs/assets/ART-BRIEF.md`)
-  - the theme choice and its persistence are decided in the step
+- **4.6 Dark mode** (ADR-0017), in two parts. Step 4.6 is visually complete only after 4.6b.
+  - **4.6a:** everything but the art (see the Step 4.6a entry). Until then, dark mode shows the
+    unchanged day illustration behind a navy scrim.
+  - **4.6b:**
+    - the owner delivers and approves two night paintings of the same room, pixel-aligned with
+      A1/A2 (`docs/assets/ART-BRIEF.md` §9)
+    - `HomeBackdrop` picks day or night from the theme; the dark scrim is tuned
+    - the hero contrast test passes in both themes
+    - approved art is never redrawn or filtered with CSS or SVG
 - **4.7 Projects:**
   - three new projects: the personal finance app (work in progress; private repository, so no
     public link unless the owner decides otherwise), the auction house application and the team
@@ -959,6 +964,56 @@ service previews; staff answers on feedback.render.com are marked as such.
   - **Tests:** `content/architecture.test.ts` now rejects any Architecture or Fun Fact text that
     mentions Rails together with "hosted", "deployed", "in production" or "online" (both
     languages), and checks that the full-stack mode is local and unhosted.
+
+### Step 4.6a — Dark mode: themes, toggle and every page
+
+- **Theme mechanism (ADR-0017):** `<html data-theme>`, set before the first paint by
+  `public/theme-init.js`.
+  - It's a same-origin classic script, since the CSP allows no inline script.
+  - It applies the stored choice (`localStorage['theme']`), else the system's
+    `prefers-color-scheme`.
+  - `src/theme/theme.ts` mirrors it; a unit test runs the real script against it.
+  - While nothing is stored, the system preference is followed live; a choice in another tab is
+    followed too.
+- **Tokens:**
+  - one `:root[data-theme='dark']` block in `tokens.css` remaps colour tokens only: deep navy
+    surfaces, off-white text, peach links and focus, a cream primary button, re-tinted badges, a
+    navy hero scrim, darker shadows, `color-scheme: dark`
+  - a new `--color-surface-raised` for the Fun Fact and the menu panel (equal to the surface in
+    light)
+  - **the light theme is unchanged**
+- **The toggle** (`components/ThemeToggle`):
+  - a button with `aria-pressed`, "Dark theme" / "Tema escuro"
+  - in the same outlined pill as EN/PT (`components/Preferences`), in the menu panel (< 48rem),
+    the header lane (48–64rem) and inline (≥ 64rem). Two separate pills wrapped the brand name at
+    1024–1039px with classic scrollbars; the shared pill keeps the header one row (owner's
+    choice, 2026-10-28).
+  - a filled face when pressed, an outline in forced colours, a decorative moon
+  - keyboard operable; focus stays; switching is instant and moves nothing
+- **Owner's decisions (2026-10-28):**
+  - a two-state toggle; follow the system until the visitor chooses
+  - the step split into 4.6a and 4.6b
+  - **no Architecture page card for themes**: documented in ADR-0017 and here
+  - the day art may show in dark mode during development only
+- **Tests:**
+  - **Unit:** `theme/theme.test.ts` (resolution, storage blocked, live system changes, other
+    tabs, the real `theme-init.js` in five cases); `ThemeToggle.test.tsx` (names in both
+    languages, `aria-pressed`, keyboard, focus, menu panel, kept across navigation and a language
+    switch); `styles/themes.test.ts` (AA contrast for every documented pair in both themes,
+    computed from `tokens.css`; dark overrides colour tokens only).
+  - **E2E:** `e2e/tests/theme.spec.ts` covers:
+    - the system preference in both directions, followed live until the visitor chooses
+    - the choice kept across a reload, every section, EN→PT and back
+    - the stored choice already applied when `<body>` appears (no flash), both directions
+    - the script before the stylesheets
+    - the keyboard
+    - the toggle beside EN/PT at 375, 768 and 1280px
+    - the desktop header one row from 1024px, in both languages, with real scrollbars
+    - no layout movement on switching
+    - full-stack only: the contact form errors and the Projects API error, axe-clean in dark
+
+    Also: axe on every page in both languages, **in both themes**; the hero-over-artwork contrast
+    in both themes; the toggle in forced colours.
 
 ## Phase 4 prerequisites (before publication)
 

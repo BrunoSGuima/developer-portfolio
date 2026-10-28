@@ -405,3 +405,39 @@ derivatives built by `npm run illustrations -w apps/shell` (into
 
 To use a higher-resolution version of any asset: replace the source PNG (same file name), run
 `npm run illustrations -w apps/shell`, and commit the regenerated WebP files and manifest.
+
+## 9. Night variants (Step 4.6b; not produced yet)
+
+Dark mode (ADR-0017) needs a night version of the Home backdrop. The approved day art is never
+redrawn or filtered: two **new paintings of the same room and camera** are required, delivered
+into `docs/assets/source/` like A1/A2 and approved by the owner before integration.
+
+| Asset | File                                | Size                                                                   | Must match                                                                                                                                                                                         |
+| ----- | ----------------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A1N   | `hero-background-desktop-night.png` | exactly 1174 × 645 (or exactly 2348 × 1290), opaque                    | A1, **pixel-aligned**: desk edge line, window frame, bookshelf, posters, plants, chair, mug and lamp in identical positions (the mascot stands on the desk edge; the stage geometry depends on it) |
+| A2N   | `hero-background-mobile-night.png`  | exactly 433 × 829 (the derivative crops the first 18 columns, as A2's) | A2, pixel-aligned                                                                                                                                                                                  |
+
+**Lighting:**
+
+- **Outside:** night; a deep blue sky with a few stars; the same coastal skyline with
+  **illuminated windows** and lights reflected on the water.
+- **Inside:**
+  - the desk lamp on, with a warm pool of light on the desk and wall
+  - soft, cool ambient light elsewhere: dark but never black, so the navy scrim and the hero
+    text stay legible
+  - no sun shadows
+  - the posters' text readable
+- **Style:** the same painterly style and palette family as the day art.
+
+**Acceptance:**
+
+- a 50% overlay over A1/A2 shows no drift
+- the hero text keeps ≥ 4.5:1 over it with the dark scrim (`e2e/tests/accessibility.spec.ts`,
+  dark)
+- the owner's approval recorded here
+
+**Integration (4.6b):**
+
+- `npm run illustrations` builds `heroDesktopNight` / `heroMobileNight`.
+- `HomeBackdrop` chooses day or night from the theme. Its first render reads the attribute that
+  `theme-init.js` already set, so only the right image loads.

@@ -191,6 +191,6 @@ describe('static-first truthfulness (ADR-0016)', () => {
     const adr15 = decisions.find((decision) => decision.id === 'ADR-0015');
     expect(adr15?.summary.en).toMatch(/^Superseded by ADR-0016/);
     expect(adr15?.summary['pt-BR']).toMatch(/^Substituída pela ADR-0016/);
-    expect(decisions.at(-1)?.id).toBe('ADR-0016');
+    expect(decisions.map((decision) => decision.id)).toContain('ADR-0016');
   });
 });

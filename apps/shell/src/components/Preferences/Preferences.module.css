@@ -1,0 +1,10 @@
+/* One outlined pill holding the language links and the theme toggle, each a small filled face. */
+.pill {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+}

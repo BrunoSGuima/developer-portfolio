@@ -391,6 +391,18 @@ export const decisions: readonly Decision[] = [
         'O site público é a versão estática, em hospedagem estática gratuita; a API em Rails e o PostgreSQL continuam completos e testados e rodam localmente, evitando um custo recorrente de servidor.',
     },
   },
+  {
+    id: 'ADR-0017',
+    title: {
+      en: 'Light and dark themes',
+      'pt-BR': 'Temas claro e escuro',
+    },
+    summary: {
+      en: 'Colour tokens remapped for a dark theme, set before the first paint; it follows the system until the visitor chooses, and the choice is remembered.',
+      'pt-BR':
+        'Tokens de cor remapeados para um tema escuro, aplicado antes da primeira renderização; ele segue o sistema até o visitante escolher, e a escolha é lembrada.',
+    },
+  },
 ];
 
 export interface RunMode {

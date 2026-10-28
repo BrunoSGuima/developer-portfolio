@@ -10,6 +10,7 @@ export const ptBR: Messages = {
     mainNav: 'Principal',
     menu: 'Menu',
     languageNav: 'Idioma',
+    themeToggle: 'Tema escuro',
   },
   funFact: {
     region: 'Curiosidade',

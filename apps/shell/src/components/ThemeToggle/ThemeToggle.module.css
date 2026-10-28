@@ -1,0 +1,46 @@
+/* A small face inside the preferences pill (components/Preferences), filled when pressed, like
+   the current language. Square: as tall as the language links, the moon centred. */
+.toggle {
+  flex: none;
+  display: block;
+  padding: var(--space-1);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.toggle:hover {
+  background: var(--color-bg);
+}
+
+/* The moon, sized like the switcher's text (--text-sm at its line height). */
+.icon {
+  display: block;
+  width: calc(var(--text-sm) * var(--leading-tight));
+  height: calc(var(--text-sm) * var(--leading-tight));
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+/* Dark theme on: filled, like the current language (plus aria-pressed). */
+.toggle[aria-pressed='true'] {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.toggle[aria-pressed='true'] .icon {
+  fill: currentcolor;
+}
+
+/* Forced colours drop backgrounds: outline the pressed toggle instead. */
+@media (forced-colors: active) {
+  .toggle[aria-pressed='true'] {
+    outline: 2px solid ButtonText;
+    outline-offset: -2px;
+  }
+}

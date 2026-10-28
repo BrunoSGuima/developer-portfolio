@@ -56,17 +56,17 @@
 }
 
 /*
- * The header's language switcher (small screens use the one in the menu panel).
- * 48–64rem: the brand row is full, so it sits in the top lane, above the brand: the nav mascot
- * only walks above the nav links, on the right, so the header keeps its height.
+ * The header's language switcher and theme toggle (small screens use the ones in the menu
+ * panel). 48–64rem: the brand row is full, so they sit in the top lane, above the brand: the nav
+ * mascot only walks above the nav links, on the right, so the header keeps its height.
  * From 64rem: inline, after the nav.
  */
-.language {
+.preferences {
   display: none;
 }
 
 @media (min-width: 48rem) and (max-width: 63.99rem) {
-  .language {
+  .preferences {
     position: absolute;
     top: var(--space-2);
     left: 0;
@@ -75,7 +75,7 @@
 }
 
 @media (min-width: 64rem) {
-  .language {
+  .preferences {
     display: block;
   }
 }

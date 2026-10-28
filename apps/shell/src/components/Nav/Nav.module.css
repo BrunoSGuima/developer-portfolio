@@ -30,7 +30,7 @@
   flex-direction: column;
   gap: var(--space-3);
   padding: var(--space-3) var(--gutter) var(--space-4);
-  background: var(--color-surface);
+  background: var(--color-surface-raised);
   box-shadow: var(--shadow-md);
 }
 
@@ -109,7 +109,7 @@
     align-items: center;
   }
 
-  /* On wide screens the header shows the language switcher itself. */
+  /* On wide screens the header shows the language switcher and theme toggle itself. */
   .panelFooter {
     display: none;
   }

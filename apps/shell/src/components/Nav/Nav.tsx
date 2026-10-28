@@ -12,7 +12,7 @@ export interface NavItem {
 
 interface NavProps {
   items: readonly NavItem[];
-  /** Shown below the links in the small-screen panel only (the language switcher). */
+  /** Shown below the links in the small-screen panel only (language and theme). */
   panelFooter?: ReactNode;
 }
 

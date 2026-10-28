@@ -26,10 +26,18 @@
   --color-white: #ffffff;
   --color-ink-950: #141518;
   --color-charcoal-700: #45464d;
+  /* Dark theme (Step 4.6a, ADR-0017): deep navy surfaces. */
+  --color-navy-950: #0e1422;
+  --color-navy-900: #161e30;
+  --color-navy-800: #1e2840;
+
+  /* Light theme (the approved design). The dark theme remaps the purpose tokens below. */
+  color-scheme: light;
 
   /* ---- Purpose-named colours ---- */
   --color-bg: var(--color-sand-100); /* page background; text on it 11.0:1 */
   --color-surface: var(--color-cream-50); /* header, cards */
+  --color-surface-raised: var(--color-surface); /* floating panels (Fun Fact, menu panel) */
   --color-text: var(--color-charcoal-900); /* 13.1:1 */
   --color-text-muted: var(--color-grey-700); /* 6.3:1 */
   --color-text-slate: var(--color-slate-700); /* 6.2:1 */
@@ -153,6 +161,43 @@
   --duration-fast: 150ms;
   --duration-base: 250ms;
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/*
+ * Dark theme (Step 4.6a, ADR-0017): set by public/theme-init.js before the first paint (the
+ * stored choice, else the system preference) and by the theme toggle. Only colour tokens change;
+ * components never branch on the theme. Contrast is WCAG 2.x, against bg / surface / raised;
+ * tokens.test.ts recomputes every documented pair in both themes.
+ */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-bg: var(--color-navy-950);
+  --color-surface: var(--color-navy-900);
+  --color-surface-raised: var(--color-navy-800); /* replaces shadows, which vanish on dark */
+  --color-text: #ece6de; /* 14.8 / 13.4 / 11.8 */
+  --color-text-muted: #aeb4c2; /* 8.9 / 8.0 / 7.1 */
+  --color-text-slate: #9fb0c8; /* 8.3 / 7.5 / 6.6 */
+  --color-primary: var(--color-cream-50);
+  --color-on-primary: var(--color-navy-950); /* 17.0 */
+  --color-accent: #f4b98a; /* 10.6 / 9.6 / 8.5 */
+  --color-border: #3a4560; /* decorative only, never text */
+  --color-focus: #f4b98a;
+  --color-danger: #ff9f97; /* 9.3 / 8.4 / 7.4 (with text, never colour alone) */
+  --color-control-border: #8a93a8; /* 6.0 / 5.4 / 4.8, above the 3:1 minimum */
+
+  --badge-blue-bg: #1d3354;
+  --badge-blue-fg: #b8d0f2; /* 8.1 */
+  --badge-slate-bg: #273042;
+  --badge-slate-fg: #cfd5e0; /* 9.0 */
+  --badge-green-bg: #18392f;
+  --badge-green-fg: #a6dcc6; /* 8.2 */
+  --badge-burgundy-bg: #3e1f27;
+  --badge-burgundy-fg: #f4b6ae; /* 8.5 */
+
+  --hero-scrim: rgb(14 20 34 / 0.7); /* navy veil; tuned against the night art in Step 4.6b */
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.35), 0 1px 3px rgb(0 0 0 / 0.25);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.4), 0 2px 4px rgb(0 0 0 / 0.3);
 }
 
 @media (min-width: 48rem) {

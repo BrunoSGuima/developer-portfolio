@@ -1,4 +1,5 @@
-/* A compact segmented control: two small pills; the current language is filled. */
+/* A compact segmented control: two small faces; the current language is filled. The outline
+   around it is the preferences pill (components/Preferences), shared with the theme toggle. */
 .switcher {
   flex: none;
 }
@@ -6,9 +7,7 @@
 .list {
   display: flex;
   gap: var(--space-1);
-  padding: var(--space-1);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
+  padding: 0;
   list-style: none;
 }
 

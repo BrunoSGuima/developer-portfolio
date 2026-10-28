@@ -158,8 +158,9 @@ describe('ArchitecturePage', () => {
     const region = screen.getByRole('region', { name: 'Key decisions' });
     const items = within(region).getAllByRole('listitem');
     expect(items).toHaveLength(decisions.length);
-    expect(decisions.at(-1)?.id).toBe('ADR-0016');
-    expect(items.at(-2)).toHaveTextContent(/ADR-0015.*Superseded by ADR-0016/);
+    expect(decisions.at(-1)?.id).toBe('ADR-0017');
+    expect(items.at(-3)).toHaveTextContent(/ADR-0015.*Superseded by ADR-0016/);
+    expect(items.at(-1)).toHaveTextContent(/ADR-0017: Light and dark themes/);
     items.forEach((item, index) =>
       expect(item).toHaveTextContent(`ADR-${String(index + 1).padStart(4, '0')}`),
     );

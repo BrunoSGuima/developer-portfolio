@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
-import LanguageSwitcher from '../../components/LanguageSwitcher/LanguageSwitcher.tsx';
 import Nav, { type NavItem } from '../../components/Nav/Nav.tsx';
+import Preferences from '../../components/Preferences/Preferences.tsx';
 import { profile } from '../../content/profile.ts';
 import { useLocale } from '../../i18n/context.ts';
 import { localizePath } from '../../i18n/locales.ts';
@@ -31,13 +31,14 @@ function SiteHeader({ lane }: SiteHeaderProps) {
           <span className={styles.role}>{pick(profile.role, locale)}</span>
         </Link>
         {/*
-          The language switcher: in the menu panel on small screens; in the header from 48rem
-          (outside the main nav, so the nav mascot ignores it). See SiteHeader.module.css.
+          The language switcher and the theme toggle: in the menu panel on small screens; in the
+          header from 48rem (outside the main nav, so the nav mascot ignores them). See
+          SiteHeader.module.css.
         */}
         <div className={styles.actions}>
-          <Nav items={navItems} panelFooter={<LanguageSwitcher />} />
-          <div className={styles.language}>
-            <LanguageSwitcher />
+          <Nav items={navItems} panelFooter={<Preferences />} />
+          <div className={styles.preferences}>
+            <Preferences />
           </div>
         </div>
       </div>

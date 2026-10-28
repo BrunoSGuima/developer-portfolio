@@ -16,4 +16,9 @@ if (typeof window !== 'undefined') {
 afterEach(() => {
   cleanup();
   resetMedia();
+  if (typeof window !== 'undefined') {
+    // The theme lives on <html> and in localStorage (ADR-0017): no test may leak it.
+    delete document.documentElement.dataset.theme;
+    window.localStorage.clear();
+  }
 });
