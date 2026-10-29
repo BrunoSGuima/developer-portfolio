@@ -126,6 +126,10 @@ runs it).
 ```bash
 npm run test:e2e         # Playwright + axe against the full stack (both languages)
 npm run test:e2e:static  # the same suite against the static build, served as Cloudflare Pages would
+
+# The deployed static site (read-only, starts nothing)
+E2E_MODE=static E2E_STATIC_SERVER=remote E2E_BASE_URL=https://bruno-guimaraes.pages.dev npm run e2e -w e2e
+SMOKE_BASE_URL=https://bruno-guimaraes.pages.dev npx playwright test -c e2e/playwright.smoke.config.ts
 ```
 
 The full-stack suite starts the Rails API in its `e2e` environment (port 3100, its own database

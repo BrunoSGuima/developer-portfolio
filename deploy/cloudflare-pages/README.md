@@ -2,8 +2,12 @@
 
 The portfolio's public home (ADR-0016): the **static** build (`VITE_APP_MODE=static`, local data,
 no backend) on Cloudflare Pages Free, with a custom domain at publication. The full stack isn't
-deployed; it runs locally. Prepared and tested in Phase 4, Step 4.4; **nothing is deployed yet**
-(Step 4.11: the owner creates the project on `*.pages.dev`; the custom domain is Step 4.12).
+deployed; it runs locally. Prepared and tested in Phase 4, Step 4.4.
+
+**Deployed (Step 4.11, 2026-10-29):** the owner's Pages project `bruno-guimaraes`, at
+**https://bruno-guimaraes.pages.dev/**, built from `main` (first deployment: `ab12700`, also at
+`https://a3611000.bruno-guimaraes.pages.dev`). It's public but never indexed (`X-Robots-Tag:
+noindex`); the custom domain, the site's public address, is Step 4.12.
 
 ## Files
 
@@ -17,7 +21,7 @@ serve them. `npm run build:pages` builds the static site and copies them into `a
 (`scripts/prepare-pages.mjs`, which also refuses any build whose `build-mode.json` isn't
 `static` and validates `_headers`).
 
-## Pages project settings (Step 4.11; the owner creates the project)
+## Pages project settings (Step 4.11; the owner's project, as configured)
 
 Checked against Cloudflare's documentation on 2026-10-29, and the build command reproduced on a
 clean clone (Step 4.11).
@@ -38,6 +42,12 @@ clean clone (Step 4.11).
 
 No secrets, no API, no database. A successful build log ends with
 `prepare-pages: … is a static build, ready for Cloudflare Pages.`
+
+**Confirmed by the owner (Step 4.11, 2026-10-29):**
+
+- the Cloudflare GitHub app has access to `BrunoSGuima/developer-portfolio` only ("Only select
+  repositories")
+- the project is on the Free plan, with no paid add-on
 
 **Known and accepted (owner, Step 4.11):**
 
@@ -71,35 +81,39 @@ The emulator is `wrangler pages dev` (no Cloudflare account, metrics off); it is
 and CI tool only, never part of the shell or the production image. CI's `e2e-static` job runs the
 whole static suite under it, including `e2e/tests/static-host.spec.ts`.
 
-## What the emulator showed (Step 4.4) and what Pages must confirm (Step 4.11)
+## What the emulator showed (Step 4.4) and what real Pages does (Step 4.11)
 
-| Behaviour                                                           | Emulator (`wrangler pages dev` 4.154.0)             | Real Pages                 |
-| ------------------------------------------------------------------- | --------------------------------------------------- | -------------------------- |
-| `_headers` on documents, assets, the SPA fallback                   | Applied as written                                  | To confirm                 |
-| CSP removed from the PDF (`! Content-Security-Policy`)              | Removed; `application/pdf`                          | To confirm                 |
-| `/assets/*` cache                                                   | `public, max-age=31536000, immutable`               | To confirm                 |
-| Other files' cache                                                  | Pages' default `public, max-age=0, must-revalidate` | Documented default         |
-| Every route, `/pt-br`, `/pt-br/`, trailing slashes                  | 200, the shell (no redirect)                        | To confirm                 |
-| Unknown page                                                        | 200, the shell's 404 page                           | Documented (SPA mode)      |
-| Missing asset with `assets/404.html`                                | 404, the small page, `no-store`                     | To confirm                 |
-| Missing asset without it                                            | 200 `index.html` with the immutable cache (avoided) | —                          |
-| `/index.html`                                                       | 308 to `/`                                          | Documented                 |
-| `/_headers`                                                         | Not served (502 in the emulator)                    | To confirm it isn't served |
-| `X-Robots-Tag: noindex` on `*.pages.dev` hosts only                 | As written (by Host header)                         | To confirm                 |
-| Pages' own default headers (e.g. `Access-Control-Allow-Origin`)     | Not emulated                                        | To check                   |
-| Headers added or changed at Cloudflare's edge (e.g. dashboard HSTS) | Not emulated                                        | To check                   |
+Real Pages: `https://bruno-guimaraes.pages.dev` and its deployment URL, 2026-10-29 (`curl`, the
+remote static suite and the browser smoke).
+
+| Behaviour                                                 | Emulator (`wrangler pages dev` 4.154.0)             | Real Pages (Step 4.11)                                             |
+| --------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------ |
+| `_headers` on documents, assets, the SPA fallback         | Applied as written                                  | Applied as written                                                 |
+| CSP removed from the PDFs (`! Content-Security-Policy`)   | Removed; `application/pdf`                          | Removed; `application/pdf`                                         |
+| `/assets/*` cache                                         | `public, max-age=31536000, immutable`               | The same                                                           |
+| Other files' cache                                        | Pages' default `public, max-age=0, must-revalidate` | The same                                                           |
+| Every route, `/pt-br`, `/pt-br/`, trailing slashes        | 200, the shell (no redirect)                        | 200, the shell (no redirect)                                       |
+| Unknown page                                              | 200, the shell's 404 page                           | 200, the shell's 404 page                                          |
+| Missing asset with `assets/404.html`                      | 404, the small page, `no-store`                     | 404, `no-store`                                                    |
+| Missing asset without it                                  | 200 `index.html` with the immutable cache (avoided) | —                                                                  |
+| `/index.html`                                             | 308 to `/`                                          | 308 to `/`                                                         |
+| `/_headers`                                               | Not served (502 in the emulator)                    | Not served: the SPA fallback (`index.html`)                        |
+| `X-Robots-Tag: noindex` on `*.pages.dev` hosts only       | As written (by Host header)                         | On the production and the deployment URL (documents, assets, PDFs) |
+| HTTP                                                      | —                                                   | 301 to HTTPS (both URLs)                                           |
+| Pages' own default headers                                | Not emulated                                        | `Access-Control-Allow-Origin: *`; Cloudflare's `report-to` / `nel` |
+| Headers added or changed at Cloudflare's edge (e.g. HSTS) | Not emulated                                        | None changed: HSTS is `_headers`' one day                          |
+
+**`Access-Control-Allow-Origin: *` (accepted, Step 4.11):** Pages adds it to every response. It
+only lets other sites' scripts read this site's public, static, credential-free files, which
+anyone can fetch anyway; `Cross-Origin-Resource-Policy: same-origin` still applies, and the
+parity rule covers the headers this project sets. Removing it (`! Access-Control-Allow-Origin`)
+would be a new decision with a parity note. `report-to` / `nel` are Cloudflare's network-error
+reporting (`success_fraction` 0), not page content.
 
 ## Remaining before publication
 
-1. **Step 4.11:**
-   - done in the repository: the noindex rules, the remote mode, the settings above
-   - the owner: create the Pages project with the settings above and deploy `main` to its
-     `*.pages.dev` URL
-   - then: the remote suite, the browser smoke and `curl -sI` against it (also a
-     `<hash>.<project>.pages.dev` URL), filling in the "Real Pages" column
-   - decide on Pages' default `Access-Control-Allow-Origin: *`, if present (recommended: accept
-     and document it; the site is public, static and has no credentials, and
-     `Cross-Origin-Resource-Policy: same-origin` still applies)
+1. **Step 4.11:** done: deployed, validated and the owner's settings confirmed (above;
+   `docs/ROADMAP.md`, Step 4.11).
 2. **Step 4.12:**
    - add the custom domain
    - revisit HSTS (one day, no `includeSubDomains`) for it

@@ -1,11 +1,40 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { expect, test } from '@playwright/test';
-import { e2eMode } from '../support/mode.ts';
+import { type APIRequestContext, expect, test } from '@playwright/test';
+import { e2eMode, remoteBaseURL } from '../support/mode.ts';
 import { pages } from '../support/site.ts';
 
 // The static build (ADR-0014) works with no Rails API and no database: it never requests /api
 // and doesn't even contain the API client.
+
+/** The local build's scripts: every file in apps/shell/dist/assets. */
+function localScripts(): Map<string, string> {
+  const assets = fileURLToPath(new URL('../../apps/shell/dist/assets/', import.meta.url));
+  return new Map(
+    readdirSync(assets)
+      .filter((file) => file.endsWith('.js'))
+      .map((file) => [file, readFileSync(assets + file, 'utf8')]),
+  );
+}
+
+/**
+ * A deployed site's scripts (remote runs, Step 4.11): the entry script in index.html, then every
+ * chunk the scripts name, transitively (Vite names each chunk `<name>-<8-char hash>.js`).
+ */
+async function deployedScripts(request: APIRequestContext): Promise<Map<string, string>> {
+  const chunk = /[\w.-]+-[\w-]{8}\.js/g;
+  const scripts = new Map<string, string>();
+  const queue = [...(await (await request.get('/')).text()).matchAll(chunk)].map(([name]) => name);
+  for (let name = queue.shift(); name !== undefined; name = queue.shift()) {
+    if (scripts.has(name)) continue;
+    const response = await request.get(`/assets/${name}`);
+    expect(response.status(), name).toBe(200);
+    const code = await response.text();
+    scripts.set(name, code);
+    queue.push(...[...code.matchAll(chunk)].map(([found]) => found));
+  }
+  return scripts;
+}
 test.describe('the static build', () => {
   test.skip(e2eMode !== 'static', 'Only the static build is checked here.');
 
@@ -33,13 +62,13 @@ test.describe('the static build', () => {
     }
   });
 
-  test('contains no API client or contact form code', () => {
-    const assets = fileURLToPath(new URL('../../apps/shell/dist/assets/', import.meta.url));
-    const scripts = readdirSync(assets).filter((file) => file.endsWith('.js'));
+  test('contains no API client or contact form code', async ({ request }) => {
+    // A remote run checks the deployed site's scripts, never the local build.
+    const scripts = remoteBaseURL ? await deployedScripts(request) : localScripts();
 
-    expect(scripts.length).toBeGreaterThan(0);
-    for (const file of scripts) {
-      const code = readFileSync(assets + file, 'utf8');
+    // The entry and every page's chunk, at least.
+    expect(scripts.size).toBeGreaterThan(5);
+    for (const [file, code] of scripts) {
       expect(code, file).not.toContain('/api/v1');
       expect(code, file).not.toContain('contact_messages');
       // The contact form (data-contact-form) is full-stack only, like its client.

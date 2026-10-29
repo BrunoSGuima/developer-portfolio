@@ -39,9 +39,10 @@ architecture and documentation revision) is done (`2db5e00`); Step 4.6a (dark mo
 night art, ADR-0017) is done (`d4d324e`); Step 4.6b (the night Home art and the removal of the
 mascot's emphasis marks) is done (`2773f75`); Step 4.7 (the projects, with About and Contact
 refinements) is done (`91271c7`); Step 4.8 (the résumés) is done; Step 4.9 (the public README) is
-done (`f5f223d`); Step 4.10 (the comment review) is done (`e217887`); Step 4.11 (the Cloudflare Pages preview) is in
-progress: the repository side is ready for review, the deployment is the owner's; see "Phase 4 — Deployment" below.
-Nothing is deployed and nothing has been purchased. In a full-stack build the Projects page loads
+done (`f5f223d`); Step 4.10 (the comment review) is done (`e217887`); Step 4.11 (the Cloudflare Pages preview) is
+done: deployed at https://bruno-guimaraes.pages.dev (not indexed) and validated; see
+"Phase 4 — Deployment" below. Only the static site is deployed (never the Rails API or
+PostgreSQL), and nothing has been purchased. In a full-stack build the Projects page loads
 from the Rails API and the Contact page has a form that sends to it; a static build uses local
 data and keeps the channels only. **Long-term requirement (2026-10-26):** the same codebase
 builds a **full-stack** site (React + Rails API + PostgreSQL) or a **static** site (local data, no
@@ -695,7 +696,7 @@ approval, recorded in the spending log below. The only expected cost is the doma
 | 4.8  | Résumés: replace the outdated English and Portuguese PDFs                                                                                        | —                 | Done             |
 | 4.9  | Public README review: improve it for visitors, remove unnecessary information                                                                    | —                 | Done (`f5f223d`) |
 | 4.10 | Codebase comment review: remove redundant or outdated comments without changing behaviour                                                        | —                 | Done (`e217887`) |
-| 4.11 | Real Cloudflare Pages verification on `*.pages.dev` (no domain, no paid services)                                                                | Free              | In progress      |
+| 4.11 | Real Cloudflare Pages verification on `*.pages.dev` (no domain, no paid services)                                                                | Free              | Done             |
 | 4.12 | Custom domain and final publication                                                                                                              | Domain (approved) | Planned          |
 
 Each step is planned in detail and approved before it starts. **Steps 4.6–4.10 come before
@@ -747,7 +748,7 @@ planned; the notes below only record what is already known.
 - **4.9 Public README:** done in `f5f223d` (see the Step 4.9 entry).
 - **4.10 Comments:** remove redundant or outdated comments only. No behaviour change; every check
   stays green. Done in `e217887` (see the Step 4.10 entry).
-- **4.11 Pages verification** (in progress; see the Step 4.11 entry):
+- **4.11 Pages verification** (done: deployed and validated; see the Step 4.11 entry):
   - the owner creates the Pages project: Git integration limited to this repository (Direct
     Upload can never switch to Git later), production branch `main`, **preview branches "None"**
   - `X-Robots-Tag: noindex` for `*.pages.dev` (the absolute-URL `_headers` rule Cloudflare
@@ -986,7 +987,7 @@ service previews; staff answers on feedback.render.com are marked as such.
     mentions Rails together with "hosted", "deployed", "in production" or "online" (both
     languages), and checks that the full-stack mode is local and unhosted.
 
-### Step 4.11 — Cloudflare Pages preview (in progress)
+### Step 4.11 — Cloudflare Pages preview
 
 **Part 1, the repository (ready for review):**
 
@@ -1012,10 +1013,40 @@ service previews; staff answers on feedback.render.com are marked as such.
 - **Accepted by the owner:** the `pages.dev` address is public (not indexed); Pages builds every
   push to `main` without waiting for CI (gating it would need a Cloudflare token in GitHub).
 
-**Part 2, the deployment (the owner's, next):** the dashboard steps in the Pages README; then
-the remote suite, the browser smoke and `curl` header checks against the URL, the "Real Pages"
-column filled in, and the `Access-Control-Allow-Origin` decision recorded (recommended: accept it
-if present; the site is public and has no credentials).
+**Part 2, the deployment (done by the owner, 2026-10-29):**
+
+- **The project:** `bruno-guimaraes`, Git integration with `BrunoSGuima/developer-portfolio`,
+  production branch `main` (automatic deployments on), preview branches **None**, framework preset
+  None, the repository root, `npm ci --ignore-scripts && npm run build:pages` into
+  `apps/shell/dist`, `SKIP_DEPENDENCY_INSTALL=1` and `VITE_APP_MODE=static`; no Functions, Web
+  Analytics, custom domain or paid service.
+- **URLs:** https://bruno-guimaraes.pages.dev (production) and
+  `https://a3611000.bruno-guimaraes.pages.dev` (the `ab12700` deployment, from the Cloudflare
+  check run on GitHub). There is no `main.` branch alias (404).
+- **Validated (2026-10-29, against the live site):**
+  - the whole static E2E suite in remote mode, desktop and mobile: **278 passed**, 140 skipped
+    (full-stack-only), 0 failed. It covers every page in both languages, direct navigation and
+    trailing slashes, the 404 page, the language switch, both themes, layout and transitions,
+    axe (0 violations), and the headers spec; `static-host.spec.ts` and `static-mode.spec.ts`
+    also passed against the deployment URL (36 passed)
+  - the browser smoke: 14 passed (the contact-form write is skipped: static)
+  - `curl`: the security headers and CSP on documents and assets, no CSP on the PDFs
+    (`application/pdf`), the asset cache, `X-Robots-Tag: noindex` on both URLs (documents,
+    assets, PDFs), HTTP → HTTPS (301), `/index.html` → `/` (308), a real 404 for a missing asset,
+    `/_headers` not served
+  - the owner checked navigation, languages, themes and responsive layouts by hand
+- **Pages' default headers:** `Access-Control-Allow-Origin: *` on every response (accepted, as
+  recommended in the plan: public, static, credential-free files; CORP `same-origin` still
+  applies) and Cloudflare's `report-to` / `nel`. Nothing else differs from `_headers`.
+- **Fixed during validation:** the first remote run failed one check twice (desktop, mobile):
+  `static-mode.spec.ts` inspected the **local** `apps/shell/dist` (left as a full-stack build by
+  a local run), not the deployment. In remote mode it now crawls the deployed scripts from
+  `index.html` (every chunk, transitively). No site issue was found.
+- **Confirmed by the owner (2026-10-29)**, as dashboard and GitHub settings not visible from
+  outside: the Cloudflare GitHub app limited to this repository ("Only select repositories":
+  `BrunoSGuima/developer-portfolio` only), and the project on the Free plan with no paid add-on.
+- **Done:** every acceptance criterion passed (the mandatory "Previews and indexing" and the
+  headers on real Pages included).
 
 ### Step 4.10 — Comment review
 
@@ -1173,12 +1204,12 @@ public; each names the step that delivers it.
   - confirmed on real Pages in 4.11, including Pages' own default headers
 - **HSTS (mandatory, 4.12):** one day without `includeSubDomains` or `preload` until the domain
   and its subdomains are verified; revisited at publication.
-- **Previews and indexing (mandatory, 4.11):**
+- **Previews and indexing (mandatory; done in 4.11):**
   - preview branches "None" (pull requests from forks never get previews)
-  - `*.pages.dev` served with `X-Robots-Tag: noindex`
-  - the GitHub app limited to this repository
+  - `*.pages.dev` served with `X-Robots-Tag: noindex` (production and deployment URLs, verified)
+  - the GitHub app limited to this repository (confirmed by the owner)
 - **Résumés (mandatory, 4.8):** each public PDF's text and metadata checked for a phone number.
-- **Cost controls:** Pages Free has no paid add-ons enabled; the domain is the only expense
+- **Cost controls:** Pages Free has no paid add-ons enabled (confirmed by the owner in 4.11); the domain is the only expense
   (approved and logged in 4.12, its auto-renewal decided at purchase).
 
 **If the full stack is ever deployed** (requires a new ADR and the owner's approval; none is
