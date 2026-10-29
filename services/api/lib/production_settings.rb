@@ -16,7 +16,7 @@ require "active_support/core_ext/integer/time"
 module ProductionSettings
   class Error < StandardError; end
 
-  # HSTS max-age for the first deployment: one day (raised once the domain is verified, Step 4.9).
+  # HSTS max-age for the first deployment: one day (raised once the domain is verified, Step 4.12).
   HSTS_MAX_AGE = 1.day.to_i
 
   # Host authorization: /up is exempt (platform health checks use internal addresses).

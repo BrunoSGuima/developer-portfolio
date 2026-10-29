@@ -30,7 +30,7 @@ Rails.application.configure do
   # HSTS for the first deployment (Step 4.3, owner's decision): HTTPS is enforced, but for a short
   # time and only for the exact host, until the domain and its subdomains are verified. Rails'
   # default (2 years, includeSubDomains) would commit every subdomain to HTTPS for two years.
-  # Revisit before public go-live (Step 4.9).
+  # Revisit before public go-live (Step 4.12).
   config.ssl_options = { hsts: { expires: ProductionSettings::HSTS_MAX_AGE, subdomains: false, preload: false } }
 
   # Log to STDOUT with the current request id as a default log tag.

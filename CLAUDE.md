@@ -24,7 +24,8 @@ static-first architecture and documentation revision, done in `2db5e00`; Step 4.
 without the night art, done in `d4d324e`; Step 4.6b, the night Home art and the removal of the
 mascot's emphasis marks, done in `2773f75`; Step 4.7, the projects (with About and Contact
 refinements), done in `91271c7`; Step 4.8, the résumés, done; Step 4.9, the public README (developer
-detail in `docs/DEVELOPMENT.md`), ready for review; then 4.10 comment review, 4.11 real Cloudflare Pages
+detail in `docs/DEVELOPMENT.md`), done in `f5f223d`; Step 4.10, the comment review, ready for review;
+then 4.11 real Cloudflare Pages
 verification, 4.12 custom domain and publication; details, prerequisites and the spending log
 are in `docs/ROADMAP.md`). **Deployment strategy (ADR-0016, 2026-10-28, superseding ADR-0015):**
 only the **static** build is published, on Cloudflare Pages Free; the Rails API and PostgreSQL

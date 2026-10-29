@@ -1,7 +1,8 @@
 require "rails_helper"
 
 # The contract and the backend must agree on their closed vocabularies (ADR-0012). This compares
-# the API with its own document; the shell gets its own check in Phase 3.
+# the API with its own document; the shell checks its generated types and test fixtures against it
+# (npm run api:types:check, apps/shell/src/api/fixtures.ts).
 RSpec.describe "OpenAPI document" do
   let(:document) { YAML.load_file(Rails.root.join("docs/openapi.yaml")) }
   let(:schemas) { document.dig("components", "schemas") }

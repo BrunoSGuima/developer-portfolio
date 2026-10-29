@@ -10,7 +10,7 @@ info:
 
     This document is the contract between the API and the shell: the Rails request specs
     validate every request and response against it (committee), and the shell checks its
-    types and fixtures against it in Phase 3. Change it first when the API changes.
+    types and fixtures against it. Change it first when the API changes.
 paths:
   /api/v1/projects:
     get:

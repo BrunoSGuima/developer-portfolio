@@ -83,7 +83,8 @@ module Api
       # defaults: loopback and private networks, where a local reverse proxy sits); otherwise
       # the peer's own address is the key. A peer address that is missing or isn't a single IP
       # (e.g. a Unix-socket path) is untrusted and shares one fixed key, so it can neither raise
-      # nor be varied to escape the limits. Phase 4 sets the production proxy configuration.
+      # nor be varied to escape the limits. In production, TRUSTED_PROXIES can replace that list
+      # (ProductionSettings, Step 4.3).
       def client_ip
         peer = peer_address
         return UNKNOWN_PEER unless peer

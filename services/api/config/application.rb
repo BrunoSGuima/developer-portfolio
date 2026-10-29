@@ -71,7 +71,8 @@ module Api
     end
 
     # Counters for rate limits (Api::V1::ContactMessagesController). In memory and per process:
-    # fine for Phase 2; Phase 4 replaces it with a store shared by all API processes (ADR-0013).
+    # right for the single Puma process the app runs (no WEB_CONCURRENCY); several processes
+    # would need a store shared by all of them (ADR-0013).
     config.x.rate_limit_store = ActiveSupport::Cache::MemoryStore.new
   end
 end

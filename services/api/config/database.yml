@@ -32,7 +32,7 @@ e2e:
   <<: *default
   database: portfolio_api_e2e
 
-# Production is configured in Phase 4 (deployment), from the environment only.
+# Production (Step 4.2) is configured from the environment only.
 production:
   <<: *default
   url: <%= ENV["DATABASE_URL"] %>

@@ -39,7 +39,7 @@ architecture and documentation revision) is done (`2db5e00`); Step 4.6a (dark mo
 night art, ADR-0017) is done (`d4d324e`); Step 4.6b (the night Home art and the removal of the
 mascot's emphasis marks) is done (`2773f75`); Step 4.7 (the projects, with About and Contact
 refinements) is done (`91271c7`); Step 4.8 (the résumés) is done; Step 4.9 (the public README) is
-ready for review; see "Phase 4 — Deployment" below.
+done (`f5f223d`); Step 4.10 (the comment review) is ready for review; see "Phase 4 — Deployment" below.
 Nothing is deployed and nothing has been purchased. In a full-stack build the Projects page loads
 from the Rails API and the Contact page has a form that sends to it; a static build uses local
 data and keeps the channels only. **Long-term requirement (2026-10-26):** the same codebase
@@ -692,8 +692,8 @@ approval, recorded in the spending log below. The only expected cost is the doma
 | 4.6b | Dark mode: the orange emphasis marks removed; the approved nighttime Home artwork integrated with a crossfade                                    | —                 | Done (`2773f75`) |
 | 4.7  | Projects: the Personal Finance App (in progress, private repository) and Auction House added; this site's card linked to its public repository   | —                 | Done (`91271c7`) |
 | 4.8  | Résumés: replace the outdated English and Portuguese PDFs                                                                                        | —                 | Done             |
-| 4.9  | Public README review: improve it for visitors, remove unnecessary information                                                                    | —                 | Ready for review |
-| 4.10 | Codebase comment review: remove redundant or outdated comments without changing behaviour                                                        | —                 | Planned          |
+| 4.9  | Public README review: improve it for visitors, remove unnecessary information                                                                    | —                 | Done (`f5f223d`) |
+| 4.10 | Codebase comment review: remove redundant or outdated comments without changing behaviour                                                        | —                 | Ready for review |
 | 4.11 | Real Cloudflare Pages verification on `*.pages.dev` (no domain, no paid services)                                                                | Free              | Planned          |
 | 4.12 | Custom domain and final publication                                                                                                              | Domain (approved) | Planned          |
 
@@ -743,9 +743,9 @@ planned; the notes below only record what is already known.
     PDF (`about.resume.href`)
   - any replacement: check its text **and metadata** for a phone number first (Conventions)
   - **done (owner, 2026-10-29):** both PDFs are final and their download links tested
-- **4.9 Public README:** ready for review (see the Step 4.9 entry).
+- **4.9 Public README:** done in `f5f223d` (see the Step 4.9 entry).
 - **4.10 Comments:** remove redundant or outdated comments only. No behaviour change; every check
-  stays green.
+  stays green. Ready for review (see the Step 4.10 entry).
 - **4.11 Pages verification:**
   - the owner creates the Pages project: Git integration limited to this repository (Direct
     Upload can never switch to Git later), production branch `main`, **preview branches "None"**
@@ -984,6 +984,27 @@ service previews; staff answers on feedback.render.com are marked as such.
   - **Tests:** `content/architecture.test.ts` now rejects any Architecture or Fun Fact text that
     mentions Rails together with "hosted", "deployed", "in production" or "online" (both
     languages), and checks that the full-stack mode is local and unhosted.
+
+### Step 4.10 — Comment review
+
+- **Reviewed:** every tracked code and configuration file outside `docs/`, for Phase and Step
+  references, the superseded hosting plan (Render, Stage A/B, ADR-0015), pending wording
+  ("will", "until", "not yet", TODO) and removed content; each hit read in context.
+- **Fixed (comments only), all in `services/api`:**
+  - the HSTS revisit points to Step 4.12, not the renumbered 4.9 (`production.rb`,
+    `production_settings.rb`)
+  - the rate-limit store: in memory is right for the single Puma process; several processes
+    would need a shared store (no longer "Phase 4 replaces it")
+  - `client_ip`: `TRUSTED_PROXIES` (Step 4.3) instead of "Phase 4 sets the proxy configuration"
+  - finished work no longer described as future: `database.yml` (production), `Project`
+    (the OpenAPI enum), `openapi_spec.rb` and the OpenAPI description (the shell's type checks)
+- **Kept on purpose:**
+  - Step and Phase provenance tags that are still accurate
+  - the `onrender.com` hostname examples (a real multi-tenant risk, and test data)
+  - Rails' generator comments in `config/`
+  - the historical "(Step 4.9)" mentions in the Step 4.2 and 4.3 entries and in the ADRs
+- **No behaviour change:** only comments, the OpenAPI description prose and these status docs
+  changed; the generated API types are unchanged.
 
 ### Step 4.9 — Public README
 
