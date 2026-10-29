@@ -37,8 +37,9 @@ is published, on Cloudflare Pages Free; the Rails API and PostgreSQL stay implem
 documented and run **locally** (full-stack mode), never as paid cloud services. Step 4.5 (the
 architecture and documentation revision) is done (`2db5e00`); Step 4.6a (dark mode without the
 night art, ADR-0017) is done (`d4d324e`); Step 4.6b (the night Home art and the removal of the
-mascot's emphasis marks) is done (`2773f75`); Step 4.7 (the projects) is ready for review; see
-"Phase 4 — Deployment" below.
+mascot's emphasis marks) is done (`2773f75`); Step 4.7 (the projects, with About and Contact
+refinements) is done (`91271c7`); Step 4.8 (the résumés) is done; Step 4.9 (the public README) is
+ready for review; see "Phase 4 — Deployment" below.
 Nothing is deployed and nothing has been purchased. In a full-stack build the Projects page loads
 from the Rails API and the Contact page has a form that sends to it; a static build uses local
 data and keeps the channels only. **Long-term requirement (2026-10-26):** the same codebase
@@ -689,9 +690,9 @@ approval, recorded in the spending log below. The only expected cost is the doma
 | 4.5  | Static-first architecture and documentation revision: ADR-0016, README, CLAUDE.md, the Architecture page and Fun Facts in both languages         | —                 | Done (`2db5e00`) |
 | 4.6a | Dark mode: themes (ADR-0017), accessible toggle, dark palette, persistence and system preference, every page                                     | —                 | Done (`d4d324e`) |
 | 4.6b | Dark mode: the orange emphasis marks removed; the approved nighttime Home artwork integrated with a crossfade                                    | —                 | Done (`2773f75`) |
-| 4.7  | Projects: the Personal Finance App (in progress, private repository) and Auction House added; this site's card linked to its public repository   | —                 | Ready for review |
-| 4.8  | Résumés: replace the outdated English and Portuguese PDFs                                                                                        | —                 | Planned          |
-| 4.9  | Public README review: improve it for visitors, remove unnecessary information                                                                    | —                 | Planned          |
+| 4.7  | Projects: the Personal Finance App (in progress, private repository) and Auction House added; this site's card linked to its public repository   | —                 | Done (`91271c7`) |
+| 4.8  | Résumés: replace the outdated English and Portuguese PDFs                                                                                        | —                 | Done             |
+| 4.9  | Public README review: improve it for visitors, remove unnecessary information                                                                    | —                 | Ready for review |
 | 4.10 | Codebase comment review: remove redundant or outdated comments without changing behaviour                                                        | —                 | Planned          |
 | 4.11 | Real Cloudflare Pages verification on `*.pages.dev` (no domain, no paid services)                                                                | Free              | Planned          |
 | 4.12 | Custom domain and final publication                                                                                                              | Domain (approved) | Planned          |
@@ -734,16 +735,15 @@ planned; the notes below only record what is already known.
       - The dark scrim (navy at 70%) passes the hero contrast test over the night art and was
         approved as previewed.
       - Approved art is never redrawn or filtered with CSS or SVG.
-- **4.7 Projects:** ready for review (see the Step 4.7 entry).
+- **4.7 Projects:** done in `91271c7` (see the Step 4.7 entry).
 - **4.8 Résumés:**
   - done early, in Step 4.5: the owner's new English and Portuguese PDFs are in
     `apps/shell/public/resumes/`, phone-free (text and metadata checked 2026-10-28), tracked
     through two explicit `.gitignore` exceptions; the About page links each language to its own
     PDF (`about.resume.href`)
   - any replacement: check its text **and metadata** for a phone number first (Conventions)
-  - left for this step: the content review
-- **4.9 Public README:** written for visitors; the developer detail moves to `CLAUDE.md`,
-  `docs/` or the API README.
+  - **done (owner, 2026-10-29):** both PDFs are final and their download links tested
+- **4.9 Public README:** ready for review (see the Step 4.9 entry).
 - **4.10 Comments:** remove redundant or outdated comments only. No behaviour change; every check
   stays green.
 - **4.11 Pages verification:**
@@ -984,6 +984,33 @@ service previews; staff answers on feedback.render.com are marked as such.
   - **Tests:** `content/architecture.test.ts` now rejects any Architecture or Fun Fact text that
     mentions Rails together with "hosted", "deployed", "in production" or "online" (both
     languages), and checks that the full-stack mode is local and unhosted.
+
+### Step 4.9 — Public README
+
+- **The README is written for visitors:**
+  - what the portfolio is and the two Home screenshots, light and dark
+    (`docs/assets/readme/`, 1280 × 800 WebP, about 80 KB each, captured from the current build)
+  - what you'll find on the site
+  - how it's built, in three groups: **implemented on the public site**, **implemented, running
+    locally (not deployed)** and **planned**. The microfrontend host is described as a tested host
+    with no real remote section yet.
+  - the tech stack, quality and CI, the phase table, a three-command quick start, documentation
+    links, the author, and the license
+- **License:** "All rights reserved; source available for review" (owner's decision; the
+  project stays `UNLICENSED`, with no open-source license).
+- **Developer detail moved, not rewritten,** to the new `docs/DEVELOPMENT.md`: the repository
+  layout, requirements, scripts, the two build modes, the static site without a backend,
+  full-stack mode, the production image, E2E and CI. `CLAUDE.md` stays the maintainers'
+  rulebook.
+- **The API README's status line** now says the API is integrated with the shell in full-stack
+  mode and runs locally only.
+- **Checked:**
+  - every claim against the code and lockfiles
+  - every relative link and anchor resolves
+  - every documented command exists
+  - `npm run build` and `npm run build:pages` succeed
+  - Prettier
+- **No application code changed.**
 
 ### Step 4.7 — Portfolio projects
 

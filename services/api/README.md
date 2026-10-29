@@ -7,10 +7,11 @@ with the shell (through the Vite proxy in development; in the full-stack product
 serves the shell and the API from one origin), so there is no CORS configuration. The API isn't
 deployed: the public site is the static build, and the full stack runs locally (ADR-0016).
 
-**Status (Phase 2 complete, Step 2.6):** the toolchain, the database, the test setup, Rails'
-`GET /up` health check, the **Projects domain** (models, constraints, seeds), the read-only
-**Projects API** and **contact messages** (`POST` only, with abuse protection and privacy
-safeguards). The React shell starts using it in Phase 3.
+**Status:** complete (Phase 2) and integrated with the React shell in full-stack mode (Phase 3):
+the toolchain, the database, the test setup, Rails' `GET /up` health check, the **Projects
+domain** (models, constraints, seeds), the read-only **Projects API** and **contact messages**
+(`POST` only, with abuse protection and privacy safeguards). It runs locally; the public site is
+the static build (ADR-0016).
 
 | Component    | Version                                          | Pinned in                                      |
 | ------------ | ------------------------------------------------ | ---------------------------------------------- |

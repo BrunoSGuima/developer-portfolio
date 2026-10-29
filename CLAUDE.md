@@ -22,7 +22,9 @@ GitHub Actions green on `f66efbf`; the MVP is complete). **Phase 4 — Deploymen
 (Steps 4.0–4.4 done: `13938b0`, `2653ba5`, `6b9c9ed`, `35beb2d`, `4bdf06a`; Step 4.5, the
 static-first architecture and documentation revision, done in `2db5e00`; Step 4.6a, dark mode
 without the night art, done in `d4d324e`; Step 4.6b, the night Home art and the removal of the
-mascot's emphasis marks, done in `2773f75`; Step 4.7, the projects, ready for review; then 4.8 résumés, 4.9 public README, 4.10 comment review, 4.11 real Cloudflare Pages
+mascot's emphasis marks, done in `2773f75`; Step 4.7, the projects (with About and Contact
+refinements), done in `91271c7`; Step 4.8, the résumés, done; Step 4.9, the public README (developer
+detail in `docs/DEVELOPMENT.md`), ready for review; then 4.10 comment review, 4.11 real Cloudflare Pages
 verification, 4.12 custom domain and publication; details, prerequisites and the spending log
 are in `docs/ROADMAP.md`). **Deployment strategy (ADR-0016, 2026-10-28, superseding ADR-0015):**
 only the **static** build is published, on Cloudflare Pages Free; the Rails API and PostgreSQL
@@ -349,6 +351,9 @@ before the app uses its own router.
 - Every completed feature ships with meaningful tests. Prefer test-first when practical.
 
 ## Commands
+
+The contributor-facing guide is `docs/DEVELOPMENT.md` (keep it in step with this table); the
+README is for visitors.
 
 Run from the repository root (after `nvm use`):
 

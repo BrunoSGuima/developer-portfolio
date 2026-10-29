@@ -2,26 +2,87 @@
 
 [![CI](https://github.com/BrunoSGuima/developer-portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/BrunoSGuima/developer-portfolio/actions/workflows/ci.yml)
 
-An interactive developer portfolio that feels like one website but is powered by multiple
-independently developed applications. The portfolio demonstrates engineering skills —
-architecture, testing, microfrontends, backend services — instead of just listing them.
+The interactive portfolio of **Bruno Soares Guimarães**, Full-Stack Software Engineer (Ruby on
+Rails, React, TypeScript). It's both a showcase and an engineering project: a React and
+TypeScript site built as a persistent shell, a tested Ruby on Rails API with PostgreSQL behind it,
+and a **Fun Fact** on every page that tells you which technology is really running there.
 
-A chibi mascot guides visitors through the site, and a persistent **Fun Fact** banner explains
-the real technology stack behind each section. Light and dark themes follow the system until the
-visitor picks one ([ADR-0017](./docs/adr/0017-light-and-dark-themes.md)).
+> **Status:** in development, not published yet. The public site will be the static build on
+> Cloudflare Pages ([ADR-0016](./docs/adr/0016-static-first-deployment.md)). See the
+> [roadmap](./docs/ROADMAP.md).
 
-> **Status:** Phase 1, the React frontend foundation, is done (shell, routing, Fun Fact,
-> content, microfrontend host, illustrated Home and mascot, responsive layout, English and
-> Brazilian Portuguese under `/pt-br`, page transitions, Playwright E2E, GitHub Actions CI).
-> Phase 2 (Ruby on Rails API + PostgreSQL) is done: a read-only Projects API and contact
-> messages in [`services/api`](./services/api/README.md), tested on their own. Phase 3
-> (integration) is done, and with it the MVP: in a full-stack build the Projects page loads from
-> the API and the Contact page sends messages to it; a static build runs with no backend at all.
-> Phase 4 (deployment) is in progress; nothing is published yet. The public site will be the
-> **static** build on Cloudflare Pages
-> ([ADR-0016](./docs/adr/0016-static-first-deployment.md)); the Rails API and PostgreSQL are
-> complete and tested, and run **locally** in the optional full-stack mode, so the portfolio has
-> no recurring server cost. See [`docs/ROADMAP.md`](./docs/ROADMAP.md).
+| Light                                                         | Dark                                                        |
+| ------------------------------------------------------------- | ----------------------------------------------------------- |
+| ![Home page, light theme](docs/assets/readme/home-light.webp) | ![Home page, dark theme](docs/assets/readme/home-dark.webp) |
+
+## What you'll find
+
+- **Five pages:** Home, About, Projects, Architecture and Contact.
+- **English and Brazilian Portuguese**, each with its own URLs (`/pt-br`); the language switcher
+  keeps you on the same page.
+- **Light and dark themes**, following your system until you choose one
+  ([ADR-0017](./docs/adr/0017-light-and-dark-themes.md)). The Home illustration has a day and a
+  night version.
+- **A Fun Fact on every page** describing the real stack behind it, and an **Architecture** page
+  that separates what's built from what's planned.
+- **An illustrated Home and a mascot** that walks along the navigation (purely decorative; it
+  doesn't animate when you prefer reduced motion).
+- **Accessibility built in:** semantic landmarks, keyboard navigation, visible focus, reduced
+  motion and high-contrast support, aiming at WCAG 2.2 AA (automated axe checks in CI).
+
+## How it's built
+
+**Implemented, and part of the public site**
+
+- **A React shell** (React 19, TypeScript, Vite, React Router): one app that owns the layout,
+  navigation, routing, page transitions, the Fun Fact and the mascot, and stays mounted while
+  pages change.
+- **A section registry:** one list that defines every page, its route, its Fun Fact and its
+  technologies.
+- **A microfrontend host:** the shell can mount independently built apps through a small
+  `mount()` / `unmount()` contract. It's tested with a stand-in app; **no real remote section
+  exists yet**.
+
+**Implemented, running locally (not deployed)**
+
+- **A Ruby on Rails 8.1 API** with **PostgreSQL 18**: the projects (bilingual data as JSONB) and
+  a contact form (validation, rate limiting, a honeypot, minimal personal data). The API is
+  described by an **OpenAPI** contract that both the API's tests and the shell's typed client
+  follow.
+- **Two build modes from one codebase:** the **static** site uses local data and needs no server.
+  The **full-stack** site reads the projects from the API and adds the contact form. The public
+  site will be the static one, so the portfolio has no recurring server cost; the full stack
+  runs locally ([ADR-0016](./docs/adr/0016-static-first-deployment.md)).
+- **A production Docker image** in which Rails serves the site and the API from one origin, with
+  security headers and an enforced Content Security Policy. It's built and smoke-tested in CI.
+
+**Planned**
+
+- A Vue.js section mounted by the React shell, a Python (FastAPI) service, background jobs, and
+  AI engineering experiments. The order is provisional; see the [roadmap](./docs/ROADMAP.md).
+
+## Tech stack
+
+| Area              | Technologies                                                                   |
+| ----------------- | ------------------------------------------------------------------------------ |
+| Frontend          | React 19, TypeScript, Vite, React Router, CSS Modules with design tokens       |
+| Backend (local)   | Ruby 4.0, Ruby on Rails 8.1 (API-only), PostgreSQL 18, OpenAPI 3.0             |
+| Testing           | Vitest, React Testing Library, Playwright with axe-core, RSpec, FactoryBot     |
+| Quality and CI    | ESLint, Prettier, RuboCop, Brakeman, bundler-audit, GitHub Actions             |
+| Hosting (planned) | Cloudflare Pages (static site); the full stack runs locally via Docker Compose |
+
+## Quality
+
+Every push and pull request runs five CI jobs:
+
+- formatting, lint, types and unit tests
+- the end-to-end suite with automated accessibility checks, in both languages and both themes,
+  against the static and the full-stack builds
+- the Rails API's checks: RuboCop, security audits, and RSpec with OpenAPI contract validation
+  against PostgreSQL
+- a build and smoke test of the production image
+
+Architecture decisions are recorded as [ADRs](./docs/adr/).
 
 ## Roadmap
 
@@ -36,177 +97,35 @@ visitor picks one ([ADR-0017](./docs/adr/0017-light-and-dark-themes.md)).
 | 7     | Background jobs (Redis + Sidekiq)                                                    | Planned     |
 | 8     | AI Lab and future expansion                                                          | Planned     |
 
-## Repository layout
+Details, decisions and evidence for every step: [`docs/ROADMAP.md`](./docs/ROADMAP.md).
 
-```
-apps/        Frontend applications (React shell in Phase 1, Vue app in Phase 5)
-services/    Backend services (Rails API in services/api since Phase 2, FastAPI in Phase 6)
-e2e/         Playwright end-to-end tests spanning all apps
-infra/       Docker Compose (PostgreSQL for local development)
-deploy/      Cloudflare Pages files for the static site (headers, asset 404)
-.github/     GitHub Actions CI (lint, types, unit, build, E2E + axe, production image)
-docs/adr/    Architecture Decision Records
-docs/assets/ Design references (mascot reference image)
-```
-
-The Rails API has its own toolchain (Ruby, Bundler, Docker for PostgreSQL); see
-[`services/api/README.md`](./services/api/README.md) for its setup and commands.
-
-## Requirements
-
-- Node.js 22 LTS (see `.nvmrc`). With [nvm](https://github.com/nvm-sh/nvm): `nvm use`
-- npm 10+ (ships with Node 22)
-
-## Getting started
+## Run it locally
 
 ```bash
-nvm use
+nvm use        # Node.js 22 (see .nvmrc)
 npm install
+npm run dev    # http://localhost:5173 (the static site)
 ```
 
-```bash
-npm run dev         # shell dev server at http://localhost:5173 (static mode)
-npm run dev:fullstack  # the same in full-stack mode (with `bin/rails server` on port 3000)
-npm run lint        # ESLint (type-aware + accessibility rules)
-npm run typecheck   # TypeScript strict type-check
-npm test            # Vitest + React Testing Library
-npm run build       # production build to apps/shell/dist (the static site)
-npm run build:fullstack  # the full-stack site (VITE_APP_MODE=fullstack)
-npm run api:types   # regenerate the shell's API types from the OpenAPI contract
-                    # (first: npm run api:types:install; CI checks them with api:types:check)
-```
-
-```bash
-npm run test:e2e    # Playwright E2E + axe against the full stack (both languages)
-npm run test:e2e:static  # the same suite against the static build, with no API
-```
-
-CI (`.github/workflows/ci.yml`, ADR-0010) runs the same commands on every push to `main` and
-every pull request, plus `npm run content:check` (no unconfirmed `todo()` content), and the
-Rails API's `bin/ci` against a PostgreSQL service container.
-
-The E2E suite runs against the full stack: Playwright starts the Rails API in its `e2e`
-environment (port 3100, its own database `portfolio_api_e2e`, prepared and reset on every run) and
-the shell's production build with `vite preview` (port 4173), which proxies `/api` to it. It
-needs PostgreSQL running (`docker compose -f infra/compose.yaml up -d --wait`), the API's one-time
-setup ([`services/api/README.md`](./services/api/README.md)) and a browser once:
-`npx playwright install chromium` (on Linux/WSL also `sudo npx playwright install-deps chromium`).
-Both ports must be free: running servers are never reused. During development, the dev server
-proxies `/api` to `http://127.0.0.1:3000` (a `bin/rails server`); set `API_PROXY_TARGET` to change
-it. Root scripts delegate to npm workspaces.
-
-## Deployment
-
-The public site is the **static build only**, on Cloudflare Pages Free
-([ADR-0016](./docs/adr/0016-static-first-deployment.md)). **Nothing is published yet**: the Pages
-project is verified on a `*.pages.dev` address in Step 4.11, and the custom domain comes at
-publication (Step 4.12).
-
-The Rails API and PostgreSQL are **not deployed** and aren't operated as cloud services. They
-stay fully implemented and tested in CI, and run locally (see
-[Full-stack mode](#full-stack-mode-optional-runs-locally)). For a personal portfolio, a server
-running around the clock wasn't worth its recurring cost. Deploying the full stack would need a
-new ADR and the checklist in [`docs/ROADMAP.md`](./docs/ROADMAP.md#phase-4-prerequisites-before-publication).
-
-## Two build modes
-
-One codebase builds either site, chosen at build time by `VITE_APP_MODE` (ADR-0014). The pages,
-design and languages are the same; only the data source and the contact form differ.
-
-|          | Static (default, the public site)       | Full-stack (runs locally)                                            |
-| -------- | --------------------------------------- | -------------------------------------------------------------------- |
-| Projects | Local, typed data bundled with the page | The Rails API and PostgreSQL                                         |
-| Contact  | Email, LinkedIn and GitHub              | The same, plus a form that sends to the API                          |
-| Needs    | Nothing but static files                | PostgreSQL and the Rails API, same-origin under `/api`               |
-| Develop  | `npm run dev`                           | `bin/rails server` (in `services/api`), then `npm run dev:fullstack` |
-| Build    | `npm run build`                         | `npm run build:fullstack`                                            |
-| E2E      | `npm run test:e2e:static`               | `npm run test:e2e`                                                   |
-
-To preview a build locally: `npm run preview -w apps/shell` (port 4173; in full-stack mode it
-proxies `/api` to the API like the dev server). An API failure in full-stack mode is shown as an
-error with a retry; it never falls back to the static data. The Fun Facts and the Architecture
-page say which mode a build is.
-
-### Running the static site without a backend
-
-The static build is a complete site: no API, no database and no environment variables.
-
-1. `npm ci && npm run build` (any commit; static is the default mode), or `npm run build:pages`
-   for Cloudflare Pages, the chosen host: it adds the Pages headers and 404 handling
-   (`deploy/cloudflare-pages`, see its README) and refuses any build that isn't static.
-2. Serve `apps/shell/dist/` from any static host, with an **SPA fallback**: every path that is
-   not a file serves `index.html` (deep links such as `/pt-br/contact` and the in-app 404 page
-   need it).
-3. Check it: every page loads in both languages, the Contact page shows the channels and no
-   form, and the browser makes no `/api` request (`npm run test:e2e:static` checks the same
-   things against the local build, served as Cloudflare Pages would; install its emulator once
-   with `npm run pages:emulator:install`).
-
-## Full-stack mode (optional, runs locally)
-
-The full-stack build shows the same site backed by a real API. It runs on your machine; it isn't
-deployed.
-
-**What it adds**
-
-- **A Ruby on Rails 8.1 API** (Ruby 4.0, API-only) in [`services/api`](./services/api/README.md):
-  - versioned under `/api/v1`, served from the same origin as the shell, with no CORS
-  - described by a handwritten **OpenAPI** document
-  - every request spec validates its responses against that document, and the shell's TypeScript
-    client is typed from it
-- **PostgreSQL 18:**
-  - bilingual project data stored as JSONB, with database constraints matching the model
-    validations
-  - the Projects page loads from it
-- **A contact form** (full-stack builds only):
-  - validated on both sides, rate-limited per client and guarded by a honeypot
-  - stored with minimal personal data, never logged, kept 12 months (ADR-0013)
-- **Tests:**
-  - RSpec with FactoryBot (models, constraints, requests, tasks), plus RuboCop, Brakeman and
-    dependency audits (`bin/ci`)
-  - the Playwright suite runs against the full stack too, with an end-to-end database
-- **A production Docker image:**
-  - Rails serves the shell and `/api` from one origin, with security headers, an enforced
-    Content Security Policy, IP-free logs and a database-aware `/up`
-  - built and smoke-tested in CI
-
-**Run it with development servers**
-
-Needs Ruby from `services/api/.ruby-version` (asdf), Docker, and the one-time API setup in
-[`services/api/README.md`](./services/api/README.md) (`.env` files from their `.env.example`).
-
-```bash
-docker compose -f infra/compose.yaml up -d --wait   # PostgreSQL on 127.0.0.1:5432
-(cd services/api && bin/setup --skip-server)          # gems, development and test databases
-(cd services/api && bin/rails server)                 # the API on http://localhost:3000
-npm run dev:fullstack                                 # the shell on http://localhost:5173, /api proxied
-npm run test:e2e                                      # the E2E suite against the full stack
-```
-
-**Or run the production image locally**
-
-Rails serves the shell's full-stack build, its page URLs and `/api` from one origin; PostgreSQL
-is external (here, the Compose one).
-
-```bash
-docker build -t portfolio:local .
-# Once per deploy (never on web startup): migrations and the site's projects.
-docker run --rm --network host -e DATABASE_URL -e SECRET_KEY_BASE -e ALLOWED_HOSTS=localhost \
-  portfolio:local bin/release
-# The web service (Puma on $PORT, default 3000).
-docker run --rm --network host -e DATABASE_URL -e SECRET_KEY_BASE -e ALLOWED_HOSTS=localhost \
-  portfolio:local
-```
-
-`DATABASE_URL` points at a database of your choice; `SECRET_KEY_BASE` is any long random string
-(`openssl rand -hex 64`). `ALLOWED_HOSTS` is required in production mode. Nothing secret is in
-the image. `scripts/smoke-image.sh portfolio:local` tests an image against a PostgreSQL server
-given by the `PG*` variables, on a throwaway `portfolio_smoke` database only (CI's `image` job
-runs it).
+The full-stack mode, tests, builds and the production image are covered in the
+[development guide](./docs/DEVELOPMENT.md).
 
 ## Documentation
 
-- [`CLAUDE.md`](./CLAUDE.md) — architecture, conventions, commands and development workflow.
-- [`docs/ROADMAP.md`](./docs/ROADMAP.md) — phases, steps, acceptance criteria and evidence,
-  decisions and the Phase 4 prerequisites.
-- [`docs/adr/`](./docs/adr/) — Architecture Decision Records.
+- [Development guide](./docs/DEVELOPMENT.md): setup, commands, build modes, tests and CI.
+- [Roadmap](./docs/ROADMAP.md): phases, steps, decisions and evidence.
+- [Architecture Decision Records](./docs/adr/).
+- [Rails API](./services/api/README.md): its setup, endpoints and checks.
+- [Cloudflare Pages](./deploy/cloudflare-pages/README.md): the static hosting setup.
+- [`CLAUDE.md`](./CLAUDE.md): architecture, conventions and the development workflow, for
+  maintainers.
+
+## Author
+
+Bruno Soares Guimarães, [LinkedIn](https://www.linkedin.com/in/bruno-sguimaraes) ·
+[GitHub](https://github.com/BrunoSGuima).
+
+## License
+
+All rights reserved; source available for review. The repository is public for portfolio and
+code-review purposes; no license to reuse it is granted.
