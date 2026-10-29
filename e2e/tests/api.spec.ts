@@ -19,7 +19,15 @@ test.describe('the API through the /api proxy', () => {
       en: 'Developer Portfolio (this site)',
       'pt-BR': 'Portfólio de Desenvolvedor (este site)',
     });
-    expect(project?.links.map((link) => link.url)).toEqual(['https://github.com/BrunoSGuima']);
+    expect(project?.links.map((link) => link.url)).toEqual([
+      'https://github.com/BrunoSGuima/developer-portfolio',
+    ]);
+    expect(data.map((item) => item.slug)).toEqual([
+      'developer-portfolio',
+      'personal-finance-app',
+      'auction-house',
+    ]);
+    expect(data.find((item) => item.slug === 'personal-finance-app')?.links).toEqual([]);
   });
 
   test('is same-origin for the page: a plain fetch works without CORS', async ({ page }) => {

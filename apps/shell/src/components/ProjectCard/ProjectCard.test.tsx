@@ -29,6 +29,15 @@ describe('ProjectCard', () => {
     expect(within(tech).getAllByRole('listitem')).toHaveLength(2);
   });
 
+  it('renders no links list at all for a project without links (a private repository)', () => {
+    render(<ProjectCard project={{ ...project, links: [] }} />);
+
+    const card = screen.getByRole('article', { name: 'Demo project' });
+    expect(within(card).queryByRole('list', { name: 'Links' })).toBeNull();
+    expect(within(card).queryAllByRole('link')).toHaveLength(0);
+    expect(within(card).getAllByRole('list')).toHaveLength(1); // the technologies
+  });
+
   it('links confirmed URLs and never links a placeholder', () => {
     render(<ProjectCard project={project} />);
 

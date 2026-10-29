@@ -4,7 +4,7 @@ import { experience } from '../../content/experience.ts';
 import { PHONE_PATTERN } from '../../test/privacy.ts';
 import { about } from '../../content/profile.ts';
 import { renderPage } from '../../test/renderPage.tsx';
-import { renderRoute } from '../../test/renderRoute.tsx';
+import { renderRoute, ROUTE_WAIT } from '../../test/renderRoute.tsx';
 import page from '../Page.module.css';
 import aboutCss from './AboutPage.module.css?raw';
 import styles from './AboutPage.module.css';
@@ -15,7 +15,14 @@ describe('AboutPage', () => {
     renderPage(AboutPage);
 
     expect(screen.getByRole('heading', { level: 1, name: 'About' })).toBeInTheDocument();
-    for (const name of ['Experience', 'Skills', 'Education', 'Languages', 'Background']) {
+    for (const name of [
+      'Experience',
+      'Skills',
+      'Education',
+      'Certifications',
+      'Languages',
+      'Background',
+    ]) {
       expect(screen.getByRole('heading', { level: 2, name })).toBeInTheDocument();
     }
   });
@@ -43,6 +50,48 @@ describe('AboutPage', () => {
     expect(developing).toHaveTextContent(/Python and AI engineering/);
   });
 
+  it('lists TypeScript as a language, and as strengthened through this portfolio', () => {
+    renderPage(AboutPage);
+
+    const professional = screen.getByRole('region', { name: 'Professional experience' });
+    expect(professional).toHaveTextContent('Ruby, JavaScript, TypeScript, SQL');
+    expect(screen.getByRole('region', { name: 'Currently developing' })).toHaveTextContent(
+      /TypeScript.*strengthening my practical experience by building this portfolio with it/,
+    );
+  });
+
+  it('describes AI-assisted development with its tools and the supervised multi-agent workflow', () => {
+    renderPage(AboutPage);
+
+    const professional = screen.getByRole('region', { name: 'Professional experience' });
+    expect(professional).toHaveTextContent(
+      /AI-assisted development\s*Claude Code, Grok Bot, Cursor, Multi-agent workflows \(development, design and QA agents\) with human supervision, code review and validation/,
+    );
+  });
+
+  it('lists the FullStack certification with its issuer and dates, and no introductory course', () => {
+    renderPage(AboutPage);
+
+    const section = screen.getByRole('region', { name: 'Certifications' });
+    expect(section).toHaveTextContent(
+      /FullStack Certification in Agentic Ruby on Rails Development\s*FullStack · Issued Oct 2026 · Valid until Oct 2027/,
+    );
+    expect(within(section).getAllByRole('listitem')).toHaveLength(1);
+    expect(document.body).not.toHaveTextContent(/Claude Code 101/);
+    // The credential ID stays off the page.
+    expect(document.body).not.toHaveTextContent(/FS-[A-Z0-9]{6,}/);
+  });
+
+  it('keeps the official English title of the certification in Portuguese, with Portuguese dates', async () => {
+    renderRoute('/pt-br/about');
+
+    const section = await screen.findByRole('region', { name: 'Certificações' }, ROUTE_WAIT);
+    expect(section).toHaveTextContent(
+      /FullStack Certification in Agentic Ruby on Rails Development\s*FullStack · Emitida em out\. 2026 · Válida até out\. 2027/,
+    );
+    expect(document.body).not.toHaveTextContent(/Claude Code 101/);
+  });
+
   // Lists the PDFs in apps/shell/public/resumes without importing them.
   const publicResumes = Object.keys(import.meta.glob('../../../public/resumes/*.pdf'));
 
@@ -60,7 +109,11 @@ describe('AboutPage', () => {
   it('offers the Portuguese résumé on the Portuguese page', async () => {
     renderRoute('/pt-br/about');
 
-    const link = await screen.findByRole('link', { name: 'Baixar meu currículo (PDF)' });
+    const link = await screen.findByRole(
+      'link',
+      { name: 'Baixar meu currículo (PDF)' },
+      ROUTE_WAIT,
+    );
     expect(link).toHaveAttribute('download');
     expect(link).toHaveAttribute('href', about.resume.href['pt-BR']);
     expect(publicResumes).toContain(`../../../public${about.resume.href['pt-BR']}`);

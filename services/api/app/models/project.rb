@@ -6,7 +6,7 @@ class Project < ApplicationRecord
 
   # Technology ids a project can show as badges (shell: sections/technologies.ts). Labels and
   # colours are presentation and stay in the shell. Becomes an OpenAPI enum in Step 2.4.
-  TECHNOLOGIES = %w[react typescript vite react-router vue rails].freeze
+  TECHNOLOGIES = %w[react typescript vite react-router vue rails flutter dart rspec bootstrap].freeze
 
   SLUG_FORMAT = /\A[a-z0-9]+(-[a-z0-9]+)*\z/
 

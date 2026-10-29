@@ -4,7 +4,7 @@ import StatusTag from './StatusTag.tsx';
 
 describe('StatusTag', () => {
   it.each([
-    ['done', 'Done'],
+    ['done', 'Completed'],
     ['live', 'Live'],
     ['in-progress', 'In progress'],
     ['planned', 'Planned'],

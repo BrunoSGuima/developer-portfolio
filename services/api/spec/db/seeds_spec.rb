@@ -12,7 +12,26 @@ RSpec.describe "Seeds" do
     project = Project.find_by!(slug: "developer-portfolio")
     expect(project).to be_published
     expect(project.name.keys).to contain_exactly("en", "pt-BR")
-    expect(project.links.map(&:url)).to eq([ "https://github.com/BrunoSGuima" ])
+    expect(project.links.map(&:url)).to eq([ "https://github.com/BrunoSGuima/developer-portfolio" ])
+  end
+
+  it "creates the three published projects in display order" do
+    load_seeds
+
+    expect(Project.published.ordered.pluck(:slug))
+      .to eq(%w[developer-portfolio personal-finance-app auction-house])
+    expect(Project.find_by!(slug: "auction-house")).to have_attributes(status: "done",
+                                                                       technologies: %w[rails rspec bootstrap])
+    expect(Project.find_by!(slug: "auction-house").links.map(&:url))
+      .to eq([ "https://github.com/BrunoSGuima/auction-house" ])
+  end
+
+  it "gives the Personal Finance App (a private repository) no links" do
+    load_seeds
+
+    project = Project.find_by!(slug: "personal-finance-app")
+    expect(project).to have_attributes(status: "in-progress", technologies: %w[flutter dart])
+    expect(project.links).to be_empty
   end
 
   it "only writes valid records" do
@@ -42,7 +61,7 @@ RSpec.describe "Seeds" do
     load_seeds
 
     expect(project.links.reload.map { |link| [ link.url, link.position ] })
-      .to eq([ [ "https://github.com/BrunoSGuima", 0 ] ])
+      .to eq([ [ "https://github.com/BrunoSGuima/developer-portfolio", 0 ] ])
   end
 
   it "leaves no partial changes when a step fails" do

@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { projects as staticProjects } from '../../content/projects.ts';
 import type { Project } from '../../projects/model.ts';
 import { invalidateProjects, type ProjectsData } from '../../projects/source.ts';
-import { renderRoute } from '../../test/renderRoute.tsx';
+import { renderRoute, ROUTE_WAIT } from '../../test/renderRoute.tsx';
 import page from '../Page.module.css';
 import projectsCss from './ProjectsPage.module.css?raw';
 import styles from './ProjectsPage.module.css';
@@ -46,7 +46,7 @@ describe('ProjectsPage, static build (the default)', () => {
   it('shows the static projects at once, without a loading state', async () => {
     renderRoute('/projects');
 
-    const cards = await screen.findAllByRole('article');
+    const cards = await screen.findAllByRole('article', undefined, ROUTE_WAIT);
     expect(cards).toHaveLength(staticProjects.length);
     expect(cards[0]).toHaveAccessibleName('Developer Portfolio (this site)');
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
@@ -55,7 +55,7 @@ describe('ProjectsPage, static build (the default)', () => {
   it('shows the same projects in Portuguese', async () => {
     renderRoute('/pt-br/projects');
 
-    expect(await screen.findByRole('article')).toHaveAccessibleName(
+    expect((await screen.findAllByRole('article', undefined, ROUTE_WAIT))[0]).toHaveAccessibleName(
       'Portfólio de Desenvolvedor (este site)',
     );
   });
@@ -63,33 +63,90 @@ describe('ProjectsPage, static build (the default)', () => {
   it('explains why professional work is not listed, linking to About', async () => {
     renderRoute('/projects');
 
-    expect(await screen.findByText(/private client codebases/)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/private client codebases/, undefined, ROUTE_WAIT),
+    ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'About' })).toHaveAttribute('href', '/about');
   });
 
   it('keeps the cards in the intro column, directly after the lead (no full-width body)', async () => {
     const { container } = renderRoute('/projects');
-    await screen.findByRole('article');
+    await screen.findAllByRole('article', undefined, ROUTE_WAIT);
     const intro = container.querySelector('[data-slot="page-intro"]')!;
 
     expect(intro).toContainElement(screen.getByRole('heading', { level: 1, name: 'Projects' }));
     expect(intro).toHaveTextContent(/private client codebases/);
-    expect(intro).toContainElement(screen.getByRole('article'));
+    for (const card of screen.getAllByRole('article')) expect(intro).toContainElement(card);
     expect(container.querySelector('[data-slot="page-body"]')).toBeNull();
   });
 
-  it('links the portfolio card to the GitHub profile', async () => {
+  it('shows the three projects in order, each with its status in words', async () => {
+    renderRoute('/projects');
+    await screen.findAllByRole('article', undefined, ROUTE_WAIT);
+
+    const cards = screen.getAllByRole('article');
+    expect(
+      cards.map((card) => within(card).getByRole('heading', { level: 2 }).textContent),
+    ).toEqual(['Developer Portfolio (this site)', 'Personal Finance App', 'Auction House']);
+    expect(
+      cards.map((card) => within(card).getByText(/^(Completed|In progress)$/).textContent),
+    ).toEqual(['In progress', 'In progress', 'Completed']);
+  });
+
+  it('links each public project to its own repository', async () => {
     renderRoute('/projects');
 
-    expect(await screen.findByRole('link', { name: 'GitHub profile' })).toHaveAttribute(
+    const portfolio = await screen.findByRole(
+      'article',
+      {
+        name: 'Developer Portfolio (this site)',
+      },
+      ROUTE_WAIT,
+    );
+    expect(within(portfolio).getByRole('link', { name: 'Source code' })).toHaveAttribute(
       'href',
-      'https://github.com/BrunoSGuima',
+      'https://github.com/BrunoSGuima/developer-portfolio',
+    );
+    const auction = screen.getByRole('article', { name: 'Auction House' });
+    expect(within(auction).getByRole('link', { name: 'Source code' })).toHaveAttribute(
+      'href',
+      'https://github.com/BrunoSGuima/auction-house',
+    );
+  });
+
+  it('shows no link at all for the private Personal Finance App, and its stack as badges', async () => {
+    renderRoute('/projects');
+
+    const finance = await screen.findByRole(
+      'article',
+      { name: 'Personal Finance App' },
+      ROUTE_WAIT,
+    );
+    expect(within(finance).queryAllByRole('link')).toHaveLength(0);
+    expect(within(finance).queryByRole('list', { name: 'Links' })).toBeNull();
+    expect(within(finance).getByRole('list', { name: 'Technologies' })).toHaveTextContent(
+      /Flutter.*Dart/,
+    );
+    expect(finance).toHaveTextContent(/multi-agent AI workflow/);
+  });
+
+  it('shows the projects in Portuguese with the Portuguese status words', async () => {
+    renderRoute('/pt-br/projects');
+
+    const auction = await screen.findByRole('article', { name: 'Casa de Leilões' }, ROUTE_WAIT);
+    expect(auction).toHaveTextContent('Concluído');
+    expect(within(auction).getByRole('link', { name: 'Código-fonte' })).toHaveAttribute(
+      'href',
+      'https://github.com/BrunoSGuima/auction-house',
+    );
+    expect(screen.getByRole('article', { name: 'App de Finanças Pessoais' })).toHaveTextContent(
+      'Em andamento',
     );
   });
 
   it('keeps project cards at a reasonable width however wide the column is', async () => {
     const { container } = renderRoute('/projects');
-    await screen.findByRole('article');
+    await screen.findAllByRole('article', undefined, ROUTE_WAIT);
     const list = container.querySelector('[data-projects] > ul');
 
     expect(list).toHaveClass(page.cardGridFit!, styles.cards!);
@@ -109,7 +166,7 @@ describe('ProjectsPage, full-stack states', () => {
 
     act(() => request.resolve(staticProjects));
 
-    expect(await screen.findByRole('article')).toHaveAccessibleName(
+    expect((await screen.findAllByRole('article'))[0]).toHaveAccessibleName(
       'Developer Portfolio (this site)',
     );
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
@@ -143,7 +200,7 @@ describe('ProjectsPage, full-stack states', () => {
     await user.click(await screen.findByRole('button', { name: 'Try again' }));
 
     expect(invalidateProjects).toHaveBeenCalledTimes(1);
-    expect(await screen.findByRole('article')).toBeInTheDocument();
+    expect(await screen.findAllByRole('article')).toHaveLength(staticProjects.length);
     expect(loader).toHaveBeenCalledTimes(2);
     expect(container.querySelector('[data-projects]')).toHaveFocus();
   });

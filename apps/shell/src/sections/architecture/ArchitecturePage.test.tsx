@@ -7,7 +7,7 @@ import archCss from './ArchitecturePage.module.css?raw';
 import styles from './ArchitecturePage.module.css';
 import ArchitecturePage from './ArchitecturePage.tsx';
 
-const STATUS_WORD = /^(Done|Live|In progress|Planned)$/;
+const STATUS_WORD = /^(Completed|Live|In progress|Planned)$/;
 
 describe('ArchitecturePage', () => {
   it('lists every component with a visible status word', () => {
@@ -44,11 +44,11 @@ describe('ArchitecturePage', () => {
     ]);
   });
 
-  it('marks the mascot as done, noting the navigation mascot is still a placeholder', () => {
+  it('marks the mascot as completed, noting the navigation mascot is still a placeholder', () => {
     renderPage(ArchitecturePage);
 
     const mascot = screen.getByRole('heading', { level: 3, name: 'Mascot guide' }).closest('li');
-    expect(mascot).toHaveTextContent('Done');
+    expect(mascot).toHaveTextContent('Completed');
     expect(mascot).toHaveTextContent(/placeholder/i);
   });
 
@@ -95,7 +95,7 @@ describe('ArchitecturePage', () => {
       expect(item).toHaveTextContent(timeline[index]!.name.en);
       expect(within(item).getByText(STATUS_WORD)).toBeInTheDocument();
     });
-    expect(items[0]).toHaveTextContent('Done');
+    expect(items[0]).toHaveTextContent('Completed');
     expect(items[3]).toHaveTextContent(/v4\s*Static site release\s*In progress/);
   });
 
@@ -103,7 +103,7 @@ describe('ArchitecturePage', () => {
     renderPage(ArchitecturePage);
 
     const region = screen.getByRole('region', { name: 'How it will evolve' });
-    expect(region).toHaveTextContent(/Frontend\/backend integration \(MVP\)\s*Done/);
+    expect(region).toHaveTextContent(/Frontend\/backend integration \(MVP\)\s*Completed/);
     expect(region).toHaveTextContent(
       /its integration with this site \(v3\) are built and tested, and run locally in full-stack mode/,
     );

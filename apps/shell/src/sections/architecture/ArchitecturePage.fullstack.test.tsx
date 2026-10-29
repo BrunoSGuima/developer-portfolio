@@ -15,7 +15,7 @@ describe('ArchitecturePage, full-stack build', () => {
     renderPage(ArchitecturePage);
 
     const region = screen.getByRole('region', { name: 'How it will evolve' });
-    expect(region).toHaveTextContent(/Frontend\/backend integration \(MVP\)\s*Done/);
+    expect(region).toHaveTextContent(/Frontend\/backend integration \(MVP\)\s*Completed/);
     expect(region).toHaveTextContent(
       /Projects page loads from the Rails API and the contact form sends messages to it, completing the integration \(v3\)/,
     );

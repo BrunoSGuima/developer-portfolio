@@ -90,6 +90,11 @@ RSpec.describe Project do
       expect(project).to be_valid
     end
 
+    it "accepts every technology the shell has a badge for in the API contract (Step 4.7 added four)" do
+      project.update!(technologies: %w[flutter dart rspec bootstrap])
+      expect(project.reload.technologies).to eq(%w[flutter dart rspec bootstrap])
+    end
+
     it "rejects unknown ids" do
       project.technologies = %w[rails cobol]
       expect(project).not_to be_valid

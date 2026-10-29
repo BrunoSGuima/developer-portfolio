@@ -1,4 +1,5 @@
 import { Text } from '../../components/Placeholder/Placeholder.tsx';
+import { certifications, formatIssued } from '../../content/certifications.ts';
 import { education, formatPeriod } from '../../content/education.ts';
 import { experience, formatYearMonth } from '../../content/experience.ts';
 import { about, developingSkills, languages, professionalSkills } from '../../content/profile.ts';
@@ -78,6 +79,23 @@ function AboutPage() {
                 {text(item.institution, locale)} · {formatPeriod(item, locale)}
               </span>
               {item.note && <span>{pick(item.note, locale)}</span>}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className={page.section} aria-labelledby="certifications">
+        <h2 id="certifications">{messages.about.certifications}</h2>
+        <ul className={styles.education}>
+          {certifications.map((item) => (
+            <li key={text(item.title, 'en')}>
+              <strong>{text(item.title, locale)}</strong>
+              <span className={styles.meta}>
+                {text(item.issuer, locale)} ·{' '}
+                {item.expires
+                  ? `${messages.about.issued} ${formatIssued(item.issued, locale)} · ${messages.about.validUntil} ${formatIssued(item.expires, locale)}`
+                  : formatIssued(item.issued, locale)}
+              </span>
             </li>
           ))}
         </ul>

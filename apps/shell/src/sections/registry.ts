@@ -241,9 +241,8 @@ export const sections: readonly Section[] = [
       import('../contact/action.ts').then(({ contactAction }) => contactAction(args)),
     funFact: {
       text: {
-        en: 'No contact form here: this page links to ways to reach me, and nothing you type is collected.',
-        'pt-BR':
-          'Não há formulário de contato aqui: esta página indica formas de falar comigo, e nada do que você digita é coletado.',
+        en: "There's no contact form here: this page points you to ways to reach me.",
+        'pt-BR': 'Não há formulário de contato aqui: esta página indica formas de falar comigo.',
       },
       tech: ['react', 'typescript'],
     },

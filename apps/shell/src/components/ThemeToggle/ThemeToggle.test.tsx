@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { LocaleContext } from '../../i18n/context.ts';
 import { setMedia } from '../../test/media.ts';
-import { renderRoute } from '../../test/renderRoute.tsx';
+import { renderRoute, ROUTE_WAIT } from '../../test/renderRoute.tsx';
 import { THEME_KEY } from '../../theme/theme.ts';
 import styles from './ThemeToggle.module.css';
 import css from './ThemeToggle.module.css?raw';
@@ -83,7 +83,7 @@ describe('ThemeToggle in the header', () => {
   // menu panel's copy is the one in reach (like the language switcher).
   it('is in the header and in the menu panel, beside the language switcher', async () => {
     const { user } = renderRoute('/pt-br/about');
-    await screen.findByRole('heading', { level: 1 });
+    await screen.findByRole('heading', { level: 1 }, ROUTE_WAIT);
 
     expect(screen.getAllByRole('button', { name: 'Tema escuro', hidden: true })).toHaveLength(2);
     await user.click(screen.getByRole('button', { name: 'Menu' }));
@@ -97,26 +97,27 @@ describe('ThemeToggle in the header', () => {
     }
   });
 
+  // Three route waits in a row: a test budget above Vitest's 5 s default (see ROUTE_WAIT).
   it('keeps the theme across navigation and a language switch', async () => {
     html.dataset.theme = 'light';
     const { user } = renderRoute('/about');
-    await screen.findByRole('heading', { level: 1, name: 'About' });
+    await screen.findByRole('heading', { level: 1, name: 'About' }, ROUTE_WAIT);
     const panel = () => document.getElementById('primary-nav-panel')!;
 
     await user.click(screen.getByRole('button', { name: 'Menu' }));
     await user.click(within(panel()).getByRole('button', { name: 'Dark theme' }));
     await user.click(within(panel()).getByRole('link', { name: /^PT/ }));
-    await screen.findByRole('heading', { level: 1, name: 'Sobre' });
+    await screen.findByRole('heading', { level: 1, name: 'Sobre' }, ROUTE_WAIT);
     expect(html.dataset.theme).toBe('dark');
 
     await user.click(screen.getByRole('button', { name: 'Menu' }));
     await user.click(within(panel()).getByRole('link', { name: 'Projetos' }));
-    await screen.findByRole('heading', { level: 1, name: 'Projetos' });
+    await screen.findByRole('heading', { level: 1, name: 'Projetos' }, ROUTE_WAIT);
     expect(html.dataset.theme).toBe('dark');
     await user.click(screen.getByRole('button', { name: 'Menu' }));
     expect(within(panel()).getByRole('button', { name: 'Tema escuro' })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
-  });
+  }, 20_000);
 });

@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { liveSections, type Section } from '../sections/registry.ts';
 import { createFakeSectionApp } from '../test/fakeSectionApp.ts';
 import { setMedia } from '../test/media.ts';
-import { renderRoute } from '../test/renderRoute.tsx';
+import { renderRoute, ROUTE_WAIT } from '../test/renderRoute.tsx';
 import { MASCOT_WIDTH, walkDuration } from './geometry.ts';
 import { ARRIVAL_FALLBACK_MARGIN_MS, POINT_MS } from './useMascotTimers.ts';
 
@@ -39,7 +39,7 @@ const eagerSections: Section[] = liveSections.map((section) => ({
 
 async function renderShell(path = '/', sections: Section[] = eagerSections) {
   const view = renderRoute(path, { sections });
-  await screen.findByRole('heading', { level: 1 });
+  await screen.findByRole('heading', { level: 1 }, ROUTE_WAIT);
   // Let React finish the work the async first render scheduled (e.g. the mascot's placement)
   // before faking timers, then fake only the kind of timer the mascot uses.
   await act(async () => {});
@@ -203,13 +203,15 @@ describe('HeaderMascot (desktop)', () => {
 
   it('keeps nav links clickable', async () => {
     const { user } = renderRoute('/', { sections: eagerSections });
-    await screen.findByRole('heading', { level: 1, name: 'Home' });
+    await screen.findByRole('heading', { level: 1, name: 'Home' }, ROUTE_WAIT);
     const nav = screen.getByRole('navigation', { name: 'Main' });
 
     await user.click(within(nav).getByRole('button', { name: 'Menu' }));
     await user.click(within(nav).getByRole('link', { name: 'About' }));
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'About' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'About' }, ROUTE_WAIT),
+    ).toBeInTheDocument();
   });
 });
 

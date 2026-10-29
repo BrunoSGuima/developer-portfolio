@@ -28,22 +28,25 @@ function ProjectCard({ project }: { project: Project }) {
           </li>
         ))}
       </ul>
-      <ul aria-label={messages.projectCard.links} className={styles.links}>
-        {project.links.map((link) => {
-          const label = pick(link.label, locale);
-          return (
-            <li key={label}>
-              {isPlaceholder(link.href) ? (
-                <>
-                  {label}: <Placeholder placeholder={link.href} />
-                </>
-              ) : (
-                <a href={link.href}>{label}</a>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+      {/* A project in a private repository has no links: no empty list either. */}
+      {project.links.length > 0 && (
+        <ul aria-label={messages.projectCard.links} className={styles.links}>
+          {project.links.map((link) => {
+            const label = pick(link.label, locale);
+            return (
+              <li key={label}>
+                {isPlaceholder(link.href) ? (
+                  <>
+                    {label}: <Placeholder placeholder={link.href} />
+                  </>
+                ) : (
+                  <a href={link.href}>{label}</a>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </article>
   );
 }

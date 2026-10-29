@@ -25,7 +25,7 @@ export const en = {
     planned: 'planned',
   },
   status: {
-    done: 'Done',
+    done: 'Completed',
     live: 'Live',
     'in-progress': 'In progress',
     planned: 'Planned',
@@ -52,16 +52,21 @@ export const en = {
     skillsProfessional: 'Professional experience',
     skillsDeveloping: 'Currently developing',
     education: 'Education',
+    certifications: 'Certifications',
+    /** Before a certification's issue date, e.g. "Issued Oct 2026". */
+    issued: 'Issued',
+    /** Before an expiry date, e.g. "Valid until Oct 2027". */
+    validUntil: 'Valid until',
     languages: 'Languages',
     background: 'Background',
   },
   projects: {
     leadBeforeLink:
-      "Things I've built in public. Most of my professional work lives in private client codebases, so it isn't shown here; my experience is summarised on the",
+      "Things I've built, mostly in public. Most of my professional work lives in private client codebases, so it isn't shown here; my experience is summarised on the",
     leadLink: 'About',
     /** Follows the link directly, so it carries its own leading space where needed. */
     leadAfterLink: ' page.',
-    note: 'More public projects will be added as this portfolio grows.',
+    note: 'More projects will be added as this portfolio grows.',
     loading: 'Loading projects…',
     empty: 'No projects to show yet.',
     error: "The projects couldn't be loaded. Check your connection and try again.",

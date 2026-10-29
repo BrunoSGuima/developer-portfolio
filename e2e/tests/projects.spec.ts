@@ -8,21 +8,32 @@ import { languageOf, messages } from '../support/site.ts';
 
 const PROJECTS_API = '**/api/v1/projects';
 
+const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 // The same cards in both modes: from the static data (static build) or the API (full-stack).
 test.describe(`the Projects page (${e2eMode} build)`, () => {
-  for (const [path, name] of [
-    ['/projects', 'Developer Portfolio (this site)'],
-    ['/pt-br/projects', 'Portfólio de Desenvolvedor (este site)'],
-  ] as const) {
-    test(`shows the portfolio project at ${path}`, async ({ page }) => {
+  for (const locale of ['en', 'pt-BR'] as const) {
+    const path = locale === 'en' ? '/projects' : '/pt-br/projects';
+
+    test(`shows the three projects in order at ${path}, each linked only where public`, async ({
+      page,
+    }) => {
       await page.goto(path);
 
-      const card = page.getByRole('article', { name });
-      await expect(card).toBeVisible();
-      await expect(card.getByRole('link', { name: /GitHub/ })).toHaveAttribute(
-        'href',
-        'https://github.com/BrunoSGuima',
+      const cards = page.getByRole('article');
+      await expect(cards).toHaveText(
+        staticProjects.map(({ name }) => new RegExp(escape(name[locale]))),
       );
+      for (const project of staticProjects) {
+        const card = page.getByRole('article', { name: project.name[locale] });
+        await expect(card.getByRole('link')).toHaveCount(project.links.length);
+        for (const link of project.links) {
+          await expect(card.getByRole('link', { name: link.label[locale] })).toHaveAttribute(
+            'href',
+            link.href as string, // never a placeholder: the content gate forbids them in CI
+          );
+        }
+      }
       await expect(page.getByRole('alert')).toHaveCount(0);
     });
   }
@@ -79,7 +90,7 @@ test.describe('the Projects page, full-stack only', () => {
 
     await expect(page.getByRole('status')).toContainText(messages.en.projects.loading);
     release();
-    await expect(page.getByRole('article')).toBeVisible();
+    await expect(page.getByRole('article')).toHaveCount(staticProjects.length);
     await expect(page.getByRole('status')).toHaveCount(0);
   });
 
@@ -92,7 +103,7 @@ test.describe('the Projects page, full-stack only', () => {
     });
 
     await page.goto('/projects');
-    await expect(page.getByRole('article')).toBeVisible();
+    await expect(page.getByRole('article')).toHaveCount(staticProjects.length);
     await clickLanguage(page, languageOf('pt-BR').linkName);
     await expect(
       page.getByRole('article', { name: 'Portfólio de Desenvolvedor (este site)' }),

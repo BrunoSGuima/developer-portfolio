@@ -56,6 +56,8 @@ afterEach(() => {
 });
 
 describe('page transitions', () => {
+  // A first render, a navigation and a focus check: a test budget above Vitest's 5 s default
+  // under load.
   it('crossfades a nav link navigation, keeping the shell mounted and moving focus', async () => {
     const { user } = renderApp('/');
     await screen.findByRole('heading', { level: 1, name: "Hi, I'm Bruno." });
@@ -71,7 +73,7 @@ describe('page transitions', () => {
     expect(screen.getByRole('complementary', { name: 'Fun fact' })).toBe(funFact);
     // Focus moves in an effect after the new page renders.
     await waitFor(() => expect(heading).toHaveFocus());
-  });
+  }, 20_000);
 
   it.each([
     ['the Home buttons', '/', /View Projects/, 'Projects'],

@@ -2,7 +2,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { contactMessageAccepted, errorResponse } from '../../api/fixtures.ts';
 import { clearDraft } from '../../contact/draft.ts';
-import { renderRoute } from '../../test/renderRoute.tsx';
+import { renderRoute, ROUTE_WAIT } from '../../test/renderRoute.tsx';
 
 // The Contact page through the real routes and action, as built in full-stack mode. fetch is
 // stubbed, so every API answer is controlled and no request leaves the test.
@@ -45,7 +45,7 @@ afterEach(() => fetchMock.mockReset());
 
 async function renderContact(path = '/contact') {
   const rendered = renderRoute(path);
-  await screen.findByRole('heading', { level: 2 });
+  await screen.findByRole('heading', { level: 2 }, ROUTE_WAIT);
   return rendered;
 }
 
@@ -118,6 +118,7 @@ describe('ContactPage, full-stack build', () => {
     expect(screen.getByLabelText('Name')).not.toHaveAttribute('aria-invalid');
   });
 
+  // Render, typing three fields and a submit: a test budget above Vitest's 5 s default under load.
   it('sends, then confirms with focus on the message and clears the form', async () => {
     fetchMock.mockResolvedValue(json(contactMessageAccepted, 202));
     const { user } = await renderContact();
@@ -127,6 +128,8 @@ describe('ContactPage, full-stack build', () => {
 
     const status = await screen.findByText(
       "Thank you, your message was sent. I'll reply by email.",
+      undefined,
+      ROUTE_WAIT,
     );
     expect(statusRegion()).toContainElement(status);
     expect(statusRegion()).toHaveAttribute('role', 'status');
@@ -144,7 +147,7 @@ describe('ContactPage, full-stack build', () => {
     // A new message hides the confirmation.
     await user.type(screen.getByLabelText('Name'), 'B');
     expect(statusRegion()).toBeEmptyDOMElement();
-  });
+  }, 20_000);
 
   it('sends once while pending, however often Send is pressed', async () => {
     const release = held();
@@ -161,9 +164,9 @@ describe('ContactPage, full-stack build', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
     await release(json(contactMessageAccepted, 202));
-    expect(await screen.findByRole('button', { name: 'Send message' })).not.toHaveAttribute(
-      'aria-disabled',
-    );
+    expect(
+      await screen.findByRole('button', { name: 'Send message' }, ROUTE_WAIT),
+    ).not.toHaveAttribute('aria-disabled');
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -178,7 +181,7 @@ describe('ContactPage, full-stack build', () => {
       fireEvent.submit(form);
     });
 
-    await screen.findByRole('button', { name: 'Sending…' });
+    await screen.findByRole('button', { name: 'Sending…' }, ROUTE_WAIT);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     await release(json(contactMessageAccepted, 202));
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -193,7 +196,13 @@ describe('ContactPage, full-stack build', () => {
 
     await user.click(send());
 
-    expect(await screen.findByText('Enter an email address like name@example.com.')).toBeVisible();
+    expect(
+      await screen.findByText(
+        'Enter an email address like name@example.com.',
+        undefined,
+        ROUTE_WAIT,
+      ),
+    ).toBeVisible();
     // The errors render with the result; focus moves once the submission is idle again (after
     // React Router's revalidation), so wait for it rather than assume the same tick.
     await waitFor(() => expect(screen.getByLabelText('Email')).toHaveFocus());
@@ -207,10 +216,12 @@ describe('ContactPage, full-stack build', () => {
 
     await user.click(send());
 
-    await waitFor(() =>
-      expect(alertRegion()).toHaveTextContent(
-        /may or may not have arrived\. Your text is still here/,
-      ),
+    await waitFor(
+      () =>
+        expect(alertRegion()).toHaveTextContent(
+          /may or may not have arrived\. Your text is still here/,
+        ),
+      ROUTE_WAIT,
     );
     expect(screen.getByLabelText('Name')).toHaveValue('Ada Lovelace');
     expect(send()).not.toHaveAttribute('aria-disabled');
@@ -226,8 +237,9 @@ describe('ContactPage, full-stack build', () => {
 
     await user.click(send());
 
-    await waitFor(() =>
-      expect(alertRegion()).toHaveTextContent("Your message couldn't be sent right now."),
+    await waitFor(
+      () => expect(alertRegion()).toHaveTextContent("Your message couldn't be sent right now."),
+      ROUTE_WAIT,
     );
     expect(screen.getByLabelText('Email')).toHaveValue('ada@example.com');
   });
@@ -250,7 +262,7 @@ describe('ContactPage, full-stack build', () => {
 
     await user.click(screen.getByRole('button', { name: /Send message|Enviar mensagem/ }));
 
-    await waitFor(() => expect(alertRegion()).toHaveTextContent(expected));
+    await waitFor(() => expect(alertRegion()).toHaveTextContent(expected), ROUTE_WAIT);
     expect(alertRegion()).toHaveAttribute('role', 'alert');
   });
 
@@ -260,7 +272,9 @@ describe('ContactPage, full-stack build', () => {
 
     await act(() => router.navigate('/pt-br/contact'));
 
-    expect(await screen.findByRole('textbox', { name: 'Nome' })).toHaveValue('Ada Lovelace');
+    expect(await screen.findByRole('textbox', { name: 'Nome' }, ROUTE_WAIT)).toHaveValue(
+      'Ada Lovelace',
+    );
     expect(screen.getByRole('textbox', { name: 'Mensagem' })).toHaveValue(
       'Hello, shall we talk about a role?',
     );
@@ -273,14 +287,18 @@ describe('ContactPage, full-stack build', () => {
     await user.click(send());
 
     await act(() => router.navigate('/pt-br/contact'));
-    const sending = await screen.findByRole('button', { name: 'Enviando…' });
+    const sending = await screen.findByRole('button', { name: 'Enviando…' }, ROUTE_WAIT);
     expect(sending).toHaveAttribute('aria-disabled', 'true');
     await user.click(sending);
 
     await release(json(contactMessageAccepted, 202));
 
     expect(
-      await screen.findByText('Obrigado, sua mensagem foi enviada. Vou responder por e-mail.'),
+      await screen.findByText(
+        'Obrigado, sua mensagem foi enviada. Vou responder por e-mail.',
+        undefined,
+        ROUTE_WAIT,
+      ),
     ).toBeVisible();
     expect(screen.getByRole('textbox', { name: 'Nome' })).toHaveValue('');
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -294,11 +312,11 @@ describe('ContactPage, full-stack build', () => {
     const { user, router } = await renderContact();
     await fill(user);
     await user.click(send());
-    await waitFor(() => expect(alertRegion()).not.toBeEmptyDOMElement());
+    await waitFor(() => expect(alertRegion()).not.toBeEmptyDOMElement(), ROUTE_WAIT);
 
     await act(() => router.navigate('/pt-br/contact'));
 
-    expect(await screen.findByText(/pode ou não ter chegado/)).toBeVisible();
+    expect(await screen.findByText(/pode ou não ter chegado/, undefined, ROUTE_WAIT)).toBeVisible();
     expect(screen.getByRole('textbox', { name: 'E-mail' })).toHaveValue('ada@example.com');
   });
 });

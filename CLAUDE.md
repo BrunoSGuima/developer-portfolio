@@ -22,7 +22,7 @@ GitHub Actions green on `f66efbf`; the MVP is complete). **Phase 4 — Deploymen
 (Steps 4.0–4.4 done: `13938b0`, `2653ba5`, `6b9c9ed`, `35beb2d`, `4bdf06a`; Step 4.5, the
 static-first architecture and documentation revision, done in `2db5e00`; Step 4.6a, dark mode
 without the night art, done in `d4d324e`; Step 4.6b, the night Home art and the removal of the
-mascot's emphasis marks, ready for review; then 4.7 projects, 4.8 résumés, 4.9 public README, 4.10 comment review, 4.11 real Cloudflare Pages
+mascot's emphasis marks, done in `2773f75`; Step 4.7, the projects, ready for review; then 4.8 résumés, 4.9 public README, 4.10 comment review, 4.11 real Cloudflare Pages
 verification, 4.12 custom domain and publication; details, prerequisites and the spending log
 are in `docs/ROADMAP.md`). **Deployment strategy (ADR-0016, 2026-10-28, superseding ADR-0015):**
 only the **static** build is published, on Cloudflare Pages Free; the Rails API and PostgreSQL
@@ -230,7 +230,10 @@ Sidekiq or Vue until their phase.
 - **Content** lives as typed data in `apps/shell/src/content/` (shaped like the future Rails
   models); pages render it. The owner's résumé is the source of truth: **never invent**
   experience, metrics, achievements or projects; no confidential employer/client details; private
-  professional work is not a portfolio project; Python and AI engineering are presented only as
+  professional work is not a portfolio project; a personal project in a private repository is
+  shown without any link (`content/projects.test.ts`); a new project technology goes in four
+  places (`openapi.yaml` first, then `npm run api:types`, `Project::TECHNOLOGIES`,
+  `sections/technologies.ts`); Python and AI engineering are presented only as
   areas of ongoing development. **Never publish a phone number** (`privacy.test.ts` rejects
   phone-like text using a generic pattern; never write the real number into the repo, tests
   included). Résumé PDFs are git-ignored, except the public phone-free copies in

@@ -5,7 +5,7 @@ import { messages } from '../i18n/messages/index.ts';
 import { liveSections, type Section, shellFunFact } from '../sections/registry.ts';
 import { createFakeSectionApp } from '../test/fakeSectionApp.ts';
 import { same } from '../test/localized.ts';
-import { renderRoute } from '../test/renderRoute.tsx';
+import { renderRoute, ROUTE_WAIT } from '../test/renderRoute.tsx';
 
 const pt = messages['pt-BR'];
 const funFact = (name = 'Fun fact') => screen.getByRole('complementary', { name });
@@ -27,7 +27,7 @@ describe('Portuguese pages (/pt-br)', () => {
     async (path, section) => {
       renderRoute(path);
 
-      const heading = await screen.findByRole('heading', { level: 1 });
+      const heading = await screen.findByRole('heading', { level: 1 }, ROUTE_WAIT);
       expect(heading).toHaveTextContent(
         section.path === '/' ? pt.home.heading : section.title['pt-BR'],
       );
@@ -41,7 +41,7 @@ describe('Portuguese pages (/pt-br)', () => {
     renderRoute('/pt-br/');
 
     expect(
-      await screen.findByRole('heading', { level: 1, name: pt.home.heading }),
+      await screen.findByRole('heading', { level: 1, name: pt.home.heading }, ROUTE_WAIT),
     ).toBeInTheDocument();
   });
 
@@ -49,7 +49,7 @@ describe('Portuguese pages (/pt-br)', () => {
     renderRoute('/pt-br/does-not-exist');
 
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Página não encontrada' }),
+      await screen.findByRole('heading', { level: 1, name: 'Página não encontrada' }, ROUTE_WAIT),
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Voltar ao início' })).toHaveAttribute(
       'href',
@@ -62,20 +62,20 @@ describe('Portuguese pages (/pt-br)', () => {
   it('always shows English at "/" and Portuguese at "/pt-br": the URL alone decides', async () => {
     const { router } = renderRoute('/');
     expect(
-      await screen.findByRole('heading', { level: 1, name: "Hi, I'm Bruno." }),
+      await screen.findByRole('heading', { level: 1, name: "Hi, I'm Bruno." }, ROUTE_WAIT),
     ).toBeInTheDocument();
     expect(document.documentElement.lang).toBe('en');
 
     await act(() => router.navigate('/pt-br'));
     expect(
-      await screen.findByRole('heading', { level: 1, name: pt.home.heading }),
+      await screen.findByRole('heading', { level: 1, name: pt.home.heading }, ROUTE_WAIT),
     ).toBeInTheDocument();
     expect(document.documentElement.lang).toBe('pt-BR');
   });
 
   it('builds every internal link in Portuguese', async () => {
     const { user } = renderRoute('/pt-br');
-    await screen.findByRole('heading', { level: 1 });
+    await screen.findByRole('heading', { level: 1 }, ROUTE_WAIT);
     const nav = screen.getByRole('navigation', { name: 'Principal' });
     await user.click(within(nav).getByRole('button', { name: 'Menu' }));
 
@@ -103,12 +103,12 @@ describe('Portuguese pages (/pt-br)', () => {
 describe('switching languages', () => {
   it('stays on the same page, keeps the shell mounted, and moves focus to the new heading', async () => {
     const { user, router } = renderRoute('/about');
-    await screen.findByRole('heading', { level: 1, name: 'About' });
+    await screen.findByRole('heading', { level: 1, name: 'About' }, ROUTE_WAIT);
     const header = screen.getByRole('banner');
 
     await switchLanguage(user, 'PT');
 
-    const heading = await screen.findByRole('heading', { level: 1, name: 'Sobre' });
+    const heading = await screen.findByRole('heading', { level: 1, name: 'Sobre' }, ROUTE_WAIT);
     expect(router.state.location.pathname).toBe('/pt-br/about');
     expect(screen.getByRole('banner')).toBe(header);
     // Focus moves in an effect after the new page renders.
@@ -122,28 +122,32 @@ describe('switching languages', () => {
 
   it('works with the browser history: back and forward restore the language', async () => {
     const { user, router } = renderRoute('/projects');
-    await screen.findByRole('heading', { level: 1, name: 'Projects' });
+    await screen.findByRole('heading', { level: 1, name: 'Projects' }, ROUTE_WAIT);
     await switchLanguage(user, 'PT');
-    await screen.findByRole('heading', { level: 1, name: 'Projetos' });
+    await screen.findByRole('heading', { level: 1, name: 'Projetos' }, ROUTE_WAIT);
 
     await act(() => router.navigate(-1));
-    expect(await screen.findByRole('heading', { level: 1, name: 'Projects' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Projects' }, ROUTE_WAIT),
+    ).toBeInTheDocument();
     expect(document.documentElement.lang).toBe('en');
     expect(document.title).toBe(`Projects · ${messages.en.site.title}`);
 
     await act(() => router.navigate(1));
-    expect(await screen.findByRole('heading', { level: 1, name: 'Projetos' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Projetos' }, ROUTE_WAIT),
+    ).toBeInTheDocument();
     expect(document.documentElement.lang).toBe('pt-BR');
   });
 
   it('keeps an unknown address when switching, showing the other language’s 404', async () => {
     const { user, router } = renderRoute('/nope');
-    await screen.findByRole('heading', { level: 1, name: 'Page not found' });
+    await screen.findByRole('heading', { level: 1, name: 'Page not found' }, ROUTE_WAIT);
 
     await switchLanguage(user, 'PT');
 
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Página não encontrada' }),
+      await screen.findByRole('heading', { level: 1, name: 'Página não encontrada' }, ROUTE_WAIT),
     ).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/pt-br/nope');
   });
@@ -152,7 +156,7 @@ describe('switching languages', () => {
 describe('document metadata', () => {
   it('describes the page and links its language alternates', async () => {
     renderRoute('/pt-br/about');
-    await screen.findByRole('heading', { level: 1, name: 'Sobre' });
+    await screen.findByRole('heading', { level: 1, name: 'Sobre' }, ROUTE_WAIT);
     const origin = window.location.origin;
 
     expect(head('meta[name="description"]')).toHaveAttribute(
@@ -173,7 +177,7 @@ describe('document metadata', () => {
 
   it('gives the home pages clean canonical URLs', async () => {
     renderRoute('/pt-br/');
-    await screen.findByRole('heading', { level: 1 });
+    await screen.findByRole('heading', { level: 1 }, ROUTE_WAIT);
 
     expect(head('link[rel="canonical"]')).toHaveAttribute(
       'href',
@@ -184,7 +188,7 @@ describe('document metadata', () => {
 
   it('marks no canonical or alternates on a missing page', async () => {
     renderRoute('/pt-br/nope');
-    await screen.findByRole('heading', { level: 1 });
+    await screen.findByRole('heading', { level: 1 }, ROUTE_WAIT);
 
     expect(head('link[rel="canonical"]')).toBeNull();
     expect(head('link[rel="alternate"]')).toBeNull();
@@ -209,11 +213,11 @@ describe('remote sections and the language', () => {
   it('passes the locale and a localized base path, and remounts once on a language switch', async () => {
     const { load, stats } = createFakeSectionApp();
     const { router } = renderRoute('/remote', { sections: [...liveSections, remote(load)] });
-    await screen.findByRole('heading', { name: 'Fake remote section' });
+    await screen.findByRole('heading', { name: 'Fake remote section' }, ROUTE_WAIT);
     expect(stats.lastContext).toMatchObject({ locale: 'en', basePath: '/remote' });
 
     await act(() => router.navigate('/pt-br/remote'));
-    await screen.findByRole('heading', { name: 'Fake remote section' });
+    await screen.findByRole('heading', { name: 'Fake remote section' }, ROUTE_WAIT);
 
     expect(stats.unmounts).toBe(1);
     expect(stats.mounts).toBe(2);
@@ -226,9 +230,11 @@ describe('remote sections and the language', () => {
       sections: [...liveSections, remote(load)],
     });
 
-    await user.click(await screen.findByRole('button', { name: 'Go to About' }));
+    await user.click(await screen.findByRole('button', { name: 'Go to About' }, ROUTE_WAIT));
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'Sobre' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Sobre' }, ROUTE_WAIT),
+    ).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/pt-br/about');
   });
 });

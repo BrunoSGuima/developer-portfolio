@@ -292,7 +292,17 @@ export interface components {
      * @description Technology ids (the shell's sections/technologies.ts).
      * @enum {string}
      */
-    Technology: 'react' | 'typescript' | 'vite' | 'react-router' | 'vue' | 'rails';
+    Technology:
+      | 'react'
+      | 'typescript'
+      | 'vite'
+      | 'react-router'
+      | 'vue'
+      | 'rails'
+      | 'flutter'
+      | 'dart'
+      | 'rspec'
+      | 'bootstrap';
     LocalizedText120: {
       en: string;
       'pt-BR': string;
@@ -419,10 +429,10 @@ export interface operations {
            *           "links": [
            *             {
            *               "label": {
-           *                 "en": "GitHub profile",
-           *                 "pt-BR": "Perfil no GitHub"
+           *                 "en": "Source code",
+           *                 "pt-BR": "Código-fonte"
            *               },
-           *               "url": "https://github.com/BrunoSGuima"
+           *               "url": "https://github.com/BrunoSGuima/developer-portfolio"
            *             }
            *           ]
            *         }

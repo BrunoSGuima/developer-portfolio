@@ -18,6 +18,10 @@ export const technologies = {
   vue: { label: 'Vue.js', tone: 'green' },
   rails: { label: 'Ruby on Rails', tone: 'burgundy' },
   postgresql: { label: 'PostgreSQL', tone: 'blue' },
+  flutter: { label: 'Flutter', tone: 'blue' },
+  dart: { label: 'Dart', tone: 'slate' },
+  rspec: { label: 'RSpec', tone: 'burgundy' },
+  bootstrap: { label: 'Bootstrap', tone: 'slate' },
 } as const satisfies Record<string, Technology>;
 
 export type TechId = keyof typeof technologies;

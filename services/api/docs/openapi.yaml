@@ -37,9 +37,9 @@ paths:
                     technologies: [react, typescript, vite, react-router]
                     links:
                       - label:
-                          en: GitHub profile
-                          pt-BR: Perfil no GitHub
-                        url: https://github.com/BrunoSGuima
+                          en: Source code
+                          pt-BR: Código-fonte
+                        url: https://github.com/BrunoSGuima/developer-portfolio
         "500":
           $ref: "#/components/responses/InternalError"
     # Write methods are listed only to document their 405 (the API is read-only).
@@ -344,7 +344,7 @@ components:
     Technology:
       description: Technology ids (the shell's sections/technologies.ts).
       type: string
-      enum: [react, typescript, vite, react-router, vue, rails]
+      enum: [react, typescript, vite, react-router, vue, rails, flutter, dart, rspec, bootstrap]
     LocalizedText120:
       type: object
       required: [en, pt-BR]

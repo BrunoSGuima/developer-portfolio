@@ -120,7 +120,10 @@ export interface SkillGroup {
 
 /** Skills used professionally (résumé). Python is deliberately not here: see `developingSkills`. */
 export const professionalSkills: readonly SkillGroup[] = [
-  { label: { en: 'Languages', 'pt-BR': 'Linguagens' }, items: ['Ruby', 'JavaScript', 'SQL'] },
+  {
+    label: { en: 'Languages', 'pt-BR': 'Linguagens' },
+    items: ['Ruby', 'JavaScript', 'TypeScript', 'SQL'],
+  },
   {
     label: { en: 'Frameworks', 'pt-BR': 'Frameworks' },
     items: ['Ruby on Rails', 'React', 'Vue.js'],
@@ -148,9 +151,19 @@ export const professionalSkills: readonly SkillGroup[] = [
   },
   {
     label: { en: 'Ways of working', 'pt-BR': 'Formas de trabalho' },
+    items: [{ en: 'Agile (Scrum, Kanban)', 'pt-BR': 'Metodologias ágeis (Scrum, Kanban)' }],
+  },
+  {
+    label: { en: 'AI-assisted development', 'pt-BR': 'Desenvolvimento assistido por IA' },
     items: [
-      { en: 'Agile (Scrum, Kanban)', 'pt-BR': 'Metodologias ágeis (Scrum, Kanban)' },
-      { en: 'AI-assisted development', 'pt-BR': 'Desenvolvimento assistido por IA' },
+      'Claude Code',
+      'Grok Bot',
+      'Cursor',
+      {
+        en: 'Multi-agent workflows (development, design and QA agents) with human supervision, code review and validation',
+        'pt-BR':
+          'Fluxos multiagente (agentes de desenvolvimento, design e QA) com supervisão humana, revisão de código e validação',
+      },
     ],
   },
 ];
@@ -163,7 +176,10 @@ export const developingSkills: readonly { name: Localized<string>; note: Localiz
   },
   {
     name: { en: 'TypeScript', 'pt-BR': 'TypeScript' },
-    note: { en: 'this portfolio is written in it', 'pt-BR': 'este portfólio é escrito nele' },
+    note: {
+      en: 'strengthening my practical experience by building this portfolio with it',
+      'pt-BR': 'fortalecendo minha experiência prática ao construir este portfólio com ele',
+    },
   },
   {
     name: { en: 'Distributed systems', 'pt-BR': 'Sistemas distribuídos' },

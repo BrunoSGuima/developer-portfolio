@@ -5,7 +5,7 @@ import { deferred, settle } from '../test/deferred.ts';
 import { setMedia } from '../test/media.ts';
 import { createFakeSectionApp } from '../test/fakeSectionApp.ts';
 import { same } from '../test/localized.ts';
-import { renderRoute } from '../test/renderRoute.tsx';
+import { renderRoute, ROUTE_WAIT } from '../test/renderRoute.tsx';
 
 const SITE_TITLE = 'Bruno Guimarães — Full-Stack Software Engineer';
 
@@ -28,7 +28,7 @@ describe('routing', () => {
     async (path, section) => {
       renderRoute(path);
 
-      const heading = await screen.findByRole('heading', { level: 1 });
+      const heading = await screen.findByRole('heading', { level: 1 }, ROUTE_WAIT);
       expect(screen.getByRole('main')).toContainElement(heading);
       expect(screen.getByRole('banner')).toBeInTheDocument();
       if (section.path !== '/') {
@@ -39,19 +39,21 @@ describe('routing', () => {
 
   it('navigates between sections without remounting the shell', async () => {
     const { user } = renderRoute('/');
-    await screen.findByRole('heading', { level: 1, name: /hi, i'm bruno/i });
+    await screen.findByRole('heading', { level: 1, name: /hi, i'm bruno/i }, ROUTE_WAIT);
     const header = screen.getByRole('banner');
 
     await openMenu(user);
     await user.click(within(mainNav()).getByRole('link', { name: 'Projects' }));
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'Projects' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Projects' }, ROUTE_WAIT),
+    ).toBeInTheDocument();
     expect(screen.getByRole('banner')).toBe(header);
   });
 
   it('marks the current section in the nav, matching "/" exactly', async () => {
     const { user } = renderRoute('/about');
-    await screen.findByRole('heading', { level: 1, name: 'About' });
+    await screen.findByRole('heading', { level: 1, name: 'About' }, ROUTE_WAIT);
     await openMenu(user);
 
     expect(within(mainNav()).getByRole('link', { name: 'About' })).toHaveAttribute(
@@ -65,24 +67,28 @@ describe('routing', () => {
 
   it('moves focus to the new page heading after navigation, but not on first load', async () => {
     const { user } = renderRoute('/');
-    const homeHeading = await screen.findByRole('heading', { level: 1 });
+    const homeHeading = await screen.findByRole('heading', { level: 1 }, ROUTE_WAIT);
     expect(homeHeading).not.toHaveFocus();
 
     await openMenu(user);
     await user.click(within(mainNav()).getByRole('link', { name: 'Architecture' }));
 
-    const heading = await screen.findByRole('heading', { level: 1, name: 'Architecture' });
+    const heading = await screen.findByRole(
+      'heading',
+      { level: 1, name: 'Architecture' },
+      ROUTE_WAIT,
+    );
     await waitFor(() => expect(heading).toHaveFocus());
   });
 
   it('updates the document title for each section', async () => {
     const { user } = renderRoute('/');
-    await screen.findByRole('heading', { level: 1 });
+    await screen.findByRole('heading', { level: 1 }, ROUTE_WAIT);
     expect(document.title).toBe(SITE_TITLE);
 
     await openMenu(user);
     await user.click(within(mainNav()).getByRole('link', { name: 'Contact' }));
-    await screen.findByRole('heading', { level: 1, name: 'Contact' });
+    await screen.findByRole('heading', { level: 1, name: 'Contact' }, ROUTE_WAIT);
 
     expect(document.title).toBe(`Contact · ${SITE_TITLE}`);
   });
@@ -91,7 +97,7 @@ describe('routing', () => {
     renderRoute('/does-not-exist');
 
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Page not found' }),
+      await screen.findByRole('heading', { level: 1, name: 'Page not found' }, ROUTE_WAIT),
     ).toBeInTheDocument();
     expect(screen.getByRole('banner')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /back to home/i })).toHaveAttribute('href', '/');
@@ -115,7 +121,7 @@ describe('routing', () => {
     renderRoute('/broken', { sections: [...liveSections, broken] });
 
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Something went wrong' }),
+      await screen.findByRole('heading', { level: 1, name: 'Something went wrong' }, ROUTE_WAIT),
     ).toBeInTheDocument();
     expect(screen.getByRole('banner')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /reload/i })).toBeInTheDocument();
@@ -127,7 +133,7 @@ describe('Fun Fact in the shell', () => {
     '%s shows the Fun Fact for its section',
     async (path, section) => {
       renderRoute(path);
-      await screen.findByRole('heading', { level: 1 });
+      await screen.findByRole('heading', { level: 1 }, ROUTE_WAIT);
 
       expect(funFact()).toHaveTextContent(section.funFact.text.en);
     },
@@ -135,12 +141,12 @@ describe('Fun Fact in the shell', () => {
 
   it('keeps the Fun Fact mounted while its content follows navigation', async () => {
     const { user } = renderRoute('/');
-    await screen.findByRole('heading', { level: 1 });
+    await screen.findByRole('heading', { level: 1 }, ROUTE_WAIT);
     const aside = funFact();
 
     await openMenu(user);
     await user.click(within(mainNav()).getByRole('link', { name: 'Architecture' }));
-    await screen.findByRole('heading', { level: 1, name: 'Architecture' });
+    await screen.findByRole('heading', { level: 1, name: 'Architecture' }, ROUTE_WAIT);
 
     expect(funFact()).toBe(aside);
     expect(aside).toHaveTextContent(/built as static files/);
@@ -149,7 +155,7 @@ describe('Fun Fact in the shell', () => {
 
   it('shows the shell Fun Fact when no section matches', async () => {
     renderRoute('/does-not-exist');
-    await screen.findByRole('heading', { level: 1, name: 'Page not found' });
+    await screen.findByRole('heading', { level: 1, name: 'Page not found' }, ROUTE_WAIT);
 
     expect(funFact()).toHaveTextContent(shellFunFact.text.en);
   });
@@ -181,13 +187,15 @@ describe('remote sections in the shell', () => {
   it('mounts inside the persistent shell, with its own Fun Fact and title', async () => {
     const { load } = createFakeSectionApp();
     const { router } = renderWithRemote('/', load);
-    await screen.findByRole('heading', { level: 1 });
+    await screen.findByRole('heading', { level: 1 }, ROUTE_WAIT);
     const header = screen.getByRole('banner');
     const aside = funFact();
 
     await act(() => router.navigate('/remote'));
 
-    expect(await screen.findByRole('heading', { name: 'Fake remote section' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Fake remote section' }, ROUTE_WAIT),
+    ).toBeInTheDocument();
     expect(screen.getByRole('main')).toContainElement(screen.getByRole('heading', { level: 1 }));
     expect(screen.getByRole('banner')).toBe(header);
     expect(funFact()).toBe(aside);
@@ -199,12 +207,12 @@ describe('remote sections in the shell', () => {
     const mountDone = deferred();
     const { load } = createFakeSectionApp({ mountDelay: mountDone.promise });
     const { router } = renderWithRemote('/', load);
-    await screen.findByRole('heading', { level: 1 });
+    await screen.findByRole('heading', { level: 1 }, ROUTE_WAIT);
 
     await act(() => router.navigate('/remote'));
     await settle(() => mountDone.resolve());
 
-    const heading = await screen.findByRole('heading', { name: 'Fake remote section' });
+    const heading = await screen.findByRole('heading', { name: 'Fake remote section' }, ROUTE_WAIT);
     await waitFor(() => expect(heading).toHaveFocus());
   });
 
@@ -212,13 +220,15 @@ describe('remote sections in the shell', () => {
     const { load } = createFakeSectionApp();
     renderWithRemote('/remote/deeper/path', load);
 
-    expect(await screen.findByRole('heading', { name: 'Fake remote section' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Fake remote section' }, ROUTE_WAIT),
+    ).toBeInTheDocument();
   });
 
   it('stays mounted while navigating between its own sub-paths', async () => {
     const { load, stats } = createFakeSectionApp();
     const { router } = renderWithRemote('/remote/a', load);
-    await screen.findByRole('heading', { name: 'Fake remote section' });
+    await screen.findByRole('heading', { name: 'Fake remote section' }, ROUTE_WAIT);
 
     await act(() => router.navigate('/remote/b'));
 
@@ -231,9 +241,11 @@ describe('remote sections in the shell', () => {
     const { load, stats } = createFakeSectionApp();
     const { user } = renderWithRemote('/remote', load);
 
-    await user.click(await screen.findByRole('button', { name: 'Go to About' }));
+    await user.click(await screen.findByRole('button', { name: 'Go to About' }, ROUTE_WAIT));
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'About' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'About' }, ROUTE_WAIT),
+    ).toBeInTheDocument();
     // The app is unmounted in an effect cleanup, which can land just after the new page renders.
     await waitFor(() => expect(stats.unmounts).toBe(1));
     expect(fakeViews()).toHaveLength(0);
@@ -243,7 +255,9 @@ describe('remote sections in the shell', () => {
     const { app, stats } = createFakeSectionApp();
     const pending = deferred<unknown>();
     const { router } = renderWithRemote('/remote', () => pending.promise);
-    expect(await screen.findByRole('status')).toHaveTextContent('Loading section…');
+    expect(await screen.findByRole('status', undefined, ROUTE_WAIT)).toHaveTextContent(
+      'Loading section…',
+    );
 
     await act(() => router.navigate('/about'));
     await settle(() => pending.resolve(app));
@@ -256,11 +270,11 @@ describe('remote sections in the shell', () => {
   it('mounts a fresh single instance when the visitor comes back', async () => {
     const { load, stats } = createFakeSectionApp();
     const { router } = renderWithRemote('/remote', load);
-    await screen.findByRole('heading', { name: 'Fake remote section' });
+    await screen.findByRole('heading', { name: 'Fake remote section' }, ROUTE_WAIT);
 
     await act(() => router.navigate('/about'));
     await act(() => router.navigate('/remote'));
-    await screen.findByRole('heading', { name: 'Fake remote section' });
+    await screen.findByRole('heading', { name: 'Fake remote section' }, ROUTE_WAIT);
 
     expect(stats.mounts).toBe(2);
     expect(stats.unmounts).toBe(1);
@@ -280,7 +294,7 @@ describe('remote section errors reach the route error boundary', () => {
 
   async function expectErrorPageInsideShell() {
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Something went wrong' }),
+      await screen.findByRole('heading', { level: 1, name: 'Something went wrong' }, ROUTE_WAIT),
     ).toBeInTheDocument();
     expect(screen.getByRole('banner')).toBeInTheDocument();
     expect(fakeViews()).toHaveLength(0);
@@ -289,7 +303,9 @@ describe('remote section errors reach the route error boundary', () => {
   it('when load() rejects after the first render', async () => {
     const pending = deferred<unknown>();
     renderWithRemote('/remote', () => pending.promise);
-    expect(await screen.findByRole('status')).toHaveTextContent('Loading section…');
+    expect(await screen.findByRole('status', undefined, ROUTE_WAIT)).toHaveTextContent(
+      'Loading section…',
+    );
 
     await settle(() => pending.reject(new Error('entry not found')));
 
@@ -333,7 +349,7 @@ describe('mascot compositions', () => {
     ['/does-not-exist', 'peek'],
   ])('%s shows the Fun Fact mascot in the %s composition', async (path, expected) => {
     renderRoute(path);
-    await screen.findByRole('heading', { level: 1 });
+    await screen.findByRole('heading', { level: 1 }, ROUTE_WAIT);
 
     expect(composition()).toBe(expected);
     expect(funFactMascots()).toHaveLength(1);
@@ -341,28 +357,28 @@ describe('mascot compositions', () => {
 
   it('switches composition between pages while the Fun Fact card stays the same element', async () => {
     const { router } = renderRoute('/');
-    await screen.findByRole('heading', { level: 1 });
+    await screen.findByRole('heading', { level: 1 }, ROUTE_WAIT);
     const aside = funFact();
     expect(composition()).toBe('hero');
 
     await act(() => router.navigate('/about'));
-    await screen.findByRole('heading', { level: 1, name: 'About' });
+    await screen.findByRole('heading', { level: 1, name: 'About' }, ROUTE_WAIT);
     expect(composition()).toBe('peek');
     expect(funFact()).toBe(aside);
 
     await act(() => router.navigate('/'));
-    await screen.findByRole('heading', { level: 1, name: "Hi, I'm Bruno." });
+    await screen.findByRole('heading', { level: 1, name: "Hi, I'm Bruno." }, ROUTE_WAIT);
     expect(composition()).toBe('hero');
     expect(funFact()).toBe(aside);
   });
 
   it('shows both independent mascots on desktop; only the header one ever moves', async () => {
     const { router } = renderRoute('/');
-    await screen.findByRole('heading', { level: 1 });
+    await screen.findByRole('heading', { level: 1 }, ROUTE_WAIT);
     expect(headerMascot()).not.toBeNull();
 
     await act(() => router.navigate('/about'));
-    await screen.findByRole('heading', { level: 1, name: 'About' });
+    await screen.findByRole('heading', { level: 1, name: 'About' }, ROUTE_WAIT);
 
     expect(headerMascot()).not.toBeNull();
     expect(funFactMascots()).toHaveLength(1);
@@ -376,7 +392,7 @@ describe('mascot compositions', () => {
   it('keeps the Fun Fact mascot on small screens, without the header mascot', async () => {
     setMedia({ desktop: false });
     renderRoute('/about');
-    await screen.findByRole('heading', { level: 1 });
+    await screen.findByRole('heading', { level: 1 }, ROUTE_WAIT);
 
     expect(headerMascot()).toBeNull();
     expect(composition()).toBe('peek');
@@ -386,11 +402,11 @@ describe('mascot compositions', () => {
   it('shows the illustrated backdrop on Home only', async () => {
     const backdrop = () => document.querySelector('[data-slot="backdrop"]');
     const { router } = renderRoute('/');
-    await screen.findByRole('heading', { level: 1 });
+    await screen.findByRole('heading', { level: 1 }, ROUTE_WAIT);
     expect(backdrop()).not.toBeNull();
 
     await act(() => router.navigate('/about'));
-    await screen.findByRole('heading', { level: 1, name: 'About' });
+    await screen.findByRole('heading', { level: 1, name: 'About' }, ROUTE_WAIT);
     expect(backdrop()).toBeNull();
   });
 
@@ -403,7 +419,7 @@ describe('mascot compositions', () => {
     ['/does-not-exist', 'stacked'],
   ])('%s places the Fun Fact %s', async (path, expected) => {
     renderRoute(path);
-    await screen.findByRole('heading', { level: 1 });
+    await screen.findByRole('heading', { level: 1 }, ROUTE_WAIT);
 
     expect(document.querySelector('[data-context]')).toHaveAttribute('data-context', expected);
   });

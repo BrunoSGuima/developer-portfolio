@@ -2,7 +2,7 @@ import { screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { projectListResponse } from '../../api/fixtures.ts';
 import { invalidateProjects } from '../../projects/source.ts';
-import { renderRoute } from '../../test/renderRoute.tsx';
+import { renderRoute, ROUTE_WAIT } from '../../test/renderRoute.tsx';
 
 // The Projects page through the real routes, as built in full-stack mode: data from the API
 // (fetch stubbed), the full-stack Fun Fact, and no fallback to the static data on failure.
@@ -30,7 +30,11 @@ describe('ProjectsPage, full-stack build', () => {
 
     renderRoute('/projects');
 
-    const card = await screen.findByRole('article', { name: 'Developer Portfolio (this site)' });
+    const card = await screen.findByRole(
+      'article',
+      { name: 'Developer Portfolio (this site)' },
+      ROUTE_WAIT,
+    );
     expect(within(card).getByRole('link', { name: 'Source code' })).toHaveAttribute(
       'href',
       'https://example.com/source',
@@ -44,7 +48,7 @@ describe('ProjectsPage, full-stack build', () => {
 
     renderRoute('/projects');
 
-    const funFact = await screen.findByRole('complementary', { name: 'Fun fact' });
+    const funFact = await screen.findByRole('complementary', { name: 'Fun fact' }, ROUTE_WAIT);
     expect(funFact).toHaveTextContent(/come from a Ruby on Rails API backed by PostgreSQL/);
     const badges = within(funFact).getByRole('list', { name: 'Technologies' });
     expect(within(badges).getByText('Ruby on Rails')).toBeInTheDocument();
@@ -61,7 +65,9 @@ describe('ProjectsPage, full-stack build', () => {
 
     renderRoute('/projects');
 
-    expect(await screen.findByRole('alert')).toHaveTextContent("The projects couldn't be loaded.");
+    expect(await screen.findByRole('alert', undefined, ROUTE_WAIT)).toHaveTextContent(
+      "The projects couldn't be loaded.",
+    );
     expect(screen.queryByRole('article')).not.toBeInTheDocument();
   });
 
@@ -70,7 +76,7 @@ describe('ProjectsPage, full-stack build', () => {
 
     renderRoute('/pt-br/projects');
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
+    expect(await screen.findByRole('alert', undefined, ROUTE_WAIT)).toHaveTextContent(
       'Não foi possível carregar os projetos.',
     );
     expect(screen.queryByRole('article')).not.toBeInTheDocument();
@@ -81,9 +87,9 @@ describe('ProjectsPage, full-stack build', () => {
     fetchMock.mockResolvedValueOnce(json(projectListResponse));
     const { user } = renderRoute('/projects');
 
-    await user.click(await screen.findByRole('button', { name: 'Try again' }));
+    await user.click(await screen.findByRole('button', { name: 'Try again' }, ROUTE_WAIT));
 
-    expect(await screen.findByRole('article')).toBeInTheDocument();
+    expect(await screen.findByRole('article', undefined, ROUTE_WAIT)).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });
