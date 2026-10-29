@@ -16,6 +16,16 @@
   X-Permitted-Cross-Domain-Policies: none
   Strict-Transport-Security: max-age=86400
 
+# Keeps every *.pages.dev address out of search engines: the production one and each
+# deployment's or branch's (<hash>.<project>.pages.dev), which Pages leaves indexable. The public
+# address will be the custom domain (Step 4.12), which these rules never match. Cloudflare's
+# documented absolute-URL rules (Step 4.11): a placeholder matches one label of the host.
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
+
+https://:version.:project.pages.dev/*
+  X-Robots-Tag: noindex
+
 # Vite-hashed files never change: cached for a year (Pages default: revalidate every time).
 /assets/*
   Cache-Control: public, max-age=31536000, immutable

@@ -43,6 +43,15 @@ RSpec.describe "Cloudflare Pages headers match the full-stack image" do
     expect(site.keys).to match_array(expected)
   end
 
+  it "keeps every *.pages.dev address out of search engines, and nothing else (the domain is indexed)" do
+    noindex = rules.select { |_rule, headers| headers.key?("x-robots-tag") }
+
+    expect(noindex).to eq(
+      "https://:project.pages.dev/*" => { "x-robots-tag" => "noindex" },
+      "https://:version.:project.pages.dev/*" => { "x-robots-tag" => "noindex" }
+    )
+  end
+
   it "removes the policy from the résumé PDFs and caches hashed assets for a year, like the image" do
     expect(rules.fetch("/resumes/*")).to eq("!content-security-policy" => true)
     expect(rules.fetch("/assets/*")).to eq("cache-control" => ShellAssets::CACHE_HASHED)

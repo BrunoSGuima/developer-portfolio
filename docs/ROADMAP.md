@@ -39,7 +39,8 @@ architecture and documentation revision) is done (`2db5e00`); Step 4.6a (dark mo
 night art, ADR-0017) is done (`d4d324e`); Step 4.6b (the night Home art and the removal of the
 mascot's emphasis marks) is done (`2773f75`); Step 4.7 (the projects, with About and Contact
 refinements) is done (`91271c7`); Step 4.8 (the résumés) is done; Step 4.9 (the public README) is
-done (`f5f223d`); Step 4.10 (the comment review) is ready for review; see "Phase 4 — Deployment" below.
+done (`f5f223d`); Step 4.10 (the comment review) is done (`e217887`); Step 4.11 (the Cloudflare Pages preview) is in
+progress: the repository side is ready for review, the deployment is the owner's; see "Phase 4 — Deployment" below.
 Nothing is deployed and nothing has been purchased. In a full-stack build the Projects page loads
 from the Rails API and the Contact page has a form that sends to it; a static build uses local
 data and keeps the channels only. **Long-term requirement (2026-10-26):** the same codebase
@@ -693,8 +694,8 @@ approval, recorded in the spending log below. The only expected cost is the doma
 | 4.7  | Projects: the Personal Finance App (in progress, private repository) and Auction House added; this site's card linked to its public repository   | —                 | Done (`91271c7`) |
 | 4.8  | Résumés: replace the outdated English and Portuguese PDFs                                                                                        | —                 | Done             |
 | 4.9  | Public README review: improve it for visitors, remove unnecessary information                                                                    | —                 | Done (`f5f223d`) |
-| 4.10 | Codebase comment review: remove redundant or outdated comments without changing behaviour                                                        | —                 | Ready for review |
-| 4.11 | Real Cloudflare Pages verification on `*.pages.dev` (no domain, no paid services)                                                                | Free              | Planned          |
+| 4.10 | Codebase comment review: remove redundant or outdated comments without changing behaviour                                                        | —                 | Done (`e217887`) |
+| 4.11 | Real Cloudflare Pages verification on `*.pages.dev` (no domain, no paid services)                                                                | Free              | In progress      |
 | 4.12 | Custom domain and final publication                                                                                                              | Domain (approved) | Planned          |
 
 Each step is planned in detail and approved before it starts. **Steps 4.6–4.10 come before
@@ -745,8 +746,8 @@ planned; the notes below only record what is already known.
   - **done (owner, 2026-10-29):** both PDFs are final and their download links tested
 - **4.9 Public README:** done in `f5f223d` (see the Step 4.9 entry).
 - **4.10 Comments:** remove redundant or outdated comments only. No behaviour change; every check
-  stays green. Ready for review (see the Step 4.10 entry).
-- **4.11 Pages verification:**
+  stays green. Done in `e217887` (see the Step 4.10 entry).
+- **4.11 Pages verification** (in progress; see the Step 4.11 entry):
   - the owner creates the Pages project: Git integration limited to this repository (Direct
     Upload can never switch to Git later), production branch `main`, **preview branches "None"**
   - `X-Robots-Tag: noindex` for `*.pages.dev` (the absolute-URL `_headers` rule Cloudflare
@@ -984,6 +985,37 @@ service previews; staff answers on feedback.render.com are marked as such.
   - **Tests:** `content/architecture.test.ts` now rejects any Architecture or Fun Fact text that
     mentions Rails together with "hosted", "deployed", "in production" or "online" (both
     languages), and checks that the full-stack mode is local and unhosted.
+
+### Step 4.11 — Cloudflare Pages preview (in progress)
+
+**Part 1, the repository (ready for review):**
+
+- **Readiness, checked rather than assumed:** the Pages build command
+  (`npm ci --ignore-scripts && npm run build:pages`, `SKIP_DEPENDENCY_INSTALL=1`, Node 22 from
+  `.nvmrc`) reproduced on a clean clone of `e217887`; 48 files, 1.8 MB, no source maps, no
+  `/api` or localhost strings, no inline scripts or styles; the settings checked against
+  Cloudflare's current docs (`deploy/cloudflare-pages/README.md`).
+- **`*.pages.dev` is never indexed (mandatory):** Pages adds `X-Robots-Tag: noindex` to preview
+  deployments only, so `_headers` adds Cloudflare's documented absolute-URL rules for
+  `<project>.pages.dev` and `<hash or branch>.<project>.pages.dev`. Verified before adding them:
+  Cloudflare's docs (a host placeholder matches one label; rules ignore protocol and port) and
+  the emulator (noindex on the production, deployment and branch hosts; none on `localhost`, a
+  custom domain or a look-alike host). The custom domain (Step 4.12) stays indexable.
+  - Tests: `static-host.spec.ts` (by Host header under the emulator; the real host remotely) and
+    the parity spec, which pins exactly these two rules.
+  - Fallback, if real Pages disagrees: a one-file Pages Function adding the header on
+    `*.pages.dev` (a robots meta tag can't work: the same `index.html` serves the domain).
+- **A remote mode for the static suite:** `E2E_STATIC_SERVER=remote E2E_BASE_URL=https://…`
+  starts no server and runs the whole static suite, including `static-host.spec.ts`, against a
+  deployed site (read-only; https only, or http on this machine). Tried against the local
+  emulator: 278 passed.
+- **Accepted by the owner:** the `pages.dev` address is public (not indexed); Pages builds every
+  push to `main` without waiting for CI (gating it would need a Cloudflare token in GitHub).
+
+**Part 2, the deployment (the owner's, next):** the dashboard steps in the Pages README; then
+the remote suite, the browser smoke and `curl` header checks against the URL, the "Real Pages"
+column filled in, and the `Access-Control-Allow-Origin` decision recorded (recommended: accept it
+if present; the site is public and has no credentials).
 
 ### Step 4.10 — Comment review
 

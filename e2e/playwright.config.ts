@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { e2eMode, servedAsPages } from './support/mode.ts';
+import { e2eMode, remoteBaseURL, servedAsPages } from './support/mode.ts';
 
 /**
  * End-to-end tests against the full stack (ADR-0009): the shell's production build served by
@@ -14,6 +14,9 @@ import { e2eMode, servedAsPages } from './support/mode.ts';
  *
  * Servers are never reused: a busy port fails the run instead of silently testing (and writing
  * to) some other server, such as a development API.
+ *
+ * A remote static run (E2E_STATIC_SERVER=remote E2E_BASE_URL=https://…, Step 4.11) starts no
+ * server and tests the deployed site instead.
  */
 const PORT = 4173;
 const API_PORT = 3100;
@@ -60,6 +63,11 @@ const pagesServer = {
 
 const shellServer = servedAsPages ? pagesServer : previewServer;
 
+function webServers() {
+  if (remoteBaseURL) return [];
+  return MODE === 'fullstack' ? [apiServer, shellServer] : [shellServer];
+}
+
 export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
@@ -72,7 +80,7 @@ export default defineConfig({
     : [['list'], ['html', { open: 'never' }]],
   expect: { timeout: 5_000 },
   use: {
-    baseURL: `http://localhost:${PORT}`,
+    baseURL: remoteBaseURL ?? `http://localhost:${PORT}`,
     reducedMotion: 'reduce',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
@@ -89,5 +97,5 @@ export default defineConfig({
     },
     { name: 'mobile', use: { ...devices['Pixel 7'] } },
   ],
-  webServer: MODE === 'fullstack' ? [apiServer, shellServer] : [shellServer],
+  webServer: webServers(),
 });

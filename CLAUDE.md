@@ -24,9 +24,9 @@ static-first architecture and documentation revision, done in `2db5e00`; Step 4.
 without the night art, done in `d4d324e`; Step 4.6b, the night Home art and the removal of the
 mascot's emphasis marks, done in `2773f75`; Step 4.7, the projects (with About and Contact
 refinements), done in `91271c7`; Step 4.8, the résumés, done; Step 4.9, the public README (developer
-detail in `docs/DEVELOPMENT.md`), done in `f5f223d`; Step 4.10, the comment review, ready for review;
-then 4.11 real Cloudflare Pages
-verification, 4.12 custom domain and publication; details, prerequisites and the spending log
+detail in `docs/DEVELOPMENT.md`), done in `f5f223d`; Step 4.10, the comment review, done in `e217887`;
+Step 4.11, the Cloudflare Pages preview on `*.pages.dev`, in progress (the repository side ready for
+review; the deployment is the owner's); then 4.12 custom domain and publication; details, prerequisites and the spending log
 are in `docs/ROADMAP.md`). **Deployment strategy (ADR-0016, 2026-10-28, superseding ADR-0015):**
 only the **static** build is published, on Cloudflare Pages Free; the Rails API and PostgreSQL
 stay implemented, tested and documented and run **locally** (full-stack mode), never as paid
@@ -149,8 +149,11 @@ Sidekiq or Vue until their phase.
   both modes; the parity spec in `services/api/spec/deploy/` fails otherwise): change both
   together. No top-level `404.html` (it would switch Pages' SPA mode off). The static E2E suite
   runs under the pinned Pages emulator (`tools/pages-emulator`, `npm run pages:emulator:install`;
-  dev and CI only); `E2E_STATIC_SERVER=preview` uses `vite preview`. Nothing is on Cloudflare yet
-  (the real Pages verification is Step 4.11).
+  dev and CI only); `E2E_STATIC_SERVER=preview` uses `vite preview`, and `E2E_STATIC_SERVER=remote
+E2E_BASE_URL=https://…` tests a deployed site (read-only, starts nothing). `_headers` keeps every
+  `*.pages.dev` address out of search engines (absolute-URL `X-Robots-Tag: noindex` rules, pinned
+  by the parity spec); never add a rule that matches the custom domain. Nothing is on Cloudflare
+  yet (the deployment is the owner's, Step 4.11).
 - **Production hardening** (Step 4.3): `ALLOWED_HOSTS` (exact hostnames) is required in
   production, validated by `lib/production_settings.rb` (boot fails otherwise; `/up` exempt);
   optional `TRUSTED_PROXIES` replaces Rails' default proxy list (verifying a host's value is a

@@ -3,14 +3,14 @@ import { fileURLToPath } from 'node:url';
 import { expect, type Page, test } from '@playwright/test';
 import { about } from '../../apps/shell/src/content/profile.ts';
 import { contact } from '../../apps/shell/src/content/contact.ts';
-import { servedAsPages } from '../support/mode.ts';
+import { remoteBaseURL, servedAsPages } from '../support/mode.ts';
 import { languageOf, notFoundCase, pages, type Locale } from '../support/site.ts';
 
 // The static site as Cloudflare Pages serves it (the public site, ADR-0016, Phase 4 Step 4.4),
 // under the Pages emulator (`wrangler pages dev`): the _headers rules, the SPA fallback for page
-// URLs, real 404s for missing assets, and the static Contact page. This is the emulator's
-// behaviour; docs/ROADMAP.md (Step 4.4) lists what still needs confirming on the real platform
-// (Step 4.11).
+// URLs, real 404s for missing assets, and the static Contact page. It also runs against a
+// deployed site (E2E_STATIC_SERVER=remote, Step 4.11), which confirms the emulator's results on
+// the real platform (deploy/cloudflare-pages/README.md).
 test.skip(!servedAsPages, 'Only when the static build is served as Cloudflare Pages would.');
 
 // The expected headers come from the file the host applies; their parity with the full-stack
@@ -77,6 +77,32 @@ test.describe('the static site under the Cloudflare Pages emulator', () => {
       }
       expect(site['content-security-policy']).toContain("script-src 'self'");
       expect(site['strict-transport-security']).toBe('max-age=86400');
+    });
+
+    test('*.pages.dev addresses are never indexed; other hosts (the domain) are', async ({
+      request,
+    }) => {
+      if (remoteBaseURL) {
+        // A deployed site: its own address decides.
+        const { hostname } = new URL(remoteBaseURL);
+        const robots = (await request.get('/pt-br/about')).headers()['x-robots-tag'];
+        expect(robots).toBe(hostname.endsWith('.pages.dev') ? 'noindex' : undefined);
+        return;
+      }
+      // Under the emulator, the rules are matched against the Host header.
+      const hosts = {
+        'portfolio.pages.dev': 'noindex',
+        'a1b2c3d4.portfolio.pages.dev': 'noindex',
+        'main.portfolio.pages.dev': 'noindex',
+        'example.com': undefined,
+        'portfolio.pages.dev.example.com': undefined,
+      };
+      for (const [host, expected] of Object.entries(hosts)) {
+        for (const path of ['/', '/pt-br/about', about.resume.href.en]) {
+          const response = await request.get(path, { headers: { host } });
+          expect(response.headers()['x-robots-tag'], `${host}${path}`).toBe(expected);
+        }
+      }
     });
 
     test('hashed assets are cached for a year', async ({ request, page }) => {
