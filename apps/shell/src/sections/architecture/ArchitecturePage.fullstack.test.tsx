@@ -20,7 +20,7 @@ describe('ArchitecturePage, full-stack build', () => {
       /Projects page loads from the Rails API and the contact form sends messages to it, completing the integration \(v3\)/,
     );
     expect(region).toHaveTextContent(
-      /The public release \(v4\) will be the static build; this mode runs locally/,
+      /The published site \(v4\) is the static build; this mode runs locally/,
     );
     expect(region).not.toHaveTextContent(/this build is the static version/);
   });

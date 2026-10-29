@@ -83,9 +83,9 @@ export const en = {
     /** Depends on the build's mode (src/config/mode.ts). */
     timelineNote: {
       static:
-        'The Rails API (v2) and its integration with this site (v3) are built and tested, and run locally in full-stack mode; this build is the static version, which runs without the API or a database. The public release (v4) will be this static build. The order of the later steps (v5–v8) is provisional.',
+        'The Rails API (v2) and its integration with this site (v3) are built and tested, and run locally in full-stack mode; this build is the static version, which runs without the API or a database. This static build is the published site (v4), on Cloudflare Pages. The order of the later steps (v5–v8) is provisional.',
       fullstack:
-        "You're running the full-stack mode: the Projects page loads from the Rails API and the contact form sends messages to it, completing the integration (v3). The public release (v4) will be the static build; this mode runs locally. The order of the later steps (v5–v8) is provisional.",
+        "You're running the full-stack mode: the Projects page loads from the Rails API and the contact form sends messages to it, completing the integration (v3). The published site (v4) is the static build; this mode runs locally. The order of the later steps (v5–v8) is provisional.",
     },
     decisions: 'Key decisions',
     /** The link below the decisions to every ADR on GitHub (opens in a new tab). */

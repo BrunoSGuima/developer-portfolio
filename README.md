@@ -7,8 +7,9 @@ Rails, React, TypeScript). It's both a showcase and an engineering project: a Re
 TypeScript site built as a persistent shell, a tested Ruby on Rails API with PostgreSQL behind it,
 and a **Fun Fact** on every page that tells you which technology is really running there.
 
-> **Status:** in development, not published yet. The public site will be the static build on
-> Cloudflare Pages ([ADR-0016](./docs/adr/0016-static-first-deployment.md)). See the
+> **Live:** [bruno-guimaraes.pages.dev](https://bruno-guimaraes.pages.dev/), the static build on
+> Cloudflare Pages ([ADR-0016](./docs/adr/0016-static-first-deployment.md)). The Rails API and
+> PostgreSQL run locally and aren't deployed. Still evolving; see the
 > [roadmap](./docs/ROADMAP.md).
 
 | Light                                                         | Dark                                                        |
@@ -51,7 +52,7 @@ and a **Fun Fact** on every page that tells you which technology is really runni
   follow.
 - **Two build modes from one codebase:** the **static** site uses local data and needs no server.
   The **full-stack** site reads the projects from the API and adds the contact form. The public
-  site will be the static one, so the portfolio has no recurring server cost; the full stack
+  site is the static one, so the portfolio has no recurring server cost; the full stack
   runs locally ([ADR-0016](./docs/adr/0016-static-first-deployment.md)).
 - **A production Docker image** in which Rails serves the site and the API from one origin, with
   security headers and an enforced Content Security Policy. It's built and smoke-tested in CI.
@@ -63,13 +64,13 @@ and a **Fun Fact** on every page that tells you which technology is really runni
 
 ## Tech stack
 
-| Area              | Technologies                                                                   |
-| ----------------- | ------------------------------------------------------------------------------ |
-| Frontend          | React 19, TypeScript, Vite, React Router, CSS Modules with design tokens       |
-| Backend (local)   | Ruby 4.0, Ruby on Rails 8.1 (API-only), PostgreSQL 18, OpenAPI 3.0             |
-| Testing           | Vitest, React Testing Library, Playwright with axe-core, RSpec, FactoryBot     |
-| Quality and CI    | ESLint, Prettier, RuboCop, Brakeman, bundler-audit, GitHub Actions             |
-| Hosting (planned) | Cloudflare Pages (static site); the full stack runs locally via Docker Compose |
+| Area            | Technologies                                                                   |
+| --------------- | ------------------------------------------------------------------------------ |
+| Frontend        | React 19, TypeScript, Vite, React Router, CSS Modules with design tokens       |
+| Backend (local) | Ruby 4.0, Ruby on Rails 8.1 (API-only), PostgreSQL 18, OpenAPI 3.0             |
+| Testing         | Vitest, React Testing Library, Playwright with axe-core, RSpec, FactoryBot     |
+| Quality and CI  | ESLint, Prettier, RuboCop, Brakeman, bundler-audit, GitHub Actions             |
+| Hosting         | Cloudflare Pages (static site); the full stack runs locally via Docker Compose |
 
 ## Quality
 
@@ -86,16 +87,16 @@ Architecture decisions are recorded as [ADRs](./docs/adr/).
 
 ## Roadmap
 
-| Phase | Scope                                                                                | Status      |
-| ----- | ------------------------------------------------------------------------------------ | ----------- |
-| 1     | React frontend foundation: shell, static data, mascot, Fun Fact, en/pt-BR, tests, CI | Done        |
-| 2     | Ruby on Rails API + PostgreSQL: projects, contact messages, RSpec, OpenAPI           | Done        |
-| 3     | Frontend/backend integration, full-stack validation and MVP completion               | Done        |
-| 4     | Public release of the static site on Cloudflare Pages; the full stack stays local    | In progress |
-| 5     | Vue 3 microfrontend mounted by the React shell                                       | Planned     |
-| 6     | Python FastAPI service + interactive quiz                                            | Planned     |
-| 7     | Background jobs (Redis + Sidekiq)                                                    | Planned     |
-| 8     | AI Lab and future expansion                                                          | Planned     |
+| Phase | Scope                                                                                | Status  |
+| ----- | ------------------------------------------------------------------------------------ | ------- |
+| 1     | React frontend foundation: shell, static data, mascot, Fun Fact, en/pt-BR, tests, CI | Done    |
+| 2     | Ruby on Rails API + PostgreSQL: projects, contact messages, RSpec, OpenAPI           | Done    |
+| 3     | Frontend/backend integration, full-stack validation and MVP completion               | Done    |
+| 4     | Public release of the static site on Cloudflare Pages; the full stack stays local    | Done    |
+| 5     | Vue 3 microfrontend mounted by the React shell                                       | Planned |
+| 6     | Python FastAPI service + interactive quiz                                            | Planned |
+| 7     | Background jobs (Redis + Sidekiq)                                                    | Planned |
+| 8     | AI Lab and future expansion                                                          | Planned |
 
 Details, decisions and evidence for every step: [`docs/ROADMAP.md`](./docs/ROADMAP.md).
 

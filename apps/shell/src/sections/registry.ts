@@ -202,9 +202,9 @@ export const sections: readonly Section[] = [
     // running locally, never as hosted.
     funFact: {
       text: {
-        en: 'This site is built as static files, so it needs no server to run or pay for. The same repository holds a Ruby on Rails API with PostgreSQL, tested with RSpec on every push; run it locally to see the full-stack version.',
+        en: 'This site is published as static files on Cloudflare Pages, so it needs no server to run or pay for. The same repository holds a Ruby on Rails API with PostgreSQL, tested with RSpec on every push; run it locally to see the full-stack version.',
         'pt-BR':
-          'Este site é gerado como arquivos estáticos, então não precisa de servidor para rodar nem para pagar. O mesmo repositório tem uma API em Ruby on Rails com PostgreSQL, testada com RSpec a cada push; rode localmente para ver a versão full-stack.',
+          'Este site é publicado como arquivos estáticos no Cloudflare Pages, então não precisa de servidor para rodar nem para pagar. O mesmo repositório tem uma API em Ruby on Rails com PostgreSQL, testada com RSpec a cada push; rode localmente para ver a versão full-stack.',
       },
       tech: ['react', 'react-router', 'vite'],
       plannedTech: ['vue'],
@@ -212,9 +212,9 @@ export const sections: readonly Section[] = [
     fullstack: {
       funFact: {
         text: {
-          en: "You're running the full-stack version: this React shell talks to a Ruby on Rails API and PostgreSQL on the same origin. The portfolio is designed to be published as static files, so no server has to run, or be paid for, around the clock.",
+          en: "You're running the full-stack version: this React shell talks to a Ruby on Rails API and PostgreSQL on the same origin. The portfolio is published as static files, so no server has to run, or be paid for, around the clock.",
           'pt-BR':
-            'Você está rodando a versão full-stack: este shell em React conversa com uma API em Ruby on Rails e PostgreSQL na mesma origem. O portfólio foi pensado para ser publicado como arquivos estáticos, então nenhum servidor precisa ficar rodando, nem ser pago, o tempo todo.',
+            'Você está rodando a versão full-stack: este shell em React conversa com uma API em Ruby on Rails e PostgreSQL na mesma origem. O portfólio é publicado como arquivos estáticos, então nenhum servidor precisa ficar rodando, nem ser pago, o tempo todo.',
         },
         tech: ['react', 'react-router', 'vite'],
         plannedTech: ['vue'],

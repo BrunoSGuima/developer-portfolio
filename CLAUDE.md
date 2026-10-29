@@ -18,7 +18,7 @@ CI is green on GitHub; Architecture page updated). Phase 1 is **not** the MVP.
 
 **Phase 2 — Ruby on Rails API + PostgreSQL: done** (Steps 2.0–2.6; GitHub Actions green on
 `5f9eb59`). **Phase 3 — Frontend/backend integration and MVP completion: done** (Steps 3.0–3.5;
-GitHub Actions green on `f66efbf`; the MVP is complete). **Phase 4 — Deployment: in progress**
+GitHub Actions green on `f66efbf`; the MVP is complete). **Phase 4 — Deployment: done** (v4, the static site release)
 (Steps 4.0–4.4 done: `13938b0`, `2653ba5`, `6b9c9ed`, `35beb2d`, `4bdf06a`; Step 4.5, the
 static-first architecture and documentation revision, done in `2db5e00`; Step 4.6a, dark mode
 without the night art, done in `d4d324e`; Step 4.6b, the night Home art and the removal of the
@@ -26,13 +26,16 @@ mascot's emphasis marks, done in `2773f75`; Step 4.7, the projects (with About a
 refinements), done in `91271c7`; Step 4.8, the résumés, done; Step 4.9, the public README (developer
 detail in `docs/DEVELOPMENT.md`), done in `f5f223d`; Step 4.10, the comment review, done in `e217887`;
 Step 4.11, the Cloudflare Pages preview, done (deployed at `https://bruno-guimaraes.pages.dev`, noindex,
-and validated); then 4.12 custom domain and publication; details, prerequisites and the spending log
-are in `docs/ROADMAP.md`). **Deployment strategy (ADR-0016, 2026-10-28, superseding ADR-0015):**
+and validated); Step 4.12, the final static release verification and documentation alignment, done
+(the live sign-off follows the owner's push); a custom domain, search indexing and social metadata
+are an optional backlog, not scheduled; the next phase (5) is only suggested, never started
+without approval; details, prerequisites, the backlog and the spending log are in
+`docs/ROADMAP.md`). **Deployment strategy (ADR-0016, 2026-10-28, superseding ADR-0015):**
 only the **static** build is published, on Cloudflare Pages Free; the Rails API and PostgreSQL
 stay implemented, tested and documented and run **locally** (full-stack mode), never as paid
 cloud services. Phase 4 rules: one step at a time; **never create cloud resources, buy anything
 or incur charges without the owner's explicit approval** (record approved expenses in the
-ROADMAP's spending log; the domain is the only expected one); keep one repository, one `main`
+ROADMAP's spending log; nothing has been bought; a custom domain would be the only one); keep one repository, one `main`
 branch, both build modes, all backend code, Docker support and all five CI jobs; the `Dockerfile`
 never contains secrets; **never describe the backend as hosted, deployed or public** (the README,
 the Architecture page and the Fun Facts separate what the repository implements from what runs in
@@ -125,9 +128,9 @@ Sidekiq or Vue until their phase.
   Rate limits key on `client_ip`, which ignores forwarded headers from untrusted peers. Every
   response documented in `openapi.yaml` must be asserted by a request spec (a complete RSpec
   run fails otherwise).
-- **Hosting** (ADR-0016; not published yet): the **static** build on Cloudflare Pages Free (SPA
-  fallback, `_headers`), no backend, a custom domain at publication (Step 4.12). The full stack
-  is not hosted anywhere: it runs locally. (ADR-0015's two-stage plan, Render for about three
+- **Hosting** (ADR-0016; published): the **static** build on Cloudflare Pages Free (SPA
+  fallback, `_headers`), no backend, at `https://bruno-guimaraes.pages.dev` (`noindex`; no custom
+  domain: an optional backlog item). The full stack is not hosted anywhere: it runs locally. (ADR-0015's two-stage plan, Render for about three
   months then Pages, was superseded in Step 4.5 on cost; an earlier VPS plan was dropped in 4.1.)
 - **Production image** (Step 4.2; root `Dockerfile` and allowlist `.dockerignore`; built and
   smoke-tested in CI, run locally, not deployed): three
@@ -152,7 +155,7 @@ Sidekiq or Vue until their phase.
   dev and CI only); `E2E_STATIC_SERVER=preview` uses `vite preview`, and `E2E_STATIC_SERVER=remote
 E2E_BASE_URL=https://…` tests a deployed site (read-only, starts nothing). `_headers` keeps every
   `*.pages.dev` address out of search engines (absolute-URL `X-Robots-Tag: noindex` rules, pinned
-  by the parity spec); never add a rule that matches the custom domain. Deployed (Step 4.11) as
+  by the parity spec); never add a rule that would match a custom domain. Deployed (Step 4.11) as
   the owner's Pages project `bruno-guimaraes` (`https://bruno-guimaraes.pages.dev`, from `main`;
   settings in the Pages README); a remote run never reads the local build.
 - **Production hardening** (Step 4.3): `ALLOWED_HOSTS` (exact hostnames) is required in
@@ -162,8 +165,8 @@ E2E_BASE_URL=https://…` tests a deployed site (read-only, starts nothing). `_h
   environment) sets the security headers and the **enforced CSP**: the shell's document is
   same-origin only with **no inline scripts or styles** (keep it that way; a feature that needs
   more changes the policy here and in Cloudflare Pages' `_headers` together), JSON
-  gets `default-src 'none'`. HSTS is one day without `includeSubDomains` until the domain is
-  verified (revisit in 4.12). Production request logs never include client IPs
+  gets `default-src 'none'`. HSTS is one day without `includeSubDomains` (revisit only if a
+  custom domain is added; backlog). Production request logs never include client IPs
   (`RequestLogger`); `/up` (`HealthController`) checks PostgreSQL and never returns error
   details. The browser smoke fails on any CSP violation; `SMOKE_WRITE=1` only against a
   throwaway database.
@@ -218,9 +221,9 @@ E2E_BASE_URL=https://…` tests a deployed site (read-only, starts nothing). `_h
   duration such as 0.01ms: with `transition-property: all` it would delay every style change and
   make measured layouts jump; Step 4.0, `global.test.ts`, `e2e/tests/layout-stability.spec.ts`).
 - **Truthfulness:** the Fun Fact and Architecture page must only describe what is actually
-  implemented. Planned components are marked `planned`. Until the site is published (4.12) the
-  Architecture components are `done`, not `live`; the backend is always described as running
-  locally, never as hosted (ADR-0016).
+  implemented. Planned components are marked `planned`. Architecture components are `live` only
+  when they run on the published static site, otherwise `done` (`content/architecture.test.ts`
+  pins the set); the backend is always described as running locally, never as hosted (ADR-0016).
 - **Writing Fun Facts:** describe only what exists at the end of the current step; put future
   technologies in `plannedTech` (rendered with a visible "planned" label); when a section's
   framework differs from the shell's, say so (e.g. "built with Vue.js, mounted by the React

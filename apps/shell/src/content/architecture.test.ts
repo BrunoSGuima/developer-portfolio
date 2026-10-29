@@ -22,9 +22,24 @@ const finished = (id: string) => milestoneById(id).status === 'done';
 
 // The Architecture page must not claim anything that isn't built.
 describe('architecture truthfulness', () => {
-  // Implemented, but not yet published (ADR-0016): 'done' until the static site is live (4.12).
-  it('"How it\'s built today" lists only implemented (done) components', () => {
-    expect(components.every((component) => component.status === 'done')).toBe(true);
+  // Implemented only: 'live' when it runs on the published static site (Step 4.12, ADR-0016),
+  // 'done' otherwise. Never 'live' for anything that involves the Rails API, which runs locally.
+  it('"How it\'s built today" lists only implemented components, live only where the site runs them', () => {
+    expect(components.every((component) => ['live', 'done'].includes(component.status))).toBe(true);
+    expect(
+      components.filter((component) => component.status === 'live').map(({ id }) => id),
+    ).toEqual([
+      'react-shell',
+      'section-registry',
+      'routing',
+      'internationalisation',
+      'responsive-layout',
+      'accessibility',
+      'mascot',
+    ]);
+    for (const component of components) {
+      if (component.status === 'live') expect(component.description.en).not.toMatch(/\bRails\b/);
+    }
   });
 
   it('only marks the Vue.js milestone done if a section is built with Vue', () => {
@@ -100,17 +115,20 @@ describe('architecture timeline', () => {
     expect(timeline.filter((milestone) => milestone.status === 'in-progress').length).toBeLessThan(
       2,
     );
-    // A finished milestone is "done", never "live": the site isn't published yet (Phase 4).
+    // A finished milestone is "done", never "live" ("live" is for what runs on the site).
     expect(timeline.some((milestone) => milestone.status === 'live')).toBe(false);
   });
 
-  // Phase 4 (ADR-0016): the API (v2) and the integration (v3, the MVP) are done; the static
-  // site's release (v4) is in progress until it is published (Step 4.12).
-  it('shows the Rails API and the integration done, and the static release in progress', () => {
+  // Phase 4 (ADR-0016): the API (v2), the integration (v3, the MVP) and the static site's
+  // release (v4, published on Cloudflare Pages in Steps 4.11–4.12) are done; v5–v8 are planned.
+  it('shows the Rails API, the integration and the static release done, and the rest planned', () => {
     expect(milestoneById('rails-api').status).toBe('done');
     expect(milestoneById('integration').status).toBe('done');
-    expect(milestoneById('deployment').status).toBe('in-progress');
+    expect(milestoneById('deployment').status).toBe('done');
     expect(milestoneById('deployment').name.en).toBe('Static site release');
+    expect(
+      timeline.slice(timeline.indexOf(milestoneById('deployment')) + 1).map((m) => m.status),
+    ).toEqual(['planned', 'planned', 'planned', 'planned']);
   });
 
   it('deploys only after the Rails API and the frontend/backend integration', () => {
@@ -118,7 +136,6 @@ describe('architecture timeline', () => {
 
     expect(at('rails-api')).toBeLessThan(at('integration'));
     expect(at('integration')).toBeLessThan(at('deployment'));
-    expect(finished('deployment')).toBe(false);
   });
 
   it('places the MVP at the integration: no earlier milestone is called the MVP', () => {
@@ -179,7 +196,7 @@ describe('static-first truthfulness (ADR-0016)', () => {
   it('marks the full-stack mode as local and not deployed, and only the static site as hosted', () => {
     const [staticSite, fullStack] = runModes;
     expect(staticSite?.id).toBe('static');
-    expect(staticSite?.hosting).toEqual({ name: 'Cloudflare Pages', status: 'planned' });
+    expect(staticSite?.hosting).toEqual({ name: 'Cloudflare Pages', status: 'live' });
     expect(fullStack?.id).toBe('fullstack');
     expect(fullStack?.hosting).toBeUndefined();
     for (const locale of LOCALES) expect(fullStack?.role[locale]).toMatch(LOCAL[locale]);

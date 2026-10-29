@@ -149,7 +149,7 @@ describe('Fun Fact in the shell', () => {
     await screen.findByRole('heading', { level: 1, name: 'Architecture' }, ROUTE_WAIT);
 
     expect(funFact()).toBe(aside);
-    expect(aside).toHaveTextContent(/built as static files/);
+    expect(aside).toHaveTextContent(/published as static files on Cloudflare Pages/);
     expect(within(aside).getByText('planned')).toBeInTheDocument();
   });
 

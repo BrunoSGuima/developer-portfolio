@@ -30,7 +30,7 @@ and GitHub Actions ran green on the final Step 2.6 commit (`5f9eb59`, 2026-10-26
 **Phase 3 (integration and MVP completion) is done, and with it the MVP:** Steps 3.0
 (`84b4e4c`), 3.1 (`c922ddc`), 3.2 (`1b6bca1`), 3.3 (`4b3f833`), 3.4 (`9d7b47b`) and 3.5
 (`f66efbf`); all four GitHub Actions jobs passed on `f66efbf` ([run 40561117258](https://github.com/BrunoSGuima/developer-portfolio/actions/runs/40561117258)).
-**Phase 4 (deployment) is in progress:** Steps 4.0–4.4 are done (`13938b0`, `2653ba5`,
+**Phase 4 (deployment) is done, and with it v4, the static site release:** Steps 4.0–4.4 are done (`13938b0`, `2653ba5`,
 `6b9c9ed`, `35beb2d`, `4bdf06a`). **Strategy changed on 2026-10-28 (owner's decision,
 [ADR-0016](adr/0016-static-first-deployment.md), superseding ADR-0015):** only the **static** build
 is published, on Cloudflare Pages Free; the Rails API and PostgreSQL stay implemented, tested and
@@ -40,9 +40,12 @@ night art, ADR-0017) is done (`d4d324e`); Step 4.6b (the night Home art and the 
 mascot's emphasis marks) is done (`2773f75`); Step 4.7 (the projects, with About and Contact
 refinements) is done (`91271c7`); Step 4.8 (the résumés) is done; Step 4.9 (the public README) is
 done (`f5f223d`); Step 4.10 (the comment review) is done (`e217887`); Step 4.11 (the Cloudflare Pages preview) is
-done: deployed at https://bruno-guimaraes.pages.dev (not indexed) and validated; see
-"Phase 4 — Deployment" below. Only the static site is deployed (never the Rails API or
-PostgreSQL), and nothing has been purchased. In a full-stack build the Projects page loads
+done: deployed at https://bruno-guimaraes.pages.dev (not indexed) and validated; Step 4.12 (the
+final static release verification and documentation alignment) is done locally, its live
+verification follows the owner's push; see "Phase 4 — Deployment" below. The published site is
+the static build at https://bruno-guimaraes.pages.dev; the Rails API and PostgreSQL are never
+deployed and run locally; nothing has been purchased. A custom domain, search indexing and social
+sharing metadata are an optional backlog, not part of v4. In a full-stack build the Projects page loads
 from the Rails API and the Contact page has a form that sends to it; a static build uses local
 data and keeps the channels only. **Long-term requirement (2026-10-26):** the same codebase
 builds a **full-stack** site (React + Rails API + PostgreSQL) or a **static** site (local data, no
@@ -53,7 +56,7 @@ backend); the static site is the public one (see "Two modes" below).
 | 1     | **React frontend foundation**: React + TypeScript shell, static data, mascot, Fun Fact, responsive layout, en/pt-BR, unit + E2E tests, CI                             | Done             |
 | 2     | Ruby on Rails API + PostgreSQL: projects and contact messages, security, RSpec + FactoryBot, OpenAPI contract, its own CI job; works and is tested on its own         | Done (`5f9eb59`) |
 | 3     | Frontend/backend integration, full-stack validation and **MVP completion**: the shell reads projects and sends contact messages through the API, full-stack E2E in CI | Done (`f66efbf`) |
-| 4     | Public release of the static site (ADR-0016): dark mode, content updates, Cloudflare Pages verification, custom domain; the full stack stays local                    | In progress      |
+| 4     | Public release of the static site (ADR-0016): dark mode, content updates, the static site on Cloudflare Pages (v4); the full stack stays local                        | Done             |
 | 5     | Vue 3 microfrontend mounted by the React shell (order of 5–8 provisional)                                                                                             | Planned          |
 | 6     | Python FastAPI service + interactive quiz                                                                                                                             | Planned          |
 | 7     | Background jobs (Redis + Sidekiq)                                                                                                                                     | Planned          |
@@ -680,24 +683,25 @@ the full-stack deployment that won't happen; Stage B is the static site, now sim
 production site. Everything they built stays.
 
 **Spending rule:** no cloud resource, purchase or plan change without the owner's explicit
-approval, recorded in the spending log below. The only expected cost is the domain (Step 4.12).
+approval, recorded in the spending log below. Phase 4 cost nothing; a custom domain, the only
+foreseeable expense, is an optional backlog item.
 
-| #    | Step                                                                                                                                             | Cost              | Status           |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------- | ---------------- |
-| 4.0  | Home layout shift under reduced motion (separate from infrastructure)                                                                            | —                 | Done (`13938b0`) |
-| 4.1  | Deployment architecture: ADR-0015 and documentation (superseded by ADR-0016)                                                                     | —                 | Done (`2653ba5`) |
-| 4.2  | Production container: Dockerfile, Rails serves the shell (SPA fallback), CI image build and smoke test                                           | —                 | Done (`6b9c9ed`) |
-| 4.3  | Production hardening: `config.hosts`, `trusted_proxies`, security headers and CSP, IP-free request logs, database-aware `/up`                    | —                 | Done (`35beb2d`) |
-| 4.4  | Static-host readiness: `_headers`, `assets/404.html`, `build:pages` with an explicit static guard, the static E2E suite under the Pages emulator | —                 | Done (`4bdf06a`) |
-| 4.5  | Static-first architecture and documentation revision: ADR-0016, README, CLAUDE.md, the Architecture page and Fun Facts in both languages         | —                 | Done (`2db5e00`) |
-| 4.6a | Dark mode: themes (ADR-0017), accessible toggle, dark palette, persistence and system preference, every page                                     | —                 | Done (`d4d324e`) |
-| 4.6b | Dark mode: the orange emphasis marks removed; the approved nighttime Home artwork integrated with a crossfade                                    | —                 | Done (`2773f75`) |
-| 4.7  | Projects: the Personal Finance App (in progress, private repository) and Auction House added; this site's card linked to its public repository   | —                 | Done (`91271c7`) |
-| 4.8  | Résumés: replace the outdated English and Portuguese PDFs                                                                                        | —                 | Done             |
-| 4.9  | Public README review: improve it for visitors, remove unnecessary information                                                                    | —                 | Done (`f5f223d`) |
-| 4.10 | Codebase comment review: remove redundant or outdated comments without changing behaviour                                                        | —                 | Done (`e217887`) |
-| 4.11 | Real Cloudflare Pages verification on `*.pages.dev` (no domain, no paid services)                                                                | Free              | Done             |
-| 4.12 | Custom domain and final publication                                                                                                              | Domain (approved) | Planned          |
+| #    | Step                                                                                                                                             | Cost | Status           |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---- | ---------------- |
+| 4.0  | Home layout shift under reduced motion (separate from infrastructure)                                                                            | —    | Done (`13938b0`) |
+| 4.1  | Deployment architecture: ADR-0015 and documentation (superseded by ADR-0016)                                                                     | —    | Done (`2653ba5`) |
+| 4.2  | Production container: Dockerfile, Rails serves the shell (SPA fallback), CI image build and smoke test                                           | —    | Done (`6b9c9ed`) |
+| 4.3  | Production hardening: `config.hosts`, `trusted_proxies`, security headers and CSP, IP-free request logs, database-aware `/up`                    | —    | Done (`35beb2d`) |
+| 4.4  | Static-host readiness: `_headers`, `assets/404.html`, `build:pages` with an explicit static guard, the static E2E suite under the Pages emulator | —    | Done (`4bdf06a`) |
+| 4.5  | Static-first architecture and documentation revision: ADR-0016, README, CLAUDE.md, the Architecture page and Fun Facts in both languages         | —    | Done (`2db5e00`) |
+| 4.6a | Dark mode: themes (ADR-0017), accessible toggle, dark palette, persistence and system preference, every page                                     | —    | Done (`d4d324e`) |
+| 4.6b | Dark mode: the orange emphasis marks removed; the approved nighttime Home artwork integrated with a crossfade                                    | —    | Done (`2773f75`) |
+| 4.7  | Projects: the Personal Finance App (in progress, private repository) and Auction House added; this site's card linked to its public repository   | —    | Done (`91271c7`) |
+| 4.8  | Résumés: replace the outdated English and Portuguese PDFs                                                                                        | —    | Done             |
+| 4.9  | Public README review: improve it for visitors, remove unnecessary information                                                                    | —    | Done (`f5f223d`) |
+| 4.10 | Codebase comment review: remove redundant or outdated comments without changing behaviour                                                        | —    | Done (`e217887`) |
+| 4.11 | Real Cloudflare Pages verification on `*.pages.dev` (no domain, no paid services)                                                                | Free | Done             |
+| 4.12 | Final static release verification and documentation alignment (v4); the custom domain moved to the optional backlog                              | —    | Done             |
 
 Each step is planned in detail and approved before it starts. **Steps 4.6–4.10 come before
 publication.** Their exact content and requirements are reviewed separately when each step is
@@ -756,12 +760,11 @@ planned; the notes below only record what is already known.
   - check Pages' default `Access-Control-Allow-Origin: *` against the parity rule
   - a remote mode for the static suite and the browser smoke against the preview
   - the "To confirm" rows in `deploy/cloudflare-pages/README.md`
-- **4.12 Publication:**
-  - the domain purchase (approved, logged below); DNS on Cloudflare; the static E2E suite and
-    browser smoke against the domain
-  - HSTS revisited for the domain
-  - the Architecture page: v4 `done`, its components `live`, the hosting card no longer
-    `planned`; the Fun Facts may name the host
+- **4.12 Final static release** (done; see the Step 4.12 entry; scope revised by the owner on
+  2026-10-29): v4 is the static site already published at https://bruno-guimaraes.pages.dev.
+  The live site re-verified; the Architecture page, Fun Facts and docs aligned with the published
+  state. The custom domain, search indexing and social metadata moved to the optional backlog
+  below.
 
 ### Spending log
 
@@ -770,7 +773,27 @@ Every approved expense (purchases, paid plans, upgrades), recorded when approved
 | Date | Item | Provider | Price | Approved by |
 | ---- | ---- | -------- | ----- | ----------- |
 
-_None yet._
+_None._ Phase 4 cost nothing: Cloudflare Pages Free, no domain.
+
+### Optional future backlog (not scheduled)
+
+Not part of v4; each item needs the owner's approval before it starts (and, for the domain, a
+spending-log entry). Findings from the original Step 4.12 plan, kept so they aren't lost:
+
+- **Custom domain:** buy it (Cloudflare Registrar at cost, or another registrar with the
+  nameservers moved to a Cloudflare Free zone: an apex domain must be a zone on the Pages
+  account), add it to the Pages project, redirect `www` to the apex, turn on DNSSEC and Always
+  Use HTTPS, and keep Bot Fight Mode and Email Address Obfuscation off (their injected scripts
+  clash with the CSP; never loosen it with `unsafe-inline`). Then revisit HSTS (one day today, in
+  `_headers` and `ProductionSettings` together) and run the remote suite, the smoke and `curl`
+  against the domain. `noindex` stays on `*.pages.dev`.
+- **Search indexing** (needs the domain): the canonical origin (`VITE_SITE_ORIGIN`, or committed
+  in code), a sitemap with hreflang alternates generated from the registry, a `Sitemap:` line in
+  `robots.txt`, and `<meta name="robots" content="noindex">` on the shell's 404 page (Pages' SPA
+  mode answers unknown URLs with 200).
+- **Social sharing:** Open Graph tags in `index.html` and a preview image derived from the
+  approved art by the existing pipeline (never redrawn). Link previews don't run JavaScript, so
+  today they show only the static `<title>`.
 
 ### Step 4.0 — Home layout shift under reduced motion
 
@@ -987,6 +1010,37 @@ service previews; staff answers on feedback.render.com are marked as such.
     mentions Rails together with "hosted", "deployed", "in production" or "online" (both
     languages), and checks that the full-stack mode is local and unhosted.
 
+### Step 4.12 — Final static release (v4)
+
+- **Scope revised by the owner (2026-10-29):** v4 is the static site already published and
+  validated at https://bruno-guimaraes.pages.dev (Step 4.11). A custom domain, search indexing
+  and social sharing metadata are optional improvements, moved to the backlog; `noindex` and the
+  Pages Free configuration stay as they are.
+- **The live site re-verified before any change** (2026-10-29, deployment `a77727d`):
+  - the remote static suite: 278 passed, 140 skipped (full-stack-only), 0 failed
+  - the browser smoke: 14 passed, 1 skipped (the contact-form write), 0 failed
+  - `curl`: HTTP → HTTPS (301); nested routes in both languages 200; the security headers, CSP,
+    HSTS and `X-Robots-Tag: noindex`
+- **The site's content, in both languages:**
+  - Architecture: v4 "Static site release" **Completed**; the static run mode's hosting
+    **Cloudflare Pages: Live**, its headers "applied by the host"; the components that run on the
+    published site **Live** (React shell, registry, routing, internationalisation, responsive
+    layout, accessibility, mascot); the microfrontend host (no remote section yet), the two
+    build modes (they include the local full stack), testing and CI stay **Completed**
+  - the timeline notes: this static build is the published site (v4); the full-stack mode runs
+    locally
+  - the Architecture Fun Facts: published as static files on Cloudflare Pages; the Rails API
+    still "run it locally"
+  - the full-stack card unchanged: "Not deployed"
+- **Tests:** `content/architecture.test.ts` (the exact Live set; Live never on a Rails-related
+  component; v4 done, v5–v8 planned; the hosting Live; the hosted-backend rule unchanged) and the
+  Architecture page tests.
+- **Docs:** this roadmap (Phase 4 and v4 done, the backlog), `CLAUDE.md`, the public README,
+  the Pages README, ADR-0016 (a dated update), and the comments that pointed to "4.12, the
+  custom domain".
+- **Final sign-off:** one remote smoke run against the live site after the owner's push deploys
+  this content (required by the owner).
+
 ### Step 4.11 — Cloudflare Pages preview
 
 **Part 1, the repository (ready for review):**
@@ -1001,7 +1055,7 @@ service previews; staff answers on feedback.render.com are marked as such.
   `<project>.pages.dev` and `<hash or branch>.<project>.pages.dev`. Verified before adding them:
   Cloudflare's docs (a host placeholder matches one label; rules ignore protocol and port) and
   the emulator (noindex on the production, deployment and branch hosts; none on `localhost`, a
-  custom domain or a look-alike host). The custom domain (Step 4.12) stays indexable.
+  custom domain or a look-alike host). A custom domain (optional backlog) would stay indexable.
   - Tests: `static-host.spec.ts` (by Host header under the emulator; the real host remotely) and
     the parity spec, which pins exactly these two rules.
   - Fallback, if real Pages disagrees: a one-file Pages Function adding the header on
@@ -1202,15 +1256,16 @@ public; each names the step that delivers it.
 - **Security headers and an enforced CSP (mandatory; done in 4.4):**
   - `deploy/cloudflare-pages/_headers`, identical to `SecurityHeaders` (the parity spec)
   - confirmed on real Pages in 4.11, including Pages' own default headers
-- **HSTS (mandatory, 4.12):** one day without `includeSubDomains` or `preload` until the domain
-  and its subdomains are verified; revisited at publication.
+- **HSTS (mandatory):** one day without `includeSubDomains` or `preload` (`*.pages.dev` is
+  HTTPS-only anyway); revisited only if a custom domain is added (backlog).
 - **Previews and indexing (mandatory; done in 4.11):**
   - preview branches "None" (pull requests from forks never get previews)
   - `*.pages.dev` served with `X-Robots-Tag: noindex` (production and deployment URLs, verified)
   - the GitHub app limited to this repository (confirmed by the owner)
 - **Résumés (mandatory, 4.8):** each public PDF's text and metadata checked for a phone number.
-- **Cost controls:** Pages Free has no paid add-ons enabled (confirmed by the owner in 4.11); the domain is the only expense
-  (approved and logged in 4.12, its auto-renewal decided at purchase).
+- **Cost controls:** Pages Free has no paid add-ons enabled (confirmed by the owner in 4.11);
+  nothing has been purchased. A custom domain (backlog) would be the only expense, logged when
+  approved, with its auto-renewal decided at purchase.
 
 **If the full stack is ever deployed** (requires a new ADR and the owner's approval; none is
 planned)
@@ -1253,7 +1308,7 @@ also need everything below. It is kept here so Step 4.5's findings aren't lost.
 
 **Open questions (decided in the steps named):**
 
-- the domain name (4.12)
+- the domain name (moved to the optional backlog in 4.12)
 - the theme toggle and its persistence (4.6)
 - the content of the new projects and résumés (4.7, 4.8)
 - whether pages are prerendered for SEO (not planned in Phase 4)

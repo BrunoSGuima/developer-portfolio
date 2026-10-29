@@ -14,9 +14,11 @@ export interface ArchitectureComponent {
   status: Status;
 }
 
-// "How it's built today" lists only what is implemented (all done; 'live' once the site is
-// published, Step 4.12); planned work lives in the timeline. Reading order: architecture
-// foundations, then cross-cutting features, then quality.
+// "How it's built today" lists only what is implemented: 'live' when it runs on the published
+// static site (Step 4.12), 'done' when it's finished but doesn't (the microfrontend host has no
+// remote section yet; the build modes include the local full stack; testing and CI run in
+// development and GitHub Actions). Planned work lives in the timeline. Reading order:
+// architecture foundations, then cross-cutting features, then quality.
 export const components: readonly ArchitectureComponent[] = [
   {
     id: 'react-shell',
@@ -25,7 +27,7 @@ export const components: readonly ArchitectureComponent[] = [
       en: 'Layout, navigation and Fun Fact; stays mounted while sections change.',
       'pt-BR': 'Layout, navegação e Curiosidade; continua montado enquanto as seções mudam.',
     },
-    status: 'done',
+    status: 'live',
   },
   {
     id: 'section-registry',
@@ -34,7 +36,7 @@ export const components: readonly ArchitectureComponent[] = [
       en: 'Single source of truth for sections, routes and Fun Facts.',
       'pt-BR': 'Fonte única de verdade para seções, rotas e Curiosidades.',
     },
-    status: 'done',
+    status: 'live',
   },
   {
     id: 'routing',
@@ -44,7 +46,7 @@ export const components: readonly ArchitectureComponent[] = [
       'pt-BR':
         'O React Router carrega cada seção sob demanda; as trocas de página usam um fade suave com View Transitions, instantâneo com movimento reduzido.',
     },
-    status: 'done',
+    status: 'live',
   },
   {
     id: 'microfrontend-host',
@@ -74,7 +76,7 @@ export const components: readonly ArchitectureComponent[] = [
       'pt-BR':
         'Inglês e português do Brasil, cada um com suas próprias URLs (/pt-br). O seletor de idioma mantém você na mesma página.',
     },
-    status: 'done',
+    status: 'live',
   },
   {
     id: 'responsive-layout',
@@ -84,7 +86,7 @@ export const components: readonly ArchitectureComponent[] = [
       'pt-BR':
         'De celulares de 320px a telas ultrawide: um container fluido e grades de cards que se adaptam ao espaço disponível.',
     },
-    status: 'done',
+    status: 'live',
   },
   {
     id: 'accessibility',
@@ -94,7 +96,7 @@ export const components: readonly ArchitectureComponent[] = [
       'pt-BR':
         'Feito seguindo a WCAG 2.2 AA: landmarks, link para pular ao conteúdo, navegação por teclado com foco visível, suporte a movimento reduzido e alto contraste.',
     },
-    status: 'done',
+    status: 'live',
   },
   {
     id: 'mascot',
@@ -104,7 +106,7 @@ export const components: readonly ArchitectureComponent[] = [
       'pt-BR':
         'O mascote da página inicial e da Curiosidade usa as ilustrações finais; o mascote que caminha pela navegação ainda usa uma arte provisória até que seus quadros finais fiquem prontos.',
     },
-    status: 'done',
+    status: 'live',
   },
   {
     id: 'automated-testing',
@@ -167,11 +169,12 @@ export const timeline: readonly Milestone[] = [
     status: 'done',
   },
   {
-    // In progress: Phase 4 (ADR-0016). Done once the static site is published (Step 4.12).
+    // Done: Phase 4 (ADR-0016). The static site is published on Cloudflare Pages (Steps
+    // 4.11–4.12); the Rails API and PostgreSQL run locally only.
     id: 'deployment',
     version: 'v4',
     name: { en: 'Static site release', 'pt-BR': 'Publicação do site estático' },
-    status: 'in-progress',
+    status: 'done',
   },
   {
     id: 'vue-microfrontend',
@@ -308,17 +311,17 @@ export const runModes: readonly RunMode[] = [
         'pt-BR': 'O shell em React com dados locais tipados, em inglês e português.',
       },
       {
-        en: 'No API, no database and no server: plain files, with security headers and a strict Content Security Policy prepared for the host.',
+        en: 'No API, no database and no server: plain files, with security headers and a strict Content Security Policy applied by the host.',
         'pt-BR':
-          'Sem API, sem banco de dados e sem servidor: arquivos simples, com cabeçalhos de segurança e uma Content Security Policy rígida já preparados para a hospedagem.',
+          'Sem API, sem banco de dados e sem servidor: arquivos simples, com cabeçalhos de segurança e uma Content Security Policy rígida aplicados pela hospedagem.',
       },
       {
         en: 'The Contact page links to email, LinkedIn and GitHub.',
         'pt-BR': 'A página de Contato indica e-mail, LinkedIn e GitHub.',
       },
     ],
-    // Planned until the site is published (Step 4.12).
-    hosting: { name: 'Cloudflare Pages', status: 'planned' },
+    // Published (Steps 4.11–4.12): https://bruno-guimaraes.pages.dev.
+    hosting: { name: 'Cloudflare Pages', status: 'live' },
   },
   {
     id: 'fullstack',

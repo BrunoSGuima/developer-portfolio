@@ -51,20 +51,40 @@ describe('ArchitecturePage', () => {
     ]);
   });
 
-  it('marks the mascot as completed, noting the navigation mascot is still a placeholder', () => {
+  it('marks the mascot as live, noting the navigation mascot is still a placeholder', () => {
     renderPage(ArchitecturePage);
 
     const mascot = screen.getByRole('heading', { level: 3, name: 'Mascot guide' }).closest('li');
-    expect(mascot).toHaveTextContent('Completed');
+    expect(mascot).toHaveTextContent('Live');
     expect(mascot).toHaveTextContent(/placeholder/i);
   });
 
-  // Nothing is published yet (ADR-0016): no component may say "Live" until Step 4.12.
-  it('calls no component live while the site is unpublished', () => {
+  // The static site is published (Step 4.12, ADR-0016): "Live" only on what runs on it.
+  it('calls only the components that run on the published site live', () => {
     renderPage(ArchitecturePage);
 
     const region = screen.getByRole('region', { name: "How it's built today" });
-    expect(within(region).queryByText('Live')).not.toBeInTheDocument();
+    const live = within(region)
+      .getAllByText('Live')
+      .map((word) => within(word.closest('li')!).getByRole('heading', { level: 3 }).textContent);
+    expect(live).toEqual([
+      'React shell',
+      'Section registry',
+      'Routing and page transitions',
+      'Internationalisation',
+      'Responsive layout',
+      'Accessibility',
+      'Mascot guide',
+    ]);
+    for (const name of [
+      'Microfrontend host',
+      'Two build modes',
+      'Automated testing',
+      'Continuous integration',
+    ]) {
+      const item = within(region).getByRole('heading', { level: 3, name }).closest('li')!;
+      expect(item).toHaveTextContent('Completed');
+    }
   });
 
   it('shows the two ways to run it: the static production build and the local full stack', () => {
@@ -79,7 +99,7 @@ describe('ArchitecturePage', () => {
     expect(within(staticSite).getByRole('heading', { level: 3 })).toHaveTextContent('Static site');
     expect(staticSite).toHaveTextContent('The production build');
     expect(staticSite).toHaveTextContent(/No API, no database and no server/);
-    expect(staticSite).toHaveTextContent(/Hosting: Cloudflare Pages\s*Planned/);
+    expect(staticSite).toHaveTextContent(/Hosting: Cloudflare Pages\s*Live/);
 
     expect(within(fullStack).getByRole('heading', { level: 3 })).toHaveTextContent(
       'Full-stack mode',
@@ -105,7 +125,8 @@ describe('ArchitecturePage', () => {
       expect(within(item).getByText(STATUS_WORD)).toBeInTheDocument();
     });
     expect(items[0]).toHaveTextContent('Completed');
-    expect(items[3]).toHaveTextContent(/v4\s*Static site release\s*In progress/);
+    expect(items[3]).toHaveTextContent(/v4\s*Static site release\s*Completed/);
+    expect(items[4]).toHaveTextContent(/v5\s*Vue microfrontend\s*Planned/);
   });
 
   it('says, in a static build, that the integration is done but this build does not use it', () => {
@@ -117,7 +138,9 @@ describe('ArchitecturePage', () => {
       /its integration with this site \(v3\) are built and tested, and run locally in full-stack mode/,
     );
     expect(region).toHaveTextContent(/runs without the API or a database/);
-    expect(region).toHaveTextContent(/The public release \(v4\) will be this static build/);
+    expect(region).toHaveTextContent(
+      /This static build is the published site \(v4\), on Cloudflare Pages/,
+    );
     expect(region).toHaveTextContent(/provisional/);
   });
 

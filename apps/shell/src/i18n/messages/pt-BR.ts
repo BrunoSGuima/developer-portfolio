@@ -75,9 +75,9 @@ export const ptBR: Messages = {
     evolution: 'Como ele vai evoluir',
     timelineNote: {
       static:
-        'A API em Rails (v2) e a sua integração com este site (v3) estão construídas e testadas, e rodam localmente no modo full-stack; esta é a versão estática, que funciona sem a API e sem banco de dados. A publicação (v4) será esta versão estática. A ordem das etapas seguintes (v5–v8) é provisória.',
+        'A API em Rails (v2) e a sua integração com este site (v3) estão construídas e testadas, e rodam localmente no modo full-stack; esta é a versão estática, que funciona sem a API e sem banco de dados. Esta versão estática é o site publicado (v4), no Cloudflare Pages. A ordem das etapas seguintes (v5–v8) é provisória.',
       fullstack:
-        'Você está usando o modo full-stack: a página de Projetos carrega seus dados da API em Rails e o formulário de contato envia mensagens para ela, o que conclui a integração (v3). A publicação (v4) será a versão estática; este modo roda localmente. A ordem das etapas seguintes (v5–v8) é provisória.',
+        'Você está usando o modo full-stack: a página de Projetos carrega seus dados da API em Rails e o formulário de contato envia mensagens para ela, o que conclui a integração (v3). O site publicado (v4) é a versão estática; este modo roda localmente. A ordem das etapas seguintes (v5–v8) é provisória.',
     },
     decisions: 'Principais decisões',
     allDecisions: 'Explore todas as decisões de arquitetura no GitHub',

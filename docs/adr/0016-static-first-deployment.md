@@ -123,3 +123,12 @@ Details: `docs/ROADMAP.md`.
     deprecated). Moving would be a new ADR, and the static build would stay the same.
   - Pages adds `Access-Control-Allow-Origin: *` by default; checked against the parity rule in
     4.11.
+
+## Update (2026-10-29, Steps 4.11–4.12)
+
+The static site is published on Cloudflare Pages Free at https://bruno-guimaraes.pages.dev,
+with `X-Robots-Tag: noindex` on every `*.pages.dev` address. The owner decided that a custom
+domain, search indexing and social sharing metadata are optional improvements, not part of the
+static release (v4): they're in the roadmap's optional backlog, so the domain purchase and the
+HSTS revisit described above happen only if that item is taken up. The Rails API and PostgreSQL
+remain local, as decided here.

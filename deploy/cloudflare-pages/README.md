@@ -1,13 +1,14 @@
 # Cloudflare Pages (the production site)
 
 The portfolio's public home (ADR-0016): the **static** build (`VITE_APP_MODE=static`, local data,
-no backend) on Cloudflare Pages Free, with a custom domain at publication. The full stack isn't
-deployed; it runs locally. Prepared and tested in Phase 4, Step 4.4.
+no backend) on Cloudflare Pages Free. The full stack isn't deployed; it runs locally. Prepared and
+tested in Phase 4, Step 4.4; published in Steps 4.11–4.12 (v4, the static site release).
 
 **Deployed (Step 4.11, 2026-10-29):** the owner's Pages project `bruno-guimaraes`, at
 **https://bruno-guimaraes.pages.dev/**, built from `main` (first deployment: `ab12700`, also at
 `https://a3611000.bruno-guimaraes.pages.dev`). It's public but never indexed (`X-Robots-Tag:
-noindex`); the custom domain, the site's public address, is Step 4.12.
+noindex`, the owner's choice). A custom domain, search indexing and social metadata are an
+optional backlog (`docs/ROADMAP.md`), not scheduled.
 
 ## Files
 
@@ -26,19 +27,19 @@ serve them. `npm run build:pages` builds the static site and copies them into `a
 Checked against Cloudflare's documentation on 2026-10-29, and the build command reproduced on a
 clean clone (Step 4.11).
 
-| Setting                | Value                                                                                                                                   |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| How                    | **Connect to Git** (a Direct Upload project can never switch to Git later)                                                              |
-| Repository access      | the GitHub app limited to **this repository only** ("Only select repositories")                                                         |
-| Framework preset       | None                                                                                                                                    |
-| Root directory         | empty (the repository root: the npm workspaces need the root lockfile)                                                                  |
-| Build command          | `npm ci --ignore-scripts && npm run build:pages`                                                                                        |
-| Build output directory | `apps/shell/dist`                                                                                                                       |
-| Environment variables  | `SKIP_DEPENDENCY_INSTALL=1` (the build command installs, lockfile-exact, without install scripts), `VITE_APP_MODE=static` (explicit)    |
-| Node.js                | from `.nvmrc` (`22`). Build image v3 honours `.nvmrc` (its default is Node 22 as well) but not `package.json` `engines`                 |
-| Production branch      | `main` (automatic deployments on)                                                                                                       |
-| Preview deployments    | **off**: Settings → Builds → Branch control → Preview branch **None** (previews are public and on by default)                           |
-| Leave off              | Web Analytics (its injected script would break the CSP), the Access policy, Functions, bindings, custom domains (Step 4.12), paid plans |
+| Setting                | Value                                                                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| How                    | **Connect to Git** (a Direct Upload project can never switch to Git later)                                                            |
+| Repository access      | the GitHub app limited to **this repository only** ("Only select repositories")                                                       |
+| Framework preset       | None                                                                                                                                  |
+| Root directory         | empty (the repository root: the npm workspaces need the root lockfile)                                                                |
+| Build command          | `npm ci --ignore-scripts && npm run build:pages`                                                                                      |
+| Build output directory | `apps/shell/dist`                                                                                                                     |
+| Environment variables  | `SKIP_DEPENDENCY_INSTALL=1` (the build command installs, lockfile-exact, without install scripts), `VITE_APP_MODE=static` (explicit)  |
+| Node.js                | from `.nvmrc` (`22`). Build image v3 honours `.nvmrc` (its default is Node 22 as well) but not `package.json` `engines`               |
+| Production branch      | `main` (automatic deployments on)                                                                                                     |
+| Preview deployments    | **off**: Settings → Builds → Branch control → Preview branch **None** (previews are public and on by default)                         |
+| Leave off              | Web Analytics (its injected script would break the CSP), the Access policy, Functions, bindings, custom domains (backlog), paid plans |
 
 No secrets, no API, no database. A successful build log ends with
 `prepare-pages: … is a static build, ready for Cloudflare Pages.`
@@ -61,8 +62,8 @@ Pages adds `X-Robots-Tag: noindex` to preview deployments only. `_headers` there
 deployment's `<hash>.<project>.pages.dev` and branch aliases): Cloudflare's documented rules, in
 which a host placeholder matches one label. Verified under the emulator by Host header (also
 `static-host.spec.ts`): noindex on those hosts, none on `localhost`, a custom domain or
-`<project>.pages.dev.example.com`. The custom domain stays indexable; `robots.txt` allows crawling
-so crawlers can see the header. If real Pages ignored the rules, the fallback is a one-file Pages
+`<project>.pages.dev.example.com`. A custom domain (backlog) would stay indexable; `robots.txt`
+allows crawling so crawlers can see the header. If real Pages ignored the rules, the fallback is a one-file Pages
 Function that adds the header on `*.pages.dev`.
 
 ## Locally and in CI
@@ -110,11 +111,12 @@ parity rule covers the headers this project sets. Removing it (`! Access-Control
 would be a new decision with a parity note. `report-to` / `nel` are Cloudflare's network-error
 reporting (`success_fraction` 0), not page content.
 
-## Remaining before publication
+## Status
 
 1. **Step 4.11:** done: deployed, validated and the owner's settings confirmed (above;
    `docs/ROADMAP.md`, Step 4.11).
-2. **Step 4.12:**
-   - add the custom domain
-   - revisit HSTS (one day, no `includeSubDomains`) for it
-   - run the checks against it
+2. **Step 4.12:** done: the final static release (v4) on this `pages.dev` address, re-verified,
+   with the site's content and docs aligned (`docs/ROADMAP.md`, Step 4.12).
+3. **Optional backlog** (`docs/ROADMAP.md`, "Optional future backlog"): a custom domain (then
+   HSTS revisited, Bot Fight Mode and Email Address Obfuscation kept off for the CSP, and the
+   checks run against it), search indexing, and social sharing metadata.
