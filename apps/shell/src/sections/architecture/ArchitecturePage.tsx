@@ -1,7 +1,13 @@
 import PageIntro from '../../components/PageIntro/PageIntro.tsx';
 import StatusTag from '../../components/StatusTag/StatusTag.tsx';
 import { appMode } from '../../config/mode.ts';
-import { components, decisions, runModes, timeline } from '../../content/architecture.ts';
+import {
+  ADR_DIRECTORY_URL,
+  components,
+  decisions,
+  runModes,
+  timeline,
+} from '../../content/architecture.ts';
 import { useLocale, useMessages } from '../../i18n/context.ts';
 import { pick, text } from '../../i18n/localized.ts';
 import page from '../Page.module.css';
@@ -93,6 +99,12 @@ function ArchitecturePage() {
             </li>
           ))}
         </ul>
+        <p className={styles.allDecisions}>
+          <a href={ADR_DIRECTORY_URL} target="_blank" rel="noopener noreferrer" data-adr-directory>
+            {messages.architecture.allDecisions}{' '}
+            <span className="visually-hidden">{messages.architecture.opensInNewTab}</span>
+          </a>
+        </p>
       </section>
     </PageIntro>
   );

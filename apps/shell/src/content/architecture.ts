@@ -199,13 +199,20 @@ export const timeline: readonly Milestone[] = [
   },
 ];
 
+/** All ADRs, in the public repository. */
+export const ADR_DIRECTORY_URL =
+  'https://github.com/BrunoSGuima/developer-portfolio/tree/main/docs/adr';
+
 export interface Decision {
   id: string;
   title: Localized<string>;
   summary: Localized<string>;
 }
 
-/** Accepted Architecture Decision Records (docs/adr), in order. */
+/**
+ * The key Architecture Decision Records shown on the page (owner's selection, in this order); every
+ * ADR is in docs/adr, linked from the page (`ADR_DIRECTORY_URL`).
+ */
 export const decisions: readonly Decision[] = [
   {
     id: 'ADR-0001',
@@ -232,102 +239,12 @@ export const decisions: readonly Decision[] = [
     },
   },
   {
-    id: 'ADR-0003',
-    title: { en: 'CSS Modules and design tokens', 'pt-BR': 'CSS Modules e design tokens' },
-    summary: {
-      en: 'Plain CSS with shared custom properties, so React and Vue sections share one visual language.',
-      'pt-BR':
-        'CSS puro com custom properties compartilhadas, para que as seções em React e Vue tenham a mesma linguagem visual.',
-    },
-  },
-  {
-    id: 'ADR-0004',
-    title: {
-      en: 'Routes generated from a section registry',
-      'pt-BR': 'Rotas geradas a partir de um registro de seções',
-    },
-    summary: {
-      en: 'React Router routes, navigation and Fun Facts all come from a single list of sections.',
-      'pt-BR':
-        'As rotas do React Router, a navegação e as Curiosidades vêm todas de uma única lista de seções.',
-    },
-  },
-  {
-    id: 'ADR-0005',
-    title: {
-      en: 'Decorative mascot driven by a state machine',
-      'pt-BR': 'Mascote decorativo guiado por uma máquina de estados',
-    },
-    summary: {
-      en: 'Two decorative mascots animated by a small state machine and CSS; they never block content and respect reduced motion.',
-      'pt-BR':
-        'Dois mascotes decorativos animados por uma pequena máquina de estados e CSS; nunca bloqueiam o conteúdo e respeitam o movimento reduzido.',
-    },
-  },
-  {
     id: 'ADR-0006',
     title: { en: 'Responsive layout strategy', 'pt-BR': 'Estratégia de layout responsivo' },
     summary: {
       en: 'A fluid container up to 1536px and card grids sized by their own space: wider screens get more columns, not longer lines.',
       'pt-BR':
         'Um container fluido de até 1536px e grades de cards dimensionadas pelo próprio espaço: telas maiores ganham mais colunas, não linhas mais longas.',
-    },
-  },
-  {
-    id: 'ADR-0007',
-    title: {
-      en: 'Internationalisation with language URLs',
-      'pt-BR': 'Internacionalização com URLs por idioma',
-    },
-    summary: {
-      en: 'English and Brazilian Portuguese with the language in the URL and typed translations, without an i18n library.',
-      'pt-BR':
-        'Inglês e português do Brasil com o idioma na URL e traduções tipadas, sem biblioteca de i18n.',
-    },
-  },
-  {
-    id: 'ADR-0008',
-    title: {
-      en: 'Page transitions with View Transitions',
-      'pt-BR': 'Transições de página com View Transitions',
-    },
-    summary: {
-      en: 'React Router crossfades the page between header and footer; instant with reduced motion or in older browsers.',
-      'pt-BR':
-        'O React Router faz um fade suave da página entre o cabeçalho e o rodapé; instantâneo com movimento reduzido ou em navegadores mais antigos.',
-    },
-  },
-  {
-    id: 'ADR-0009',
-    title: {
-      en: 'End-to-end testing with Playwright and axe',
-      'pt-BR': 'Testes ponta a ponta com Playwright e axe',
-    },
-    summary: {
-      en: 'The production build is tested in both languages, on desktop and mobile, including automated accessibility scans.',
-      'pt-BR':
-        'O build de produção é testado nos dois idiomas, no desktop e no celular, incluindo verificações automáticas de acessibilidade.',
-    },
-  },
-  {
-    id: 'ADR-0010',
-    title: {
-      en: 'Continuous integration with GitHub Actions',
-      'pt-BR': 'Integração contínua com GitHub Actions',
-    },
-    summary: {
-      en: 'Every push and pull request runs all checks; deployment waits until the backend is integrated.',
-      'pt-BR':
-        'Cada push e pull request executa todas as verificações; o deploy espera a integração com o back-end.',
-    },
-  },
-  {
-    id: 'ADR-0011',
-    title: { en: 'Rails API-only backend', 'pt-BR': 'Back-end em Rails somente API' },
-    summary: {
-      en: 'A Ruby on Rails API with PostgreSQL in its own service, same-origin with the shell and tested on its own.',
-      'pt-BR':
-        'Uma API em Ruby on Rails com PostgreSQL em um serviço próprio, na mesma origem que o shell e testada de forma independente.',
     },
   },
   {
@@ -343,18 +260,6 @@ export const decisions: readonly Decision[] = [
     },
   },
   {
-    id: 'ADR-0013',
-    title: {
-      en: 'Contact messages: privacy and abuse protection',
-      'pt-BR': 'Mensagens de contato: privacidade e proteção contra abuso',
-    },
-    summary: {
-      en: 'Minimal personal data, no IP addresses, filtered logs, rate limits and a honeypot, with a 12-month retention.',
-      'pt-BR':
-        'Dados pessoais mínimos, sem endereços IP, logs filtrados, limites de envio e um honeypot, com retenção de 12 meses.',
-    },
-  },
-  {
     id: 'ADR-0014',
     title: {
       en: 'Frontend data access: static and full-stack modes',
@@ -367,19 +272,6 @@ export const decisions: readonly Decision[] = [
     },
   },
   {
-    id: 'ADR-0015',
-    title: {
-      en: 'Deployment in two stages',
-      'pt-BR': 'Deploy em duas etapas',
-    },
-    summary: {
-      en: 'Superseded by ADR-0016: the full stack on one origin for a limited period, then the static site on free hosting.',
-      'pt-BR':
-        'Substituída pela ADR-0016: a versão full-stack em uma única origem por um período limitado e, depois, o site estático em hospedagem gratuita.',
-    },
-  },
-  {
-    // A decision, not a deployment: the timeline's v4 is done only once the site is published.
     id: 'ADR-0016',
     title: {
       en: 'Static-first deployment',
@@ -389,18 +281,6 @@ export const decisions: readonly Decision[] = [
       en: 'The public site is the static build on free static hosting; the Rails API and PostgreSQL stay fully built and tested and run locally, avoiding a recurring server cost.',
       'pt-BR':
         'O site público é a versão estática, em hospedagem estática gratuita; a API em Rails e o PostgreSQL continuam completos e testados e rodam localmente, evitando um custo recorrente de servidor.',
-    },
-  },
-  {
-    id: 'ADR-0017',
-    title: {
-      en: 'Light and dark themes',
-      'pt-BR': 'Temas claro e escuro',
-    },
-    summary: {
-      en: 'Colour tokens remapped for a dark theme, set before the first paint; it follows the system until the visitor chooses, and the choice is remembered.',
-      'pt-BR':
-        'Tokens de cor remapeados para um tema escuro, aplicado antes da primeira renderização; ele segue o sistema até o visitante escolher, e a escolha é lembrada.',
     },
   },
 ];
@@ -462,9 +342,9 @@ export const runModes: readonly RunMode[] = [
       },
     ],
     note: {
-      en: 'Not deployed: kept as a complete, tested demonstration, so the portfolio has no recurring server cost.',
+      en: 'Not deployed: kept as a complete, tested demonstration. The public portfolio uses a static build to avoid recurring backend hosting costs.',
       'pt-BR':
-        'Sem deploy: mantido como uma demonstração completa e testada, para que o portfólio não tenha custo recorrente de servidor.',
+        'Sem deploy: mantido como uma demonstração completa e testada. O portfólio público usa um build estático para evitar custos recorrentes de hospedagem do back-end.',
     },
   },
 ];

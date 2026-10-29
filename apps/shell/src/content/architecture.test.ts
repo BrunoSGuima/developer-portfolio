@@ -4,7 +4,7 @@ import { isPlaceholderArt } from '../mascot/assets.ts';
 import RemoteSection from '../microfrontends/RemoteSection.tsx';
 import { LOCALES } from '../i18n/locales.ts';
 import { getSection, remoteMount, sectionInMode, sections } from '../sections/registry.ts';
-import { components, decisions, runModes, timeline } from './architecture.ts';
+import { ADR_DIRECTORY_URL, components, decisions, runModes, timeline } from './architecture.ts';
 
 function componentById(id: string) {
   const component = components.find((item) => item.id === id);
@@ -183,14 +183,24 @@ describe('static-first truthfulness (ADR-0016)', () => {
     expect(fullStack?.id).toBe('fullstack');
     expect(fullStack?.hosting).toBeUndefined();
     for (const locale of LOCALES) expect(fullStack?.role[locale]).toMatch(LOCAL[locale]);
-    expect(fullStack?.note?.en).toMatch(/^Not deployed/);
-    expect(fullStack?.note?.['pt-BR']).toMatch(/^Sem deploy/);
+    expect(fullStack?.note).toEqual({
+      en: 'Not deployed: kept as a complete, tested demonstration. The public portfolio uses a static build to avoid recurring backend hosting costs.',
+      'pt-BR':
+        'Sem deploy: mantido como uma demonstração completa e testada. O portfólio público usa um build estático para evitar custos recorrentes de hospedagem do back-end.',
+    });
   });
 
-  it('records ADR-0015 as superseded by ADR-0016', () => {
-    const adr15 = decisions.find((decision) => decision.id === 'ADR-0015');
-    expect(adr15?.summary.en).toMatch(/^Superseded by ADR-0016/);
-    expect(adr15?.summary['pt-BR']).toMatch(/^Substituída pela ADR-0016/);
-    expect(decisions.map((decision) => decision.id)).toContain('ADR-0016');
+  it('shows only the six key decisions, in order; the rest are linked on GitHub', () => {
+    expect(decisions.map((decision) => decision.id)).toEqual([
+      'ADR-0001',
+      'ADR-0002',
+      'ADR-0006',
+      'ADR-0012',
+      'ADR-0014',
+      'ADR-0016',
+    ]);
+    expect(ADR_DIRECTORY_URL).toBe(
+      'https://github.com/BrunoSGuima/developer-portfolio/tree/main/docs/adr',
+    );
   });
 });

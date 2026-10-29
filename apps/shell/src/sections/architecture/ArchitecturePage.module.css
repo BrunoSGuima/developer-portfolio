@@ -89,3 +89,11 @@
   display: flex;
   flex-direction: column;
 }
+
+/* The link to every ADR on GitHub, centred below the cards: as wide as the grid, not the reading
+   measure paragraphs get by default. */
+.allDecisions {
+  max-width: none;
+  margin-block-start: var(--space-5);
+  text-align: center;
+}

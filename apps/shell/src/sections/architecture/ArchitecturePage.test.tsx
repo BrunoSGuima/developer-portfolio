@@ -1,7 +1,14 @@
 import { screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { components, decisions, runModes, timeline } from '../../content/architecture.ts';
+import {
+  ADR_DIRECTORY_URL,
+  components,
+  decisions,
+  runModes,
+  timeline,
+} from '../../content/architecture.ts';
 import { renderPage } from '../../test/renderPage.tsx';
+import { renderRoute, ROUTE_WAIT } from '../../test/renderRoute.tsx';
 import page from '../Page.module.css';
 import archCss from './ArchitecturePage.module.css?raw';
 import styles from './ArchitecturePage.module.css';
@@ -79,7 +86,9 @@ describe('ArchitecturePage', () => {
     );
     expect(fullStack).toHaveTextContent('Runs locally');
     expect(fullStack).toHaveTextContent(/Ruby on Rails 8 API from PostgreSQL 18/);
-    expect(fullStack).toHaveTextContent(/Not deployed/);
+    expect(fullStack).toHaveTextContent(
+      'Not deployed: kept as a complete, tested demonstration. The public portfolio uses a static build to avoid recurring backend hosting costs.',
+    );
     expect(fullStack).not.toHaveTextContent(/Hosting/);
     expect(within(fullStack).getAllByRole('listitem')).toHaveLength(runModes[1]!.points.length);
   });
@@ -152,17 +161,67 @@ describe('ArchitecturePage', () => {
     );
   });
 
-  it('lists the key architecture decisions', () => {
+  it('lists the six key decisions in order, with their titles and summaries', () => {
     renderPage(ArchitecturePage);
 
     const region = screen.getByRole('region', { name: 'Key decisions' });
     const items = within(region).getAllByRole('listitem');
-    expect(items).toHaveLength(decisions.length);
-    expect(decisions.at(-1)?.id).toBe('ADR-0017');
-    expect(items.at(-3)).toHaveTextContent(/ADR-0015.*Superseded by ADR-0016/);
-    expect(items.at(-1)).toHaveTextContent(/ADR-0017: Light and dark themes/);
-    items.forEach((item, index) =>
-      expect(item).toHaveTextContent(`ADR-${String(index + 1).padStart(4, '0')}`),
+    expect(items.map((item) => item.querySelector('strong')?.textContent)).toEqual([
+      'ADR-0001: React SPA as the persistent shell',
+      'ADR-0002: Framework-agnostic mount contract',
+      'ADR-0006: Responsive layout strategy',
+      'ADR-0012: Localised data and an OpenAPI contract',
+      'ADR-0014: Frontend data access: static and full-stack modes',
+      'ADR-0016: Static-first deployment',
+    ]);
+    items.forEach((item, index) => expect(item).toHaveTextContent(decisions[index]!.summary.en));
+    for (const id of [
+      '0003',
+      '0004',
+      '0005',
+      '0007',
+      '0008',
+      '0009',
+      '0010',
+      '0011',
+      '0013',
+      '0015',
+      '0017',
+    ]) {
+      expect(region).not.toHaveTextContent(`ADR-${id}`);
+    }
+  });
+
+  it('links every decision on GitHub below the cards, in a new tab', () => {
+    renderPage(ArchitecturePage);
+
+    const region = screen.getByRole('region', { name: 'Key decisions' });
+    const link = within(region).getByRole('link', {
+      name: 'Explore all architecture decisions on GitHub (opens in a new tab)',
+    });
+    expect(link).toHaveAttribute('href', ADR_DIRECTORY_URL);
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    // Below the cards, centred.
+    const list = within(region).getByRole('list');
+    expect(list.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(link.parentElement).toHaveClass(styles.allDecisions!);
+    expect(archCss).toMatch(/\.allDecisions\s*\{[^}]*max-width:\s*none;[^}]*text-align:\s*center;/);
+  });
+
+  it('shows the GitHub link and the full-stack note in Portuguese', async () => {
+    renderRoute('/pt-br/architecture');
+
+    const region = await screen.findByRole('region', { name: 'Principais decisões' }, ROUTE_WAIT);
+    const link = within(region).getByRole('link', {
+      name: 'Explore todas as decisões de arquitetura no GitHub (abre em uma nova aba)',
+    });
+    expect(link).toHaveAttribute('href', ADR_DIRECTORY_URL);
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    expect(within(region).getAllByRole('listitem')).toHaveLength(6);
+    expect(screen.getByRole('region', { name: 'Duas formas de executar' })).toHaveTextContent(
+      'Sem deploy: mantido como uma demonstração completa e testada. O portfólio público usa um build estático para evitar custos recorrentes de hospedagem do back-end.',
     );
   });
 });

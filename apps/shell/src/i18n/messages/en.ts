@@ -88,6 +88,9 @@ export const en = {
         "You're running the full-stack mode: the Projects page loads from the Rails API and the contact form sends messages to it, completing the integration (v3). The public release (v4) will be the static build; this mode runs locally. The order of the later steps (v5–v8) is provisional.",
     },
     decisions: 'Key decisions',
+    /** The link below the decisions to every ADR on GitHub (opens in a new tab). */
+    allDecisions: 'Explore all architecture decisions on GitHub',
+    opensInNewTab: '(opens in a new tab)',
   },
   contact: {
     location: 'Location',

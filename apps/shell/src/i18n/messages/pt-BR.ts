@@ -80,6 +80,8 @@ export const ptBR: Messages = {
         'Você está usando o modo full-stack: a página de Projetos carrega seus dados da API em Rails e o formulário de contato envia mensagens para ela, o que conclui a integração (v3). A publicação (v4) será a versão estática; este modo roda localmente. A ordem das etapas seguintes (v5–v8) é provisória.',
     },
     decisions: 'Principais decisões',
+    allDecisions: 'Explore todas as decisões de arquitetura no GitHub',
+    opensInNewTab: '(abre em uma nova aba)',
   },
   contact: {
     location: 'Localização',
