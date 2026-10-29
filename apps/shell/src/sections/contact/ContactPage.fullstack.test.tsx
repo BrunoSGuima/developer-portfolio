@@ -133,7 +133,8 @@ describe('ContactPage, full-stack build', () => {
     );
     expect(statusRegion()).toContainElement(status);
     expect(statusRegion()).toHaveAttribute('role', 'status');
-    expect(statusRegion()).toHaveFocus();
+    // Focus moves in an effect after the confirmation renders.
+    await waitFor(() => expect(statusRegion()).toHaveFocus());
     expect(screen.getByLabelText('Name')).toHaveValue('');
     expect(screen.getByLabelText('Message')).toHaveValue('');
     expect(JSON.parse(fetchMock.mock.calls[0]![1]?.body as string)).toEqual({
