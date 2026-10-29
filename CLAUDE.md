@@ -21,7 +21,8 @@ CI is green on GitHub; Architecture page updated). Phase 1 is **not** the MVP.
 GitHub Actions green on `f66efbf`; the MVP is complete). **Phase 4 — Deployment: in progress**
 (Steps 4.0–4.4 done: `13938b0`, `2653ba5`, `6b9c9ed`, `35beb2d`, `4bdf06a`; Step 4.5, the
 static-first architecture and documentation revision, done in `2db5e00`; Step 4.6a, dark mode
-without the night art, ready for review; then 4.6b the approved night art, 4.7 projects, 4.8 résumés, 4.9 public README, 4.10 comment review, 4.11 real Cloudflare Pages
+without the night art, done in `d4d324e`; Step 4.6b, the night Home art and the removal of the
+mascot's emphasis marks, ready for review; then 4.7 projects, 4.8 résumés, 4.9 public README, 4.10 comment review, 4.11 real Cloudflare Pages
 verification, 4.12 custom domain and publication; details, prerequisites and the spending log
 are in `docs/ROADMAP.md`). **Deployment strategy (ADR-0016, 2026-10-28, superseding ADR-0015):**
 only the **static** build is published, on Cloudflare Pages Free; the Rails API and PostgreSQL
@@ -191,8 +192,12 @@ Sidekiq or Vue until their phase.
   on the theme. Every new colour token needs a dark value, and `styles/themes.test.ts` must keep
   AA contrast in both themes. The toggle (`components/ThemeToggle`) shares the EN/PT pill
   (`components/Preferences`) in all three header layouts; the desktop header must stay one row
-  from 1024px with classic scrollbars (`e2e/tests/theme.spec.ts`). The Home art is day/night pairs of approved rasters (never CSS-darkened;
-  the night pair is Step 4.6b, `ART-BRIEF.md` §9).
+  from 1024px with classic scrollbars (`e2e/tests/theme.spec.ts`). The Home backdrop (`mascot/HomeBackdrop`) shows the approved day
+  painting in light and the night one in dark (never CSS-darkened; `ART-BRIEF.md` §9): one layer
+  per theme, the other requested only after a switch, a 250 ms crossfade (0 under reduced
+  motion). Each painting keeps its natural aspect ratio, anchored at the top (the approved
+  framing): never let the layer fill the backdrop, or `object-fit: cover` crops and zooms it
+  (`e2e/tests/theme.spec.ts`).
 - Accessibility is a requirement: semantic landmarks, keyboard navigation, visible focus,
   `prefers-reduced-motion` support, AA contrast. The mascot is decorative
   (`aria-hidden`, `pointer-events: none`) and must never block content. Step 10 audit
@@ -285,7 +290,8 @@ Sidekiq or Vue until their phase.
 - **Illustrations:** sources in `docs/assets/source/` are never modified. `npm run illustrations
 -w apps/shell` (dev dependency `sharp`) writes WebP derivatives + `manifest.json` to
   `apps/shell/src/assets/illustrations/` (committed). Components read dimensions from the
-  manifest. See `docs/assets/ART-BRIEF.md` §8.
+  manifest. See `docs/assets/ART-BRIEF.md` §8. The only derivative-time change to approved art is
+  the removal of A3's three detached orange emphasis marks (guarded; owner's decision, Step 4.6b).
 - **Final mascot art:** add the new art components (same props, drawn facing right) and point
   `mascotAssets` in `mascot/assets.ts` at them; set `isPlaceholderArt = false` and update the
   Architecture "Mascot guide" wording. Nothing else changes.

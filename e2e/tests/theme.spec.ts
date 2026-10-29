@@ -235,6 +235,8 @@ test.describe('the toggle', () => {
           '#what-i-do',
           '[data-slot="hero"]',
           '[data-nav="main"]',
+          '[data-slot="backdrop"]',
+          '[data-slot="backdrop"] picture[data-active="true"] img',
         ].map((selector) => {
           const box = document.querySelector(selector)?.getBoundingClientRect();
           return box && [box.x, box.y, box.width, box.height].map((n) => Math.round(n * 2) / 2);
@@ -279,5 +281,128 @@ test.describe('full-stack pages in the dark theme', () => {
     await page.goto('/projects');
     await expect(page.getByRole('alert')).toContainText(messages.en.projects.error);
     await expectNoA11yViolations(page, 'the Projects error, dark');
+  });
+});
+
+// The Home backdrop (Step 4.6b): the day painting in light, the night painting in dark, both drawn
+// at their natural aspect ratio (the approved framing), the right one from the first request.
+test.describe('the Home backdrop', () => {
+  const BACKDROP = /\/hero(Desktop|Mobile)(Night)?-\d+[^/]*\.webp$/;
+
+  /** The painting on top: its key, the file the browser chose and the rendered box. */
+  const activePainting = (page: Page) =>
+    page.evaluate(() => {
+      const img = document.querySelector<HTMLImageElement>(
+        '[data-slot="backdrop"] picture[data-active="true"] img',
+      )!;
+      const box = img.getBoundingClientRect();
+      return {
+        theme: img.closest('picture')!.dataset.backdropTheme,
+        current: img.currentSrc.split('/').pop()!,
+        width: box.width,
+        height: box.height,
+        ratio: img.naturalHeight / img.naturalWidth,
+      };
+    });
+
+  const settled = (page: Page) =>
+    page.waitForFunction(() =>
+      [...document.querySelectorAll<HTMLImageElement>('[data-slot="backdrop"] img')].every(
+        (img) => img.complete && img.naturalWidth > 0,
+      ),
+    );
+
+  for (const colorScheme of ['light', 'dark'] as const) {
+    test(`${colorScheme}: only its own painting is requested on the first load`, async ({
+      page,
+      isMobile,
+    }) => {
+      const requested: string[] = [];
+      page.on('request', (request) => {
+        if (BACKDROP.test(request.url())) requested.push(new URL(request.url()).pathname);
+      });
+      await page.emulateMedia({ colorScheme });
+      await open(page, '/');
+      await settled(page);
+
+      const painting = await activePainting(page);
+      expect(painting.theme).toBe(colorScheme);
+      expect(painting.current).toMatch(
+        new RegExp(
+          `^hero${isMobile ? 'Mobile' : 'Desktop'}${colorScheme === 'dark' ? 'Night' : ''}-`,
+        ),
+      );
+      expect(requested).toHaveLength(1);
+      expect(requested[0]).toContain(painting.current.split('-')[0]!);
+    });
+
+    test(`${colorScheme}: the painting keeps its natural aspect ratio at every width (never cropped or zoomed)`, async ({
+      page,
+      isMobile,
+    }) => {
+      test.skip(isMobile, 'Widths are set explicitly on the desktop project.');
+      await page.emulateMedia({ colorScheme });
+      for (const width of [375, 768, 1024, 1440, 1920]) {
+        await page.setViewportSize({ width, height: 900 });
+        await open(page, '/');
+        await settled(page);
+        const painting = await activePainting(page);
+
+        expect(painting.current, `${width}px`).toMatch(
+          width < 768 ? /^heroMobile/ : /^heroDesktop/,
+        );
+        expect(
+          Math.abs(painting.height - painting.width * painting.ratio),
+          `${width}px`,
+        ).toBeLessThan(1);
+      }
+    });
+  }
+
+  test('switching crossfades to the other painting once loaded, and moves nothing', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'no-preference' });
+    await open(page, '/');
+    await settled(page);
+    const backdropBox = () =>
+      page.evaluate(() => {
+        const box = document
+          .querySelector('[data-slot="backdrop"] picture[data-active="true"] img')!
+          .getBoundingClientRect();
+        return [box.x, box.y, box.width, box.height].map(Math.round);
+      });
+    const before = await backdropBox();
+
+    await (await toggle(page)).click();
+    await page.keyboard.press('Escape');
+    await expect.poll(async () => (await activePainting(page)).theme).toBe('dark');
+    await settled(page);
+
+    expect(await backdropBox()).toEqual(before);
+    const fade = await page.evaluate(
+      () =>
+        getComputedStyle(
+          document.querySelector('[data-slot="backdrop"] picture[data-active="true"]')!,
+        ).transitionDuration,
+    );
+    expect(fade).toBe('0.25s');
+
+    // Back to light: the day painting is still loaded, so it's on top at once.
+    await (await toggle(page)).click();
+    await page.keyboard.press('Escape');
+    expect((await activePainting(page)).theme).toBe('light');
+  });
+
+  test('the crossfade is instant under reduced motion', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
+    await open(page, '/');
+    const fade = await page.evaluate(
+      () =>
+        getComputedStyle(
+          document.querySelector('[data-slot="backdrop"] picture[data-active="true"]')!,
+        ).transitionDuration,
+    );
+    expect(fade).toBe('0s');
   });
 });

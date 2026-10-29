@@ -36,7 +36,8 @@ and GitHub Actions ran green on the final Step 2.6 commit (`5f9eb59`, 2026-10-26
 is published, on Cloudflare Pages Free; the Rails API and PostgreSQL stay implemented, tested and
 documented and run **locally** (full-stack mode), never as paid cloud services. Step 4.5 (the
 architecture and documentation revision) is done (`2db5e00`); Step 4.6a (dark mode without the
-night art, ADR-0017) is ready for review; see "Phase 4 — Deployment" below.
+night art, ADR-0017) is done (`d4d324e`); Step 4.6b (the night Home art and the removal of the
+mascot's emphasis marks) is ready for review; see "Phase 4 — Deployment" below.
 Nothing is deployed and nothing has been purchased. In a full-stack build the Projects page loads
 from the Rails API and the Contact page has a form that sends to it; a static build uses local
 data and keeps the channels only. **Long-term requirement (2026-10-26):** the same codebase
@@ -685,8 +686,8 @@ approval, recorded in the spending log below. The only expected cost is the doma
 | 4.3  | Production hardening: `config.hosts`, `trusted_proxies`, security headers and CSP, IP-free request logs, database-aware `/up`                    | —                 | Done (`35beb2d`) |
 | 4.4  | Static-host readiness: `_headers`, `assets/404.html`, `build:pages` with an explicit static guard, the static E2E suite under the Pages emulator | —                 | Done (`4bdf06a`) |
 | 4.5  | Static-first architecture and documentation revision: ADR-0016, README, CLAUDE.md, the Architecture page and Fun Facts in both languages         | —                 | Done (`2db5e00`) |
-| 4.6a | Dark mode: themes (ADR-0017), accessible toggle, dark palette, persistence and system preference, every page                                     | —                 | Ready for review |
-| 4.6b | Dark mode: the approved nighttime Home artwork integrated (needs the owner's night art)                                                          | —                 | Planned          |
+| 4.6a | Dark mode: themes (ADR-0017), accessible toggle, dark palette, persistence and system preference, every page                                     | —                 | Done (`d4d324e`) |
+| 4.6b | Dark mode: the orange emphasis marks removed; the approved nighttime Home artwork integrated with a crossfade                                    | —                 | Ready for review |
 | 4.7  | Projects: add a personal finance app (work in progress, private repository), an auction house application and a team randomizer                  | —                 | Planned          |
 | 4.8  | Résumés: replace the outdated English and Portuguese PDFs                                                                                        | —                 | Planned          |
 | 4.9  | Public README review: improve it for visitors, remove unnecessary information                                                                    | —                 | Planned          |
@@ -701,12 +702,37 @@ planned; the notes below only record what is already known.
 - **4.6 Dark mode** (ADR-0017), in two parts. Step 4.6 is visually complete only after 4.6b.
   - **4.6a:** everything but the art (see the Step 4.6a entry). Until then, dark mode shows the
     unchanged day illustration behind a navy scrim.
-  - **4.6b:**
-    - the owner delivers and approves two night paintings of the same room, pixel-aligned with
-      A1/A2 (`docs/assets/ART-BRIEF.md` §9)
-    - `HomeBackdrop` picks day or night from the theme; the dark scrim is tuned
-    - the hero contrast test passes in both themes
-    - approved art is never redrawn or filtered with CSS or SVG
+  - **4.6b**, in two parts (owner's decisions D1–D5, 2026-10-28):
+    - **Part 1, done:** the three orange emphasis marks beside the mascot's
+      pointing finger are removed in both themes. The build makes exactly those three detached
+      islands of A3 transparent, guarded, and the source stays byte-identical
+      (`ART-BRIEF.md` §8; `scripts/build-illustrations.test.ts`).
+      - Only `mascotPresenting-760/380.webp` and the manifest changed.
+      - In the browser, every page differs from the previous build only inside the mascot image:
+        the marks are gone, and elsewhere the image differs by WebP re-encoding noise only
+        (mean below 3/255).
+    - **Part 2, done (ready for the owner's final review):** the owner's approved night
+      paintings (`docs/assets/source/hero-background-{desktop,mobile}-night.png`, 1692 × 930 and
+      887 × 1773).
+      - **Not pixel-aligned with the day art.** The desk edge is 20 px (desktop) and 39 px
+        (mobile) off, and the posters and window 15–25 px. Option 1 chosen 2026-10-28:
+        integrate them as they are, with a crossfade.
+      - **Pipeline:** `build-illustrations.mjs` scales them to the day derivatives' exact sizes
+        (`matches`: ≤ 0.07% scale difference between width and height, never cropped).
+        Rebuilding is byte-for-byte reproducible (tested).
+      - **`HomeBackdrop`:**
+        - one layer per theme; only the current theme's painting is requested first
+        - after a switch, the other appears once loaded and crossfades in (250 ms, instant under
+          reduced motion)
+        - the backdrop's size never depends on the image
+      - **A framing regression found in review, and fixed:** the new layer first filled the
+        backdrop, which made `object-fit: cover` crop and zoom the paintings in both themes.
+        - Each layer is now anchored at the top with its natural height, as before. The light
+          theme is pixel-identical to `d4d324e` outside the mascot image.
+        - An E2E test checks the natural aspect ratio at 375–1920 px in both themes.
+      - The dark scrim (navy at 70%) passes the hero contrast test over the night art and was
+        approved as previewed.
+      - Approved art is never redrawn or filtered with CSS or SVG.
 - **4.7 Projects:**
   - three new projects: the personal finance app (work in progress; private repository, so no
     public link unless the owner decides otherwise), the auction house application and the team

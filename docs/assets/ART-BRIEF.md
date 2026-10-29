@@ -406,38 +406,47 @@ derivatives built by `npm run illustrations -w apps/shell` (into
 To use a higher-resolution version of any asset: replace the source PNG (same file name), run
 `npm run illustrations -w apps/shell`, and commit the regenerated WebP files and manifest.
 
-## 9. Night variants (Step 4.6b; not produced yet)
+**A3's emphasis marks (Step 4.6b, owner's decision, 2026-10-28):** the three small orange strokes
+beside the pointing finger are removed **from the web derivatives only**; the approved source
+stays byte-identical.
 
-Dark mode (ADR-0017) needs a night version of the Home backdrop. The approved day art is never
-redrawn or filtered: two **new paintings of the same room and camera** are required, delivered
-into `docs/assets/source/` like A1/A2 and approved by the owner before integration.
+- **How:** they are three separate opaque islands (2,217, 1,972 and 1,799 px), at least 31 px from
+  the mascot. `build-illustrations.mjs` (`removeEmphasisMarks`) makes exactly those islands
+  transparent.
+- **Guard:** it refuses to build unless it finds exactly three small, mostly orange islands in
+  the expected place, so a changed source can never lose anything else.
+- **Unchanged:** the canvas size (the stage geometry and the fingertip ratio), every mascot
+  pixel and the favicons (head crop).
+- **Tests:** `apps/shell/scripts/build-illustrations.test.ts`.
 
-| Asset | File                                | Size                                                                   | Must match                                                                                                                                                                                         |
-| ----- | ----------------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A1N   | `hero-background-desktop-night.png` | exactly 1174 × 645 (or exactly 2348 × 1290), opaque                    | A1, **pixel-aligned**: desk edge line, window frame, bookshelf, posters, plants, chair, mug and lamp in identical positions (the mascot stands on the desk edge; the stage geometry depends on it) |
-| A2N   | `hero-background-mobile-night.png`  | exactly 433 × 829 (the derivative crops the first 18 columns, as A2's) | A2, pixel-aligned                                                                                                                                                                                  |
+## 9. Night variants (Step 4.6b; delivered, approved and integrated)
 
-**Lighting:**
+Dark mode (ADR-0017) shows a night version of the Home backdrop. The approved day art is never
+redrawn or filtered.
 
-- **Outside:** night; a deep blue sky with a few stars; the same coastal skyline with
-  **illuminated windows** and lights reflected on the water.
-- **Inside:**
-  - the desk lamp on, with a warm pool of light on the desk and wall
-  - soft, cool ambient light elsewhere: dark but never black, so the navy scrim and the hero
-    text stay legible
-  - no sun shadows
-  - the posters' text readable
-- **Style:** the same painterly style and palette family as the day art.
+| Asset | File                                | Delivered          | Notes                                                                                                                   |
+| ----- | ----------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| A1N   | `hero-background-desktop-night.png` | 1692 × 930, opaque | The office at night: lamp on, deep-blue sky, a lit waterfront. Scaled to A1's derivative sizes (1174 × 645, 800 × 440). |
+| A2N   | `hero-background-mobile-night.png`  | 887 × 1773, opaque | Matches A2 **after** its strip crop (no strip of its own). Scaled to 415 × 829.                                         |
 
-**Acceptance:**
+**Approved as delivered (owner, 2026-10-28):**
 
-- a 50% overlay over A1/A2 shows no drift
-- the hero text keeps ≥ 4.5:1 over it with the dark scrim (`e2e/tests/accessibility.spec.ts`,
-  dark)
-- the owner's approval recorded here
+- **Not pixel-aligned with A1/A2** (measured with edge maps):
+  - **Desktop:** the desk edge at row 550 vs 530 at 645 px tall, the posters and window 15–25 px
+    off.
+  - **Mobile:** the desk edge at 591 vs 630 at 829 px tall, the posters, window, chair and mug
+    reframed.
+  - No uniform zoom or shift aligns them.
+- **Decision (option 1):** integrate them as they are; the backdrop crossfades on a switch (ADR-0017).
+- **Scaling:** at most 0.07% difference between the width and height scale factors, never
+  cropped (`MAX_DISTORTION`, `matches` in `build-illustrations.mjs`).
+- **Each painting is drawn at its natural aspect ratio, anchored at the top** (the approved
+  framing), in both themes. `e2e/tests/theme.spec.ts` guards it.
+- **Contrast:** the hero text keeps ≥ 4.5:1 over the night art with the navy scrim (70%;
+  `e2e/tests/accessibility.spec.ts`).
 
-**Integration (4.6b):**
+**To replace a night painting:**
 
-- `npm run illustrations` builds `heroDesktopNight` / `heroMobileNight`.
-- `HomeBackdrop` chooses day or night from the theme. Its first render reads the attribute that
-  `theme-init.js` already set, so only the right image loads.
+1. Keep the file name and the aspect ratio.
+2. Run `npm run illustrations -w apps/shell`. The build refuses more than 0.5% distortion.
+3. Re-check the contrast and the framing in both themes.

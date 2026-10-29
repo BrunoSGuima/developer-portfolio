@@ -1,6 +1,6 @@
 # ADR-0017: Light and dark themes
 
-- **Status:** Accepted (Phase 4, Step 4.6a; the night artwork follows in Step 4.6b)
+- **Status:** Accepted (Phase 4, Step 4.6a; the night artwork integrated in Step 4.6b)
 - **Date:** 2026-10-28
 
 ## Context
@@ -54,11 +54,16 @@ The portfolio gets a dark theme. Four constraints shape it:
    - the brand's peach for links and focus
    - a cream primary button
    - the badge colours re-tinted for navy
-6. **The Home illustration:** a day and a night painting of the same room, pixel-aligned
-   (`docs/assets/ART-BRIEF.md` §9).
-   - The approved art is never redrawn or filtered with CSS. Until the night art is approved
-     (Step 4.6b), dark mode shows the day art behind the navy scrim.
-   - Step 4.6 is visually complete only with the night art.
+6. **The Home illustration** (Step 4.6b): the approved day painting in light and the approved
+   night painting of the same office in dark (`docs/assets/ART-BRIEF.md` §9).
+   - **Sizes and alignment:** the night derivatives have exactly the day sizes. The paintings
+     aren't pixel-aligned (the owner accepted them as delivered), so the backdrop crossfades
+     (250 ms, `--duration-base`; instant under reduced motion) instead of jumping.
+   - **No wrong image:** only the current theme's painting is requested at first. After a
+     switch, the other one appears once loaded, and both stay mounted.
+   - **Framing:** each painting is drawn at its natural aspect ratio, anchored at the top, which
+     is the approved framing.
+   - The approved art is never redrawn or filtered with CSS.
 
 ## Alternatives considered
 

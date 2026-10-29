@@ -9,6 +9,39 @@
   pointer-events: none;
 }
 
+/* The day and night paintings, stacked in their own layer so their z-order stays below the
+   scrim and the page fade. */
+.layers {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+}
+
+/*
+ * Each painting is drawn at its natural aspect ratio, full width and anchored at the top (the
+ * approved composition): the layer has no height of its own, so the image's height: 100% falls
+ * back to auto. Filling the backdrop instead (inset: 0) would make object-fit: cover crop and zoom
+ * it (Step 4.6b; e2e/tests/theme.spec.ts checks the aspect ratio).
+ *
+ * Crossfade on a theme switch (ADR-0017): the newly active painting fades in on top while the
+ * previous one stays fully visible beneath it, then disappears once the fade is over, so the
+ * page never shows through. Instant under reduced motion (the duration token is 0ms).
+ */
+.layer {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  display: block;
+  opacity: 0;
+  transition: opacity 0s linear var(--duration-base);
+}
+
+.layer[data-active='true'] {
+  z-index: 1;
+  opacity: 1;
+  transition: opacity var(--duration-base) var(--ease-out);
+}
+
 .image {
   display: block;
   width: 100%;

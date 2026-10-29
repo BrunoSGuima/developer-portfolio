@@ -31,6 +31,38 @@
       }
     ]
   },
+  "heroDesktopNight": {
+    "source": "hero-background-desktop-night.png",
+    "width": 1692,
+    "height": 930,
+    "files": [
+      {
+        "name": "heroDesktopNight-1174.webp",
+        "width": 1174,
+        "height": 645,
+        "bytes": 56748
+      },
+      {
+        "name": "heroDesktopNight-800.webp",
+        "width": 800,
+        "height": 440,
+        "bytes": 33214
+      }
+    ]
+  },
+  "heroMobileNight": {
+    "source": "hero-background-mobile-night.png",
+    "width": 887,
+    "height": 1773,
+    "files": [
+      {
+        "name": "heroMobileNight-415.webp",
+        "width": 415,
+        "height": 829,
+        "bytes": 31974
+      }
+    ]
+  },
   "mascotPresenting": {
     "source": "mascot-presenting.png",
     "width": 1154,
@@ -40,13 +72,13 @@
         "name": "mascotPresenting-760.webp",
         "width": 760,
         "height": 898,
-        "bytes": 67748
+        "bytes": 63458
       },
       {
         "name": "mascotPresenting-380.webp",
         "width": 380,
         "height": 449,
-        "bytes": 29438
+        "bytes": 27272
       }
     ]
   },

@@ -6,7 +6,26 @@ const KEYS = Object.keys(manifest) as IllustrationKey[];
 
 describe('illustration derivatives', () => {
   it('covers the displayed approved assets (A4 hero-props is kept as a source only)', () => {
-    expect(KEYS.sort()).toEqual(['heroDesktop', 'heroMobile', 'mascotPeeking', 'mascotPresenting']);
+    expect(KEYS.sort()).toEqual([
+      'heroDesktop',
+      'heroDesktopNight',
+      'heroMobile',
+      'heroMobileNight',
+      'mascotPeeking',
+      'mascotPresenting',
+    ]);
+  });
+
+  // ADR-0017: the night backdrops replace the day ones in the dark theme, at exactly the same
+  // sizes, so a switch never changes the image's dimensions.
+  it.each([
+    ['heroDesktop', 'heroDesktopNight'],
+    ['heroMobile', 'heroMobileNight'],
+  ] as const)('%s and %s have derivatives of exactly the same sizes', (day, night) => {
+    const sizes = (key: IllustrationKey) =>
+      manifest[key].files.map(({ width, height }) => [width, height]);
+    expect(sizes(night)).toEqual(sizes(day));
+    expect(manifest[night].source).toMatch(/-night\.png$/);
   });
 
   it.each(KEYS)('%s: every derivative resolves to a WebP URL', (key) => {

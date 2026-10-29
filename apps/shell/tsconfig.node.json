@@ -25,5 +25,10 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts", "vite.config.test.ts"]
+  "include": [
+    "vite.config.ts",
+    "vite.config.test.ts",
+    "scripts/build-illustrations.d.mts",
+    "scripts/build-illustrations.test.ts"
+  ]
 }
