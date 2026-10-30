@@ -98,7 +98,7 @@ test.describe('the static site under the Cloudflare Pages emulator', () => {
         'portfolio.pages.dev.example.com': undefined,
       };
       for (const [host, expected] of Object.entries(hosts)) {
-        for (const path of ['/', '/pt-br/about', about.resume.href.en]) {
+        for (const path of ['/', '/pt-br/about', about.resume.href.en, '/og-image.jpg']) {
           const response = await request.get(path, { headers: { host } });
           expect(response.headers()['x-robots-tag'], `${host}${path}`).toBe(expected);
         }
@@ -126,6 +126,24 @@ test.describe('the static site under the Cloudflare Pages emulator', () => {
         expect(response.headers()['content-security-policy'], href).toBeUndefined();
         expect(response.headers()['x-content-type-options'], href).toBe('nosniff');
       }
+    });
+
+    test('the social preview is in the initial HTML and its image is served', async ({
+      request,
+    }) => {
+      // Link-preview crawlers don't run JavaScript: the raw HTML must carry the card.
+      for (const path of ['/', '/pt-br/about']) {
+        const html = await (await request.get(path)).text();
+        for (const tag of ['og:title', 'og:description', 'og:url', 'og:image', 'twitter:card']) {
+          expect(html, `${path} ${tag}`).toContain(`"${tag}"`);
+        }
+      }
+      const image = await request.get('/og-image.jpg');
+
+      expect(image.status()).toBe(200);
+      expect(image.headers()['content-type']).toBe('image/jpeg');
+      expect(image.headers()['x-content-type-options']).toBe('nosniff');
+      expect((await image.body()).subarray(0, 3)).toEqual(Buffer.from([0xff, 0xd8, 0xff]));
     });
 
     test('the build is marked static (build-mode.json)', async ({ request }) => {

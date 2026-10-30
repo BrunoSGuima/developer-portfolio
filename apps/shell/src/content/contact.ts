@@ -12,9 +12,9 @@ export interface ContactChannel {
 
 export const contact = {
   lead: {
-    en: "I'm open to Full-Stack Software Engineer roles working with Ruby on Rails and React or Vue.js. The best way to reach me is by email or LinkedIn.",
+    en: "I'm open to Full Stack Software Engineer opportunities. The best way to reach me is by email or through LinkedIn.",
     'pt-BR':
-      'Estou aberto a oportunidades como Engenheiro de Software Full-Stack com Ruby on Rails e React ou Vue.js. A melhor forma de falar comigo é por e-mail ou pelo LinkedIn.',
+      'Estou aberto a oportunidades como Engenheiro de Software Full Stack. A melhor forma de entrar em contato comigo é por e-mail ou pelo LinkedIn.',
   } satisfies Localized<string>,
   channels: [
     {

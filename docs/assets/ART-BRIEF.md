@@ -450,3 +450,14 @@ redrawn or filtered.
 1. Keep the file name and the aspect ratio.
 2. Run `npm run illustrations -w apps/shell`. The build refuses more than 0.5% distortion.
 3. Re-check the contrast and the framing in both themes.
+
+## 10. Social sharing image (2026-10-30)
+
+`apps/shell/public/og-image.jpg` (1200 × 630 JPEG), the Open Graph and X preview, approved by the
+owner as rendered. It composes existing art only, nothing redrawn: the committed derivatives of
+the day office painting (`heroDesktop-1174.webp`, cover-cropped) and the presenting mascot
+(`mascotPresenting-760.webp`, without the emphasis marks, §8), with the name, "Full Stack
+Software Engineer" and the site's address in Inter (light-theme tokens) over an 82% cream veil,
+stronger than the Home scrim so the text reads at thumbnail size. Rebuild after changing the art
+or the text with `npm run og-image -w apps/shell` (`scripts/build-og-image.mjs`, rendered in
+Chromium so the site's font draws exactly), then review it visually.

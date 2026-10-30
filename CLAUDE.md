@@ -27,8 +27,8 @@ refinements), done in `91271c7`; Step 4.8, the résumés, done; Step 4.9, the pu
 detail in `docs/DEVELOPMENT.md`), done in `f5f223d`; Step 4.10, the comment review, done in `e217887`;
 Step 4.11, the Cloudflare Pages preview, done (deployed at `https://bruno-guimaraes.pages.dev`, noindex,
 and validated); Step 4.12, the final static release verification and documentation alignment, done
-(`00ae2ae`, verified live; all five CI jobs green on `9f4dbdc`); a custom domain, search indexing and social metadata
-are an optional backlog, not scheduled; the next phase (5) is only suggested, never started
+(`00ae2ae`, verified live; all five CI jobs green on `9f4dbdc`); a custom domain and search indexing
+are an optional backlog, not scheduled (the social sharing card is done, 2026-10-30); the next phase (5) is only suggested, never started
 without approval; details, prerequisites, the backlog and the spending log are in
 `docs/ROADMAP.md`). **Deployment strategy (ADR-0016, 2026-10-28, superseding ADR-0015):**
 only the **static** build is published, on Cloudflare Pages Free; the Rails API and PostgreSQL
@@ -305,6 +305,11 @@ E2E_BASE_URL=https://…` tests a deployed site (read-only, starts nothing). `_h
   `apps/shell/src/assets/illustrations/` (committed). Components read dimensions from the
   manifest. See `docs/assets/ART-BRIEF.md` §8. The only derivative-time change to approved art is
   the removal of A3's three detached orange emphasis marks (guarded; owner's decision, Step 4.6b).
+- **Social sharing card:** static Open Graph and X tags in `apps/shell/index.html` (crawlers
+  don't run JavaScript; one site-wide English card, absolute production URLs) and
+  `public/og-image.jpg`, composed from the committed art derivatives by `npm run og-image -w
+apps/shell` (owner-approved; review any rebuild visually). `src/app/socialMetadata.test.ts`
+  pins the tags and the image; change the origin there and in `index.html` together.
 - **Final mascot art:** add the new art components (same props, drawn facing right) and point
   `mascotAssets` in `mascot/assets.ts` at them; set `isPlaceholderArt = false` and update the
   Architecture "Mascot guide" wording. Nothing else changes.
@@ -384,6 +389,7 @@ Run from the repository root (after `nvm use`):
 | `npm run api:types:check`                | Fail if the generated API types are stale (CI gate)                                   |
 | `npm run illustrations -w apps/shell`    | Rebuild WebP derivatives from `docs/assets/source/`                                   |
 | `npm run favicon -w apps/shell`          | Rebuild the favicons (mascot head crop) in `public/`                                  |
+| `npm run og-image -w apps/shell`         | Rebuild the social sharing image (`public/og-image.jpg`) from the art derivatives     |
 | `npm run test:e2e`                       | Full-stack E2E: the e2e API plus the preview                                          |
 | `npm run test:e2e:static`                | Static E2E: the static build alone, no API                                            |
 | `npm run build:pages`                    | Static build prepared for Cloudflare Pages (Step 4.4)                                 |

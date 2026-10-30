@@ -791,9 +791,18 @@ spending-log entry). Findings from the original Step 4.12 plan, kept so they are
   in code), a sitemap with hreflang alternates generated from the registry, a `Sitemap:` line in
   `robots.txt`, and `<meta name="robots" content="noindex">` on the shell's 404 page (Pages' SPA
   mode answers unknown URLs with 200).
-- **Social sharing:** Open Graph tags in `index.html` and a preview image derived from the
-  approved art by the existing pipeline (never redrawn). Link previews don't run JavaScript, so
-  today they show only the static `<title>`.
+- **Social sharing: done (2026-10-30, the owner's request after v4; v4 and Phase 4 unchanged).**
+  LinkedIn couldn't build a preview: crawlers (fetched as LinkedInBot, `facebookexternalhit`,
+  Twitterbot) got the bare `index.html`, with no `og:*` tags, because `Metadata.tsx` renders
+  metadata with JavaScript. Now `index.html` carries one site-wide English card (Open Graph and
+  X: title, description, absolute `https://bruno-guimaraes.pages.dev` URLs) and
+  `public/og-image.jpg` (1200 × 630 JPEG, 77 KB): the approved day office painting and presenting
+  mascot (the committed derivatives, nothing redrawn), the name, "Full Stack Software Engineer"
+  and the address in Inter over an 82% cream veil (the owner approved the image). Built by
+  `npm run og-image -w apps/shell`; checked by `src/app/socialMetadata.test.ts` and
+  `static-host.spec.ts`. `noindex`, the CSP and the headers are unchanged; whether LinkedIn
+  honours `noindex` for previews is undocumented, so the LinkedIn Post Inspector is the final
+  check after deployment. A shared `/pt-br/…` link shows the same English card.
 
 ### Step 4.0 — Home layout shift under reduced motion
 

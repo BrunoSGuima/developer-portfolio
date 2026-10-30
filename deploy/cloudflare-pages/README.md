@@ -7,8 +7,9 @@ tested in Phase 4, Step 4.4; published in Steps 4.11–4.12 (v4, the static site
 **Deployed (Step 4.11, 2026-10-29):** the owner's Pages project `bruno-guimaraes`, at
 **https://bruno-guimaraes.pages.dev/**, built from `main` (first deployment: `ab12700`, also at
 `https://a3611000.bruno-guimaraes.pages.dev`). It's public but never indexed (`X-Robots-Tag:
-noindex`, the owner's choice). A custom domain, search indexing and social metadata are an
-optional backlog (`docs/ROADMAP.md`), not scheduled.
+noindex`, the owner's choice). A custom domain and search indexing are an optional backlog
+(`docs/ROADMAP.md`), not scheduled. Link previews: a site-wide Open Graph and X card in
+`apps/shell/index.html`, with `/og-image.jpg` (2026-10-30; same headers as every file).
 
 ## Files
 
@@ -119,4 +120,4 @@ reporting (`success_fraction` 0), not page content.
    with the site's content and docs aligned (`docs/ROADMAP.md`, Step 4.12).
 3. **Optional backlog** (`docs/ROADMAP.md`, "Optional future backlog"): a custom domain (then
    HSTS revisited, Bot Fight Mode and Email Address Obfuscation kept off for the CSP, and the
-   checks run against it), search indexing, and social sharing metadata.
+   checks run against it) and search indexing. Social sharing metadata: done (2026-10-30).
