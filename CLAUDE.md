@@ -27,7 +27,7 @@ refinements), done in `91271c7`; Step 4.8, the résumés, done; Step 4.9, the pu
 detail in `docs/DEVELOPMENT.md`), done in `f5f223d`; Step 4.10, the comment review, done in `e217887`;
 Step 4.11, the Cloudflare Pages preview, done (deployed at `https://bruno-guimaraes.pages.dev`, noindex,
 and validated); Step 4.12, the final static release verification and documentation alignment, done
-(the live sign-off follows the owner's push); a custom domain, search indexing and social metadata
+(`00ae2ae`, verified live; all five CI jobs green on `9f4dbdc`); a custom domain, search indexing and social metadata
 are an optional backlog, not scheduled; the next phase (5) is only suggested, never started
 without approval; details, prerequisites, the backlog and the spending log are in
 `docs/ROADMAP.md`). **Deployment strategy (ADR-0016, 2026-10-28, superseding ADR-0015):**

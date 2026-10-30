@@ -41,8 +41,8 @@ mascot's emphasis marks) is done (`2773f75`); Step 4.7 (the projects, with About
 refinements) is done (`91271c7`); Step 4.8 (the résumés) is done; Step 4.9 (the public README) is
 done (`f5f223d`); Step 4.10 (the comment review) is done (`e217887`); Step 4.11 (the Cloudflare Pages preview) is
 done: deployed at https://bruno-guimaraes.pages.dev (not indexed) and validated; Step 4.12 (the
-final static release verification and documentation alignment) is done locally, its live
-verification follows the owner's push; see "Phase 4 — Deployment" below. The published site is
+final static release verification and documentation alignment) is done (`00ae2ae`), verified
+live after deployment; see "Phase 4 — Deployment" below. The published site is
 the static build at https://bruno-guimaraes.pages.dev; the Rails API and PostgreSQL are never
 deployed and run locally; nothing has been purchased. A custom domain, search indexing and social
 sharing metadata are an optional backlog, not part of v4. In a full-stack build the Projects page loads
@@ -1038,8 +1038,17 @@ service previews; staff answers on feedback.render.com are marked as such.
 - **Docs:** this roadmap (Phase 4 and v4 done, the backlog), `CLAUDE.md`, the public README,
   the Pages README, ADR-0016 (a dated update), and the comments that pointed to "4.12, the
   custom domain".
-- **Final sign-off:** one remote smoke run against the live site after the owner's push deploys
-  this content (required by the owner).
+- **Final sign-off (done, 2026-10-29):** after the owner's push of `00ae2ae`, against the live
+  site:
+  - the production smoke: 14 passed, 1 skipped (the contact-form write), 0 failed
+  - the remote static suite: 278 passed, 140 skipped, 0 failed
+  - `curl`: HTTP → HTTPS, the headers, CSP and `noindex`; the Architecture page checked in both
+    languages and themes (v4 Completed, hosting Live, the agreed Live and Completed components,
+    the full stack "Not deployed")
+- **CI follow-up:** the `quality` job failed on `00ae2ae` on a timing race in an unchanged unit
+  test (`ContactPage.fullstack.test.tsx`: focus asserted before the form's effect moved it).
+  Fixed in `9f4dbdc` (the test waits for focus; no app change); all five GitHub Actions jobs
+  passed on `9f4dbdc`.
 
 ### Step 4.11 — Cloudflare Pages preview
 
