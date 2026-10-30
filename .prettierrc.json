@@ -2,5 +2,11 @@
   "singleQuote": true,
   "semi": true,
   "printWidth": 100,
-  "trailingComma": "all"
+  "trailingComma": "all",
+  "overrides": [
+    {
+      "files": "apps/shell/index.html",
+      "options": { "printWidth": 1000 }
+    }
+  ]
 }

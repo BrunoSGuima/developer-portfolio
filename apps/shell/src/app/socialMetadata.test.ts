@@ -15,7 +15,6 @@ const imagePath = fileURLToPath(new URL('../../public/og-image.jpg', import.meta
 
 /** Every value given for a `property` (Open Graph) or `name` (X) meta tag. */
 function meta(key: string): string[] {
-  // Attributes may wrap across lines (Prettier formats index.html).
   const pattern = new RegExp(`<meta\\s+(?:property|name)="${key}"\\s+content="([^"]*)"\\s*/>`, 'g');
   return [...html.matchAll(pattern)].map(([, content]) => content!);
 }
@@ -56,6 +55,16 @@ describe('social sharing metadata (index.html)', () => {
     }
   });
 
+  // LinkedIn's Post Inspector found none of the tags when long ones wrapped across lines (it fell
+  // back to <title>): every tag stays on one line (.prettierrc.json gives index.html a wide
+  // printWidth for this).
+  it('keeps every meta tag on a single line', () => {
+    const tags = html.match(/<meta\b[^>]*>/g) ?? [];
+
+    expect(tags.length).toBeGreaterThan(16);
+    for (const tag of tags) expect(tag, tag).not.toMatch(/\n/);
+  });
+
   it('adds no inline script or style (the Content Security Policy allows none)', () => {
     expect(html).not.toMatch(/<script(?![^>]*\bsrc=)[^>]*>/);
     expect(html).not.toMatch(/<style\b|\sstyle="/);
@@ -63,10 +72,12 @@ describe('social sharing metadata (index.html)', () => {
 });
 
 describe('the preview image (public/og-image.jpg)', () => {
-  it('is a 1200 × 630 JPEG, as declared, well under the platforms’ size limits', async () => {
-    const { format, width, height } = await sharp(imagePath).metadata();
+  it('is a baseline 1200 × 630 JPEG, as declared, well under the platforms’ size limits', async () => {
+    const { format, width, height, isProgressive } = await sharp(imagePath).metadata();
 
     expect({ format, width, height }).toEqual({ format: 'jpeg', width: 1200, height: 630 });
+    // Baseline (not progressive): the format every link-preview crawler reads.
+    expect(isProgressive).toBe(false);
     expect(String(width)).toBe(meta('og:image:width')[0]);
     expect(String(height)).toBe(meta('og:image:height')[0]);
     // LinkedIn allows 5 MB; a small file loads quickly in every preview.

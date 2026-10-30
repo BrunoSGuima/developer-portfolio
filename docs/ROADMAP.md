@@ -803,6 +803,13 @@ spending-log entry). Findings from the original Step 4.12 plan, kept so they are
   `static-host.spec.ts`. `noindex`, the CSP and the headers are unchanged; whether LinkedIn
   honours `noindex` for previews is undocumented, so the LinkedIn Post Inspector is the final
   check after deployment. A shared `/pt-br/…` link shows the same English card.
+  - **First Post Inspector run:** no image, no description; the title shown was the plain
+    `<title>`, so LinkedIn used none of the `og:*` tags, although they were live and identical for
+    every user agent. Prettier had wrapped the four long tags across lines, and the first of them
+    (`og:description`) follows `og:title`. Fix: every meta tag on one line (a per-file
+    `printWidth` override for `apps/shell/index.html` in `.prettierrc.json`; tests check the source
+    and the served HTML), and the image re-encoded as a baseline JPEG (visually identical, mean
+    difference 0.04/255). `noindex` unchanged; the Post Inspector re-check follows the push.
 
 ### Step 4.0 — Home layout shift under reduced motion
 

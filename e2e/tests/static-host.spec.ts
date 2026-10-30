@@ -137,6 +137,8 @@ test.describe('the static site under the Cloudflare Pages emulator', () => {
         for (const tag of ['og:title', 'og:description', 'og:url', 'og:image', 'twitter:card']) {
           expect(html, `${path} ${tag}`).toContain(`"${tag}"`);
         }
+        // Each tag on one line, as served (LinkedIn missed tags that wrapped).
+        for (const tag of html.match(/<meta\b[^>]*>/g) ?? []) expect(tag, path).not.toMatch(/\n/);
       }
       const image = await request.get('/og-image.jpg');
 

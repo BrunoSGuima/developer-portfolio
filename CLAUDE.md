@@ -309,7 +309,9 @@ E2E_BASE_URL=https://…` tests a deployed site (read-only, starts nothing). `_h
   don't run JavaScript; one site-wide English card, absolute production URLs) and
   `public/og-image.jpg`, composed from the committed art derivatives by `npm run og-image -w
 apps/shell` (owner-approved; review any rebuild visually). `src/app/socialMetadata.test.ts`
-  pins the tags and the image; change the origin there and in `index.html` together.
+  pins the tags and the image; change the origin there and in `index.html` together. Keep every
+  meta tag on one line (LinkedIn ignored wrapped ones): `.prettierrc.json` gives `index.html` a
+  wide `printWidth`, and tests reject multi-line tags. The image is a baseline JPEG.
 - **Final mascot art:** add the new art components (same props, drawn facing right) and point
   `mascotAssets` in `mascot/assets.ts` at them; set `isPlaceholderArt = false` and update the
   Architecture "Mascot guide" wording. Nothing else changes.

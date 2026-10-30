@@ -130,7 +130,17 @@ async function main() {
     await page.setContent(card, { waitUntil: 'load' });
     await page.evaluate(() => document.fonts.ready);
     const png = await page.screenshot({ type: 'png' });
-    await sharp(png).jpeg({ quality: 82, mozjpeg: true }).toFile(output);
+    // A baseline (non-progressive) JPEG, the most widely supported by link-preview crawlers:
+    // mozjpeg's settings without optimiseScans, which would force progressive scans.
+    await sharp(png)
+      .jpeg({
+        quality: 82,
+        progressive: false,
+        trellisQuantisation: true,
+        overshootDeringing: true,
+        quantisationTable: 3,
+      })
+      .toFile(output);
   } finally {
     await browser.close();
   }
