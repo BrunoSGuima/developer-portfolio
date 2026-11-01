@@ -5,7 +5,8 @@
 //      shell's Vite config from the validated VITE_APP_MODE, must say "static" (a full-stack
 //      build would call an API that the public site doesn't have).
 //   2. deploy/cloudflare-pages/_headers must follow Pages' documented syntax and limits.
-//   3. The Pages files (everything in deploy/cloudflare-pages except README.md) are copied into
+//   3. The build must not include the flagged 3D mascot proof of concept.
+//   4. The Pages files (everything in deploy/cloudflare-pages except README.md) are copied into
 //      dist. They live outside apps/shell/public so no other build or server ever serves them.
 //
 //   node scripts/prepare-pages.mjs [dist]          prepare (default dist: apps/shell/dist)
@@ -74,7 +75,10 @@ function prepare(dist) {
       `${dist} is not a shell build (no index.html or build-mode.json); run the static build first.`,
     );
   }
-  const { mode } = JSON.parse(readFileSync(marker, 'utf8'));
+  const { mode, mascot3d } = JSON.parse(readFileSync(marker, 'utf8'));
+  if (mascot3d) {
+    fail(`${dist} includes the 3D mascot proof of concept (VITE_MASCOT_3D); it is never deployed.`);
+  }
   if (mode !== 'static') {
     fail(
       `${dist} is a "${mode}" build; Cloudflare Pages serves the static build only (VITE_APP_MODE=static).`,

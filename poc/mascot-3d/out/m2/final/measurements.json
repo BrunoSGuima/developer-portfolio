@@ -1,0 +1,66 @@
+{
+  "direct load": {
+    "bottom": 68.54545454545453,
+    "top": 30.36363636363636,
+    "rise": 0,
+    "size": 48,
+    "activeTag": "BODY"
+  },
+  "mouse click": {
+    "bottom": 68.54545454545453,
+    "top": 30.36363636363636,
+    "rise": 0,
+    "size": 48,
+    "activeTag": "H1"
+  },
+  "keyboard Enter": {
+    "bottom": 68.54545454545453,
+    "top": 30.36363636363636,
+    "rise": 0,
+    "size": 48,
+    "activeTag": "H1"
+  },
+  "browser back, dark": {
+    "bottom": 68.54545454545453,
+    "top": 30.36363636363636,
+    "rise": 0,
+    "size": 48,
+    "activeTag": "H1"
+  },
+  "en-light": {
+    "restBottom": 68.54545454545453,
+    "focusBottom": 58.54545454545453,
+    "ring": {
+      "top": 59.05,
+      "width": "3px",
+      "offset": "-5px"
+    }
+  },
+  "en-dark": {
+    "restBottom": 68.54545454545453,
+    "focusBottom": 58.54545454545453,
+    "ring": {
+      "top": 59.05,
+      "width": "3px",
+      "offset": "-5px"
+    }
+  },
+  "pt-light": {
+    "restBottom": 68.54545454545453,
+    "focusBottom": 58.54545454545453,
+    "ring": {
+      "top": 59.05,
+      "width": "3px",
+      "offset": "-5px"
+    }
+  },
+  "pt-dark": {
+    "restBottom": 68.54545454545453,
+    "focusBottom": 58.54545454545453,
+    "ring": {
+      "top": 59.05,
+      "width": "3px",
+      "offset": "-5px"
+    }
+  }
+}

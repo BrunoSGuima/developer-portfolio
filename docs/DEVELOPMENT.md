@@ -126,6 +126,7 @@ runs it).
 ```bash
 npm run test:e2e         # Playwright + axe against the full stack (both languages)
 npm run test:e2e:static  # the same suite against the static build, served as Cloudflare Pages would
+npm run test:e2e:mascot3d  # the flagged 3D mascot proof of concept (its own build; not part of CI)
 
 # The deployed static site (read-only, starts nothing)
 E2E_MODE=static E2E_STATIC_SERVER=remote E2E_BASE_URL=https://bruno-guimaraes.pages.dev npm run e2e -w e2e

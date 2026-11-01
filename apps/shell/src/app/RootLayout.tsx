@@ -1,3 +1,4 @@
+import { lazy, type ReactElement, Suspense } from 'react';
 import { Outlet, ScrollRestoration, useLocation, useMatches } from 'react-router';
 import FunFact from '../components/FunFact/FunFact.tsx';
 import { LocaleContext } from '../i18n/context.ts';
@@ -18,6 +19,18 @@ import { useDocumentLang } from './useDocumentLang.ts';
 import { useRouteFocus } from './useRouteFocus.ts';
 
 const homeSection = sections.find((section) => section.path === '/');
+
+// Flagged proof of concept. The comparison must stay inline, a literal that Vite replaces at build
+// time, or a normal build keeps the chunk, `three` and the model (checked by the flagged E2E run's
+// build test). A failed chunk must not take the page down: the 2D mascot simply stays.
+const Mascot3DHost =
+  import.meta.env.VITE_MASCOT_3D === '1'
+    ? lazy(() =>
+        import('../mascot/three/Mascot3DHost.tsx').catch(() => ({
+          default: () => null as ReactElement | null,
+        })),
+      )
+    : null;
 
 /**
  * Layout route: the persistent shell around whichever section is active. The language comes
@@ -73,6 +86,11 @@ function RootLayout() {
       >
         <Outlet />
       </AppLayout>
+      {Mascot3DHost && (
+        <Suspense fallback={null}>
+          <Mascot3DHost sectionId={sectionId} locale={locale} />
+        </Suspense>
+      )}
       <ScrollRestoration />
     </LocaleContext>
   );

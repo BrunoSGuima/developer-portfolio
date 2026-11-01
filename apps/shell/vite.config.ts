@@ -25,11 +25,22 @@ export function checkAppMode(env: Record<string, string>): 'static' | 'fullstack
 }
 
 /**
+ * Whether the build includes the 3D mascot proof of concept (src/app/RootLayout.tsx). Anything but
+ * unset or "1" fails, so a typo can't silently build the wrong site.
+ */
+export function checkMascot3d(env: Record<string, string>): boolean {
+  const value = env['VITE_MASCOT_3D'];
+  if (value === undefined || value === '') return false;
+  if (value === '1') return true;
+  throw new Error(`VITE_MASCOT_3D must be "1" or unset (got "${value}").`);
+}
+
+/**
  * Records the build's mode in the build itself (`dist/build-mode.json`, Step 4.4), so deploy
  * scripts check it explicitly instead of inferring it from the bundle: the Cloudflare Pages
  * preparation (scripts/prepare-pages.mjs) accepts only a static build.
  */
-export function buildModeFile(appMode: 'static' | 'fullstack'): Plugin {
+export function buildModeFile(appMode: 'static' | 'fullstack', mascot3d = false): Plugin {
   return {
     name: 'portfolio-build-mode',
     apply: 'build',
@@ -37,7 +48,7 @@ export function buildModeFile(appMode: 'static' | 'fullstack'): Plugin {
       this.emitFile({
         type: 'asset',
         fileName: 'build-mode.json',
-        source: `${JSON.stringify({ mode: appMode })}\n`,
+        source: `${JSON.stringify(mascot3d ? { mode: appMode, mascot3d } : { mode: appMode })}\n`,
       });
     },
   };
@@ -49,15 +60,24 @@ export default defineConfig(({ mode, command }) => {
     ...loadEnv(mode, process.cwd(), 'VITE_'),
     ...process.env,
   } as Record<string, string>);
+  const mascot3d = checkMascot3d({
+    ...loadEnv(mode, process.cwd(), 'VITE_'),
+    ...process.env,
+  } as Record<string, string>);
   if (mode !== 'test') console.info(`Shell mode: ${appMode} (VITE_APP_MODE).`);
 
   return {
-    plugins: [react(), buildModeFile(appMode)],
+    plugins: [react(), buildModeFile(appMode, mascot3d)],
     // Builds get the validated mode as a literal (src/config/mode.ts), so a static build drops
     // every full-stack-only branch, including the API client. The dev server and tests keep it
     // a normal env value (tests switch it with vi.stubEnv).
     ...(command === 'build'
-      ? { define: { 'import.meta.env.VITE_APP_MODE': JSON.stringify(appMode) } }
+      ? {
+          define: {
+            'import.meta.env.VITE_APP_MODE': JSON.stringify(appMode),
+            'import.meta.env.VITE_MASCOT_3D': JSON.stringify(mascot3d ? '1' : ''),
+          },
+        }
       : {}),
     server: { proxy: apiProxy },
     preview: { proxy: apiProxy },

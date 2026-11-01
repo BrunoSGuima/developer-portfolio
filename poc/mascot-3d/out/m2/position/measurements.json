@@ -1,0 +1,50 @@
+{
+  "en light": {
+    "size": 48,
+    "restLine": 68.046875,
+    "ringLine": 51.046875,
+    "seatedBottom": 68,
+    "seatedTop": 30.5,
+    "focus": true,
+    "focusedBottom": 51,
+    "ringTop": 52.05,
+    "focusedRise": 1,
+    "links": 7
+  },
+  "en dark": {
+    "size": 48,
+    "restLine": 68.046875,
+    "ringLine": 51.046875,
+    "seatedBottom": 68,
+    "seatedTop": 30.5,
+    "focus": true,
+    "focusedBottom": 51,
+    "ringTop": 52.05,
+    "focusedRise": 1,
+    "links": 7
+  },
+  "pt light": {
+    "size": 48,
+    "restLine": 68.046875,
+    "ringLine": 51.046875,
+    "seatedBottom": 68,
+    "seatedTop": 30.5,
+    "focus": true,
+    "focusedBottom": 51,
+    "ringTop": 52.05,
+    "focusedRise": 1,
+    "links": 7
+  },
+  "pt dark": {
+    "size": 48,
+    "restLine": 68.046875,
+    "ringLine": 51.046875,
+    "seatedBottom": 68,
+    "seatedTop": 30.5,
+    "focus": true,
+    "focusedBottom": 51,
+    "ringTop": 52.05,
+    "focusedRise": 1,
+    "links": 7
+  }
+}

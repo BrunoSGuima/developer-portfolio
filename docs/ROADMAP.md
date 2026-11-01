@@ -775,6 +775,14 @@ Every approved expense (purchases, paid plans, upgrades), recorded when approved
 
 _None._ Phase 4 cost nothing: Cloudflare Pages Free, no domain.
 
+### 3D mascot proof of concept (branch `poc/mascot-3d`, not scheduled for release)
+
+A persistent 3D character on the nav and the Fun Fact card, using a temporary CC0 model. It exists only in
+builds with `VITE_MASCOT_3D=1`, is never deployed, and leaves the published site unchanged. M1
+(feasibility), M2 (the nav) and M3 (the jump to the Fun Fact and back) are done; M4 (robustness and
+acceptance) has not started and needs approval. Reports: `poc/mascot-3d/M1-REPORT.md`, `M2-REPORT.md`,
+`M3-REPORT.md`.
+
 ### Optional future backlog (not scheduled)
 
 Not part of v4; each item needs the owner's approval before it starts (and, for the domain, a

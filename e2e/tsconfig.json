@@ -27,8 +27,10 @@
   "include": [
     "playwright.config.ts",
     "playwright.smoke.config.ts",
+    "playwright.mascot3d.config.ts",
     "support",
     "tests",
+    "tests-mascot3d",
     "smoke",
     "../apps/shell/src/env.d.ts"
   ]

@@ -22,6 +22,7 @@
     "test": "npm run test --workspaces --if-present",
     "test:e2e": "npm run e2e --workspace=e2e",
     "test:e2e:static": "E2E_MODE=static npm run e2e --workspace=e2e",
+    "test:e2e:mascot3d": "npm run e2e --workspace=e2e -- --config playwright.mascot3d.config.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "content:todo": "npm run content:todo --workspace=apps/shell",

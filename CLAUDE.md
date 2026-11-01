@@ -79,6 +79,14 @@ decisions live in **`docs/ROADMAP.md`** (version-controlled source of truth; kee
 The API runs Ruby 4.0.9, Rails 8.1.4 and PostgreSQL 18.6 (ADR-0011). Do not add Python, Redis,
 Sidekiq or Vue until their phase.
 
+**3D mascot proof of concept** (branch `poc/mascot-3d`, not released; M1–M3 done, M4 not started;
+reports in `poc/mascot-3d/`): a persistent 3D character on the nav and the Fun Fact card, in
+`apps/shell/src/mascot/three/`. It exists only in builds with `VITE_MASCOT_3D=1`: the comparison in
+`RootLayout.tsx` must stay an inline literal or a normal build keeps `three` and the model (a test builds
+with the flag off and checks). `prepare-pages` refuses a flagged build: it is never deployed. The robot is
+a temporary CC0 model, not the mascot. The approved 2D mascots stay, and take over on any failure. No
+inline styles or decoders: the CSP is unchanged.
+
 ## Architecture
 
 - **Shell** (`apps/shell`, React + TypeScript + Vite): a single SPA that owns the layout, main
@@ -187,8 +195,9 @@ E2E_BASE_URL=https://…` tests a deployed site (read-only, starts nothing). `_h
 ## Conventions
 
 - TypeScript `strict` mode (plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`).
-- Minimal dependencies. The shell's runtime deps (unchanged since Phase 1): `react`, `react-dom`,
-  `react-router` (v8), and `@fontsource-variable/inter` (self-hosted font). Adding a dependency requires a stated reason.
+- Minimal dependencies. The shell's runtime deps: `react`, `react-dom`, `react-router` (v8),
+  `@fontsource-variable/inter` (self-hosted font), and on the proof-of-concept branch `three` (only in
+  flagged builds). Adding a dependency requires a stated reason.
 - Styling (ADR-0003): CSS Modules next to each component; global styles only in
   `apps/shell/src/styles/` (`reset.css`, `tokens.css`, `global.css`, plus the `.container`
   utility). Components use **purpose-named tokens only** (`--color-text`, `--color-accent`, ...),
@@ -394,6 +403,7 @@ Run from the repository root (after `nvm use`):
 | `npm run og-image -w apps/shell`         | Rebuild the social sharing image (`public/og-image.jpg`) from the art derivatives     |
 | `npm run test:e2e`                       | Full-stack E2E: the e2e API plus the preview                                          |
 | `npm run test:e2e:static`                | Static E2E: the static build alone, no API                                            |
+| `npm run test:e2e:mascot3d`              | Flagged 3D mascot E2E, in its own build, under the Pages emulator                     |
 | `npm run build:pages`                    | Static build prepared for Cloudflare Pages (Step 4.4)                                 |
 | `npm run pages:emulator:install`         | Install the Pages emulator once (the static E2E suite needs it)                       |
 | `docker build -t portfolio:local .`      | Build the production image (Step 4.2)                                                 |
