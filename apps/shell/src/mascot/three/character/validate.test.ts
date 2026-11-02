@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { spawnSync } from 'node:child_process';
 import { describe, expect, it } from 'vitest';
-import { checkModel } from '../../../../../../scripts/check-mascot-model.mjs';
+import { checkModel } from '../../../../scripts/check-mascot-model.mjs';
 import { missingFromModel } from './validate.ts';
 
 const PROFILE = { requiredClips: ['Idle', 'Walk'], requiredNodes: ['Spine'] };
@@ -68,7 +68,7 @@ describe('the model check', () => {
   });
 
   function run(file: string) {
-    return spawnSync(process.execPath, ['scripts/check-mascot-model.mjs', file], {
+    return spawnSync(process.execPath, ['apps/shell/scripts/check-mascot-model.mjs', file], {
       cwd: new URL('../../../../../../', import.meta.url).pathname,
       encoding: 'utf8',
     });

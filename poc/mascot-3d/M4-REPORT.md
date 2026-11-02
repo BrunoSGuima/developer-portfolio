@@ -151,6 +151,17 @@ makes frame 1 slow. A test was named "the first frames are not the slowest", whi
 - **`vite preview` doesn't send the site's CSP.** The Windows preview below won't show a CSP problem. The flagged suite covers
   that under the Pages emulator with the real headers.
 
+## CI
+
+**The first run, on `220e43e`, failed two required jobs.** The advisory flagged job passed 210 of 210 on its first run.
+
+- **`image`: a bug of mine in M4.** A unit test imported the model check from the root `scripts/` folder, which the image's allowlisted
+  build context excludes, and the build type-checks tests too. Local checks couldn't show it. The check now lives in
+  `apps/shell/scripts/`, with the shell's other tools, and the allowlist is unchanged.
+- **`api`: unrelated to M4.** New advisories against `rack` 3.2.7, including one rated High, published after `main`'s last run. `rack` is
+  now 3.2.8 on this branch. **`main` still has 3.2.7,** so its `api` job should fail the same way on its next run. The published static
+  site doesn't run Rails, so this doesn't affect it.
+
 ## Problems on the published site, unrelated to 3D
 
 Found while testing, and confirmed on a build with the flag off. **Not fixed**, since they're outside M4:
@@ -212,7 +223,7 @@ GPU.**
 ## Files
 
 **New:** `character/` (contract, chooser, validator, `robot/`, `fixture/`, README, tests), `watchdog.ts`,
-`scripts/build-mascot-fixture.mjs`, `scripts/check-mascot-model.mjs`, `docs/assets/MASCOT-3D-SPEC.md`,
+`scripts/build-mascot-fixture.mjs`, `apps/shell/scripts/check-mascot-model.mjs`, `docs/assets/MASCOT-3D-SPEC.md`,
 `e2e/tests-mascot3d/resilience.spec.ts`, `e2e/tests-mascot3d-browsers/`, `e2e/playwright.mascot3d-browsers.config.ts`.
 
 **Changed:** `engine.ts`, `rig.ts`, `anchors.ts`, `landing.ts`, `motion.ts`, `capabilities.ts`, `useMascotDirector.ts`,

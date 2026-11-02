@@ -23,7 +23,7 @@
     "test:e2e": "npm run e2e --workspace=e2e",
     "test:e2e:static": "E2E_MODE=static npm run e2e --workspace=e2e",
     "test:e2e:mascot3d:browsers": "npm run e2e --workspace=e2e -- --config playwright.mascot3d-browsers.config.ts",
-    "mascot:check-model": "node scripts/check-mascot-model.mjs",
+    "mascot:check-model": "node apps/shell/scripts/check-mascot-model.mjs",
     "test:e2e:mascot3d": "npm run e2e --workspace=e2e -- --config playwright.mascot3d.config.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

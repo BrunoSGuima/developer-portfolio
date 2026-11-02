@@ -1,6 +1,6 @@
 // Checks a character's GLB without a browser, before anyone tries to load it.
 //
-//   node scripts/check-mascot-model.mjs <model.glb> [--clips Idle,Walk,Run,Jump]
+//   node apps/shell/scripts/check-mascot-model.mjs <model.glb> [--clips Idle,Walk,Run,Jump]
 //
 // Rules the site's Content Security Policy forces, and missing clips, fail it. Size targets only warn:
 // they are optimization targets, and raising one needs measured performance and the owner's approval
@@ -73,7 +73,9 @@ export function checkModel({ size, gltf }, requiredClips = []) {
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const [file, ...rest] = process.argv.slice(2);
   if (!file) {
-    console.error('Usage: node scripts/check-mascot-model.mjs <model.glb> [--clips A,B]');
+    console.error(
+      'Usage: node apps/shell/scripts/check-mascot-model.mjs <model.glb> [--clips A,B]',
+    );
     process.exit(2);
   }
   const at = rest.indexOf('--clips');
