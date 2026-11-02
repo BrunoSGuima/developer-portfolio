@@ -66,7 +66,7 @@ dispose the engine and restore the 2D mascot in the right place, with no retry d
 | 6   | Renderer stays flat over 200 trips, and across width changes | **Met** for the renderer's geometries, textures and programs. JS heap was not measured       |
 | 7   | Automatic motion under 5 s; Forced Colors, zoom, print       | **Met**, with zoom and Forced Colors emulated. The 5 s comes from a unit test of the timings |
 | 8   | Firefox and WebKit results reported                          | **Met.** Both passed 6 of 6, with WebKit run through a temporary setup                       |
-| 9   | The flagged suite runs on CI                                 | **Not yet shown.** The job is written and its YAML parses, but it needs a push to run        |
+| 9   | The flagged suite runs on CI                                 | **Met:** 210 of 210 on GitHub, in both runs, with no retries needed                          |
 | 10  | Flag off: nothing 3D, suites pass                            | **Met**                                                                                      |
 
 ## Browsers
@@ -147,11 +147,13 @@ makes frame 1 slow. A test was named "the first frames are not the slowest", whi
 - **The watchdog has never run on a slow real device.** Its logic is unit-tested, and an E2E test feeds it made-up frames. Test
   builds don't feed it real ones, because software rendering would trigger it. The owner's Chrome session is the only time it has
   seen real frames.
-- **The CI job has never run on GitHub,** and its timings there are unknown. It starts as advisory (`continue-on-error`).
+- **The CI job has only two real runs so far.** It stays advisory (`continue-on-error`) until a third stable run.
 - **`vite preview` doesn't send the site's CSP.** The Windows preview below won't show a CSP problem. The flagged suite covers
   that under the Pages emulator with the real headers.
 
 ## CI
+
+**All six jobs passed on `ada5d04`** (run 41368748667), including the flagged job's 210 tests.
 
 **The first run, on `220e43e`, failed two required jobs.** The advisory flagged job passed 210 of 210 on its first run.
 
