@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import global from '../../styles/global.css?raw';
 import mascot3d from './mascot3d.css?raw';
+import { robot } from './character/robot/profile.ts';
 import {
   anchorFrom,
   feetY,
@@ -10,7 +11,6 @@ import {
   LABEL_GAP,
   NAV_RING_OUTSET,
   type NavAnchor,
-  POSE,
   ringReaches,
   TARGET_SIZE,
   tripRuns,
@@ -23,7 +23,8 @@ const LAYOUTS = [
   { name: '800 px, Portuguese', top: 56, inkTop: 69 },
 ];
 
-const anchorAt = (top: number, inkTop: number) => anchorFrom({ left: 400, width: 70, top, inkTop });
+const anchorAt = (top: number, inkTop: number) =>
+  anchorFrom({ metrics: robot.metrics, left: 400, width: 70, top, inkTop });
 
 describe('the nav focus ring constant', () => {
   it('matches the outline in global.css and the offset in mascot3d.css', () => {
@@ -41,7 +42,7 @@ describe('the default size', () => {
 });
 
 const lowestPoint = (anchor: NavAnchor, sit: number, rise: number) =>
-  feetY(anchor, sit, rise) - POSE.seatedBottom * sit * anchor.size;
+  feetY(anchor, sit, rise) - robot.metrics.seatedBottom * sit * anchor.size;
 
 describe.each(LAYOUTS)('anchorFrom, $name', ({ top, inkTop }) => {
   const anchor = anchorAt(top, inkTop);
@@ -68,7 +69,8 @@ describe.each(LAYOUTS)('anchorFrom, $name', ({ top, inkTop }) => {
   it('keeps every pose on the page, risen or not', () => {
     for (const sit of poses) {
       for (const rise of [0, 1]) {
-        const reach = POSE.standingTop + (POSE.seatedTop - POSE.standingTop) * sit;
+        const reach =
+          robot.metrics.standingTop + (robot.metrics.seatedTop - robot.metrics.standingTop) * sit;
         expect(feetY(anchor, sit, rise) - reach * anchor.size).toBeGreaterThanOrEqual(
           HEAD_MARGIN - 1e-9,
         );
@@ -85,7 +87,7 @@ describe('anchorFrom', () => {
   it('shrinks the character when a layout leaves too little room', () => {
     const anchor = anchorAt(30, 40);
     expect(anchor.size).toBeLessThan(TARGET_SIZE);
-    expect(feetY(anchor, 0, 1) - POSE.standingTop * anchor.size).toBeGreaterThanOrEqual(0);
+    expect(feetY(anchor, 0, 1) - robot.metrics.standingTop * anchor.size).toBeGreaterThanOrEqual(0);
   });
 });
 
@@ -134,7 +136,15 @@ describe('tripRuns', () => {
   // labels' widths: Projects → Architecture is the longest next-door hop.
   const ITEMS = [687, 759, 840, 943, 1047];
   const on = (activeIndex: number): NavAnchor => ({
-    ...anchorFrom({ left: 0, width: 0, top: 57, inkTop: 70, items: ITEMS, activeIndex }),
+    ...anchorFrom({
+      metrics: robot.metrics,
+      left: 0,
+      width: 0,
+      top: 57,
+      inkTop: 70,
+      items: ITEMS,
+      activeIndex,
+    }),
   });
   const NAMES = ['Home', 'About', 'Projects', 'Architecture', 'Contact'];
 
@@ -175,11 +185,11 @@ describe('tripRuns', () => {
 
 describe('gaitSpeed', () => {
   it('matches each clip so the feet do not slide', () => {
-    expect(gaitSpeed(0, 48)).toBeCloseTo(1.05 * 48);
-    expect(gaitSpeed(1, 48)).toBeCloseTo(2.4 * 48);
+    expect(gaitSpeed(0, 48, robot.metrics)).toBeCloseTo(1.05 * 48);
+    expect(gaitSpeed(1, 48, robot.metrics)).toBeCloseTo(2.4 * 48);
   });
 
   it('blends between them', () => {
-    expect(gaitSpeed(0.5, 48)).toBeCloseTo(((1.05 + 2.4) / 2) * 48);
+    expect(gaitSpeed(0.5, 48, robot.metrics)).toBeCloseTo(((1.05 + 2.4) / 2) * 48);
   });
 });

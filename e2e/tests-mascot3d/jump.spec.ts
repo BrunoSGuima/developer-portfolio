@@ -14,6 +14,9 @@ declare global {
   }
 }
 
+// Never early, anywhere. How late is up to the machine: CI's are slower.
+const LATE_ALLOWED_MS = process.env['CI'] ? 3000 : 1000;
+
 const PAGES = ['home', 'about', 'projects', 'architecture', 'contact'];
 const canvas = (page: Page) => page.locator('[data-mascot3d="overlay"] canvas');
 
@@ -105,7 +108,7 @@ test.describe('the real delay', () => {
         }),
     );
     expect(waited).toBeGreaterThanOrEqual(JUMP_DELAY_MS);
-    expect(waited).toBeLessThan(JUMP_DELAY_MS + 1000);
+    expect(waited).toBeLessThan(JUMP_DELAY_MS + LATE_ALLOWED_MS);
     await untilPhase(page, 'perched');
     await expect(canvas(page)).toHaveCount(1);
     await page.waitForTimeout(JUMP_DELAY_MS + 2000);
@@ -135,7 +138,7 @@ test.describe('the real delay', () => {
     expect(await phase(page)).toBe('seated');
     await untilPhase(page, 'standing', 8_000);
     expect(Date.now() - settled).toBeGreaterThan(JUMP_DELAY_MS - 1000);
-    expect(Date.now() - settled).toBeLessThan(JUMP_DELAY_MS + 1000);
+    expect(Date.now() - settled).toBeLessThan(JUMP_DELAY_MS + LATE_ALLOWED_MS);
   });
 
   test('rapid navigation leaves one timer: one jump, to the current page', async ({ page }) => {

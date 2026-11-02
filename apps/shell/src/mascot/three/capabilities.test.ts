@@ -1,5 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { isSoftwareRenderer } from './capabilities.ts';
+import { isLowEndDevice, isSoftwareRenderer } from './capabilities.ts';
+
+describe('isLowEndDevice', () => {
+  it.each([
+    [{ deviceMemory: 2 }, true],
+    [{ hardwareConcurrency: 2 }, true],
+    [{ deviceMemory: 8, hardwareConcurrency: 2 }, true],
+    [{ deviceMemory: 4, hardwareConcurrency: 4 }, false],
+    // Safari and Firefox report little: unknown isn't weak
+    [{}, false],
+    [{ hardwareConcurrency: 0 }, false],
+  ])('%o: %s', (hints, expected) => {
+    expect(isLowEndDevice(hints)).toBe(expected);
+  });
+});
 
 describe('isSoftwareRenderer', () => {
   it.each([

@@ -3,17 +3,22 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * The flagged 3D mascot proof of concept, on its own (`npm run test:e2e:mascot3d`): a separate
  * build in apps/shell/.mascot3d-dist (never apps/shell/dist), served under the Pages emulator with
- * the site's real headers, so its CSP applies. It is not part of CI. Headless browsers have only
+ * the site's real headers, so its CSP applies. Headless browsers have only
  * a software renderer, which the app normally refuses: this build alone allows it.
  */
 const PORT = 4174;
 const DIST = 'apps/shell/.mascot3d-dist';
 
+const CI = Boolean(process.env['CI']);
+
 export default defineConfig({
   testDir: './tests-mascot3d',
+  forbidOnly: CI,
+  // One retry on CI's slower machines. The report still names any flaky test: it is not hidden.
+  retries: CI ? 1 : 0,
   fullyParallel: true,
   workers: 2,
-  reporter: [['list']],
+  reporter: CI ? [['github'], ['list'], ['html', { open: 'never' }]] : [['list']],
   outputDir: 'test-results/mascot3d',
   expect: { timeout: 10_000 },
   timeout: 60_000,

@@ -1,5 +1,6 @@
 import { type Arc, arcVelocity, bendArc, makeArc, type Point, sampleArc } from './arc.ts';
 import { gaitSpeed } from './anchors.ts';
+import type { CharacterMetrics, JumpTimings } from './character/contract.ts';
 import type { NavPhase } from './machine.ts';
 
 /** A flight, from its anticipation to its landing dip. */
@@ -80,17 +81,19 @@ const FACING = 1.45;
 const JUMP_FACING = 0.7;
 const PERCHED_FACING = 0.35;
 
-// The Jump clip, retimed: its own flight lasts only 0.32 s, too short for a real distance.
+// The character's jump, retimed: a jump animation's own flight is too short for a real distance.
 const ANTICIPATION = 0.32;
 const LANDING = 0.32;
-const CLIP_TAKEOFF = 0.18;
-const CLIP_TOUCHDOWN = 0.5;
-const CLIP_END = 0.705;
 
 const POINT_RISE = 0.35;
 const POINT_HOLD = 1.4;
 const POINT_FALL = 0.35;
 export const POINT_SECONDS = POINT_RISE + POINT_HOLD + POINT_FALL;
+/**
+ * On the card it holds still this long after landing, pointing included. With the jump before it, the
+ * motion that starts on its own stays under 5 s, so it needs no pause control (WCAG 2.2.2).
+ */
+export const PERCHED_SECONDS = 2.4;
 
 const toward = (value: number, target: number, step: number) =>
   value < target ? Math.min(target, value + step) : Math.max(target, value - step);
@@ -100,10 +103,16 @@ const smooth = (edge0: number, edge1: number, value: number) => {
   return t * t * (3 - 2 * t);
 };
 
-/** How far the Jump clip reaches above the feet at a clip time, as a multiple of the height. */
-export function jumpTop(clip: number): number {
-  const air = smooth(0.1, 0.24, clip) * (1 - smooth(0.42, 0.56, clip));
-  return 1.003 + 0.31 * air;
+/** How far the jump reaches above the feet at a time in it, as a multiple of the height. */
+export function jumpTop(
+  clip: number,
+  { takeoff, touchdown }: JumpTimings,
+  { standingTop, jumpTop: highest }: CharacterMetrics,
+): number {
+  const air =
+    smooth(takeoff - 0.08, takeoff + 0.06, clip) *
+    (1 - smooth(touchdown - 0.08, touchdown + 0.06, clip));
+  return standingTop + (highest - standingTop) * air;
 }
 
 export interface MotionGoal {
@@ -111,6 +120,8 @@ export interface MotionGoal {
   /** Where this phase is heading on the page. */
   targetX: number;
   size: number;
+  metrics: CharacterMetrics;
+  jump: JumpTimings;
   /** Whether a focus ring wants the character above it. */
   riseTo: boolean;
   /** This trip's gait, decided once from the menu (anchors.ts). */
@@ -194,7 +205,7 @@ export function stepMotion(
 
     case 'walking':
       next.run = toward(m.run, goal.run ? 1 : 0, BLEND_RATE * dt);
-      next.x = toward(m.x, targetX, gaitSpeed(next.run, size) * dt);
+      next.x = toward(m.x, targetX, gaitSpeed(next.run, size, goal.metrics) * dt);
       next.sit = toward(m.sit, 0, SIT_RATE * dt);
       next.yaw = toward(m.yaw, facing, TURN_RATE * dt);
       next.gait = toward(m.gait, 1, BLEND_RATE * dt);
@@ -219,15 +230,16 @@ export function stepMotion(
       if (flight.wait > 0) {
         flight.wait = Math.max(0, flight.wait - dt);
         const progress = 1 - flight.wait / ANTICIPATION;
-        next.clip = flight.clipFrom + (CLIP_TAKEOFF - flight.clipFrom) * progress;
+        next.clip = flight.clipFrom + (goal.jump.takeoff - flight.clipFrom) * progress;
       } else if (flight.time < flight.arc.duration) {
         flight.time = Math.min(flight.arc.duration, flight.time + dt);
-        const from = Math.max(flight.clipFrom, CLIP_TAKEOFF);
-        next.clip = from + (CLIP_TOUCHDOWN - from) * (flight.time / flight.arc.duration);
+        const from = Math.max(flight.clipFrom, goal.jump.takeoff);
+        next.clip = from + (goal.jump.touchdown - from) * (flight.time / flight.arc.duration);
       } else {
         flight.landed += dt;
         next.clip =
-          CLIP_TOUCHDOWN + (CLIP_END - CLIP_TOUCHDOWN) * Math.min(1, flight.landed / LANDING);
+          goal.jump.touchdown +
+          (goal.jump.end - goal.jump.touchdown) * Math.min(1, flight.landed / LANDING);
         done = flight.landed >= LANDING;
       }
       const position = sampleArc(flight.arc, flight.time);

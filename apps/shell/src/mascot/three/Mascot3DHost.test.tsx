@@ -2,11 +2,13 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { setMedia } from '../../test/media.ts';
 import { canRun3D } from './capabilities.ts';
+import { robot } from './character/robot/profile.ts';
 import { createMascotEngine, type MascotEngine } from './engine.ts';
 import Mascot3DHost from './Mascot3DHost.tsx';
 import { resetFailureForTests } from './useMascotDirector.ts';
 
 const anchor = {
+  metrics: robot.metrics,
   x: 100,
   restLine: 68,
   ringLine: 58,
@@ -32,6 +34,7 @@ vi.mock('./engine.ts', () => ({ createMascotEngine: vi.fn() }));
 
 function fakeEngine() {
   return {
+    metrics: robot.metrics,
     place: vi.fn(),
     navigate: vi.fn(),
     reanchor: vi.fn(),
@@ -161,7 +164,7 @@ describe('Mascot3DHost', () => {
   it('restores the 2D mascot when the WebGL context is lost, without retrying', async () => {
     const first = await renderReady();
     const options = vi.mocked(createMascotEngine).mock.calls[0]?.[1];
-    act(() => options?.onContextLost());
+    act(() => options?.onFailure('context-lost'));
     expect(engine.dispose).toHaveBeenCalledOnce();
     expect(active()).toBeUndefined();
     first.unmount();

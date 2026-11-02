@@ -4,7 +4,6 @@ import {
   feetY,
   headSafeFeetY,
   type NavAnchor,
-  POSE,
   type RingBox,
   ringReaches,
 } from './anchors.ts';
@@ -14,20 +13,22 @@ import {
   easeSit,
   jumpTop,
   type Motion,
+  PERCHED_SECONDS,
   type MotionGoal,
   seatedMotion,
   stepMotion,
 } from './motion.ts';
+import type { CharacterMetrics, PoseIntent } from './character/contract.ts';
+import { loadCharacter } from './character/index.ts';
 import { Rig } from './rig.ts';
-
-const MODEL_URL = new URL('./assets/RobotExpressive.glb', import.meta.url).href;
+import { SlowdownWatchdog } from './watchdog.ts';
 
 /** The small moving canvas, in CSS pixels: kept in step with mascot3d.css. */
 const WIDTH = 180;
 const HEIGHT = 160;
 /** Room below the feet inside the canvas. */
 const BELOW = 30;
-/** The idle plays this long, then the character holds still and nothing renders (WCAG 2.2.2). */
+/** The idle plays this long on the nav, then it holds still and nothing renders (WCAG 2.2.2). */
 const IDLE_SECONDS = 4;
 /** A long frame (a slow machine, a tab coming back) never turns into a sudden move. */
 const MAX_STEP = 1 / 15;
@@ -39,6 +40,28 @@ export interface PixelBox {
   bottom: number;
 }
 
+export interface FrameCosts {
+  samples: number;
+  meanMs: number;
+  p50Ms: number;
+  p95Ms: number;
+  maxMs: number;
+  /** The most expensive frame's number: a low one points at start-up costs. */
+  maxFrame: number;
+  /** Mean GPU time, where the browser can report it. */
+  gpuMeanMs: number | null;
+}
+
+export interface PoseBox {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+}
+
+/** Why the 3D character gave way to the 2D one. */
+export type MascotFailure = 'frame-error' | 'context-lost' | 'slowdown';
+
 /** For the flagged E2E build and the report: never part of a normal build. */
 export interface MascotDebug {
   state: () => NavState;
@@ -46,11 +69,23 @@ export interface MascotDebug {
   /** Frames rendered since load: flat means nothing is rendering. */
   frames: () => number;
   /** JS cost of a frame (pose, skinning, draw submission), with no GPU read-back. */
-  timing: () => { samples: number; meanMs: number; maxMs: number };
+  timing: () => FrameCosts;
+  /** One line to read or paste: the renderer, frame costs and GPU time on this machine. */
+  report: () => string;
+  /** What the renderer holds: must stay flat over a long session. */
+  memory: () => { geometries: number; textures: number; programs: number };
+  /** Reaches the end of the current trip at once, for testing long sessions. */
+  settle: () => void;
+  /** Feeds the watchdog made-up frames: headless test builds don't run it on real ones. */
+  simulateFrames: (frameMs: number, count: number) => void;
+  /** Makes the next frame throw, as a bug would. */
+  breakNextFrame: () => void;
+  /** Measures a pose from rendered pixels, in multiples of the height relative to the feet. */
+  measurePose: (pose: Partial<PoseIntent>) => PoseBox | null;
   /** The character's visible pixels, in document coordinates. */
   pixelBox: () => PixelBox | null;
-  /** How far a clip reaches above the feet across its length, as multiples of the height. */
-  clipTop: (clip: 'Jump', samples: number) => number;
+  /** How far the jump reaches above the feet across its length, as multiples of the height. */
+  jumpReach: (samples: number) => number;
   size: () => number;
   anchor: () => NavAnchor | null;
   /** Moves the character's lines, for comparing positions. */
@@ -58,6 +93,8 @@ export interface MascotDebug {
 }
 
 export interface MascotEngine {
+  /** The active character's measurements, for the geometry. */
+  metrics: CharacterMetrics;
   place: (anchor: NavAnchor) => void;
   navigate: (anchor: NavAnchor) => void;
   reanchor: (anchor: NavAnchor) => void;
@@ -79,12 +116,19 @@ export async function createMascotEngine(
   host: HTMLElement,
   options: {
     reducedMotion: boolean;
-    onContextLost: () => void;
+    /** It can't go on. The caller disposes of it and restores the 2D mascot. */
+    onFailure: (reason: MascotFailure) => void;
     /** Fully settled on the active link: when the jump's delay starts. */
     onSeated: () => void;
   },
 ): Promise<MascotEngine> {
-  const rig = await Rig.load(MODEL_URL);
+  const character = await loadCharacter();
+  const poser = await character.loadPoser();
+  const rig = await Rig.load(character, poser);
+  const { metrics } = character;
+  // Slow frames in a headless test build say nothing about a visitor's machine.
+  const watchRealFrames = import.meta.env.VITE_MASCOT_3D_ALLOW_SOFTWARE !== '1';
+  const watchdog = new SlowdownWatchdog();
 
   const canvas = document.createElement('canvas');
   const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true });
@@ -95,6 +139,8 @@ export async function createMascotEngine(
 
   const camera = new OrthographicCamera(-1, 1, 1, -1, -50, 50);
   camera.position.z = 10;
+  // Compiles its shaders now, while loading, not during the first thing it does.
+  renderer.compile(rig.scene, camera);
 
   let state = initialNavState;
   let anchor: NavAnchor | null = null;
@@ -105,44 +151,86 @@ export async function createMascotEngine(
   let lastTime = 0;
   let frames = 0;
   let disposed = false;
-  let cost = { samples: 0, total: 0, max: 0 };
+  let cost = { samples: 0, total: 0, max: 0, maxFrame: 0 };
+  const recentCosts: number[] = [];
+  let failed = false;
+  let breakNext = false;
+  const gl = renderer.getContext() as WebGL2RenderingContext;
+  const gpuTimer = gl.getExtension('EXT_disjoint_timer_query_webgl2') as {
+    TIME_ELAPSED_EXT: number;
+  } | null;
+  let gpuQuery: WebGLQuery | null = null;
+  let gpuTotal = 0;
+  let gpuSamples = 0;
   let seatedNotified = false;
   /** This trip's gait: decided when the trip starts, or when navigation changes its destination. */
   let run = false;
   /** The card's centre, to face while on it. */
   let faceX = 0;
 
+  function fail(reason: MascotFailure) {
+    if (failed || disposed) return;
+    failed = true;
+    options.onFailure(reason);
+  }
+
+  /** One frame in ten, so measuring costs next to nothing. */
+  function sampleGpu(render: () => void) {
+    if (!gpuTimer || gpuQuery || frames % 10 !== 0) {
+      render();
+      return;
+    }
+    gpuQuery = gl.createQuery();
+    if (gpuQuery) gl.beginQuery(gpuTimer.TIME_ELAPSED_EXT, gpuQuery);
+    render();
+    if (gpuQuery) gl.endQuery(gpuTimer.TIME_ELAPSED_EXT);
+  }
+
+  function readGpu() {
+    if (!gpuQuery || !gl.getQueryParameter(gpuQuery, gl.QUERY_RESULT_AVAILABLE)) return;
+    gpuTotal += (gl.getQueryParameter(gpuQuery, gl.QUERY_RESULT) as number) / 1e6;
+    gpuSamples += 1;
+    gl.deleteQuery(gpuQuery);
+    gpuQuery = null;
+  }
+
   const dispatch = (event: NavEvent) => {
     state = navReducer(state, event);
     canvas.dataset['mascotState'] = state.phase;
   };
 
-  const poseFor = (m: Motion) => {
-    const sit = easeSit(m.sit);
-    const ground = 1 - m.jumpBlend;
-    const towardCard = m.side === 'L' ? 1 : -1;
-    return {
-      layers: [
-        // With reduced motion the idle never advances: time 0 is a still pose.
-        { clip: 'Idle' as const, time: reducedMotion ? 0 : m.idle, weight: ground * (1 - m.gait) },
-        { clip: 'Walking' as const, time: m.cycle, weight: ground * m.gait * (1 - m.run) },
-        { clip: 'Running' as const, time: m.cycle, weight: ground * m.gait * m.run },
-        { clip: 'Jump' as const, time: m.clip, weight: m.jumpBlend },
-      ].filter((layer) => layer.weight > 0),
-      yaw: m.yaw,
-      sit,
-      // Down and across, towards the card's content
-      point: { weight: m.point, x: 0.68 * towardCard, y: -0.62, side: m.side },
-      look: { yaw: 0, pitch: 0.22 * m.point },
-    };
-  };
+  const intentFor = (m: Motion): PoseIntent => ({
+    // With reduced motion the idle never advances: time 0 is a still pose.
+    idleTime: reducedMotion ? 0 : m.idle,
+    gait: m.gait,
+    run: m.run,
+    cycle: m.cycle,
+    jump: m.jumpBlend,
+    jumpTime: m.clip,
+    sit: easeSit(m.sit),
+    yaw: m.yaw,
+    point: m.point,
+    arm: m.side,
+  });
 
   function draw() {
-    if (!anchor) return;
+    if (!anchor || failed) return;
+    try {
+      drawFrame(anchor);
+    } catch {
+      fail('frame-error');
+    }
+  }
+
+  function drawFrame(current: NavAnchor) {
+    const anchor = current;
     const start = performance.now();
-    rig.apply(poseFor(motion));
+    readGpu();
+    poser(rig, intentFor(motion));
     // The clip's height makes the feet descend during takeoff, so the head stays on the page.
-    const reach = POSE.standingTop + (jumpTop(motion.clip) - POSE.standingTop) * motion.jumpBlend;
+    const reach =
+      metrics.standingTop +
+      (jumpTop(motion.clip, character.jump, metrics) - metrics.standingTop) * motion.jumpBlend;
     const y =
       motion.y === null
         ? feetY(anchor, easeSit(motion.sit), easeSit(motion.rise))
@@ -160,10 +248,17 @@ export async function createMascotEngine(
     camera.position.x = -(motion.x - WIDTH / 2 - left) * unit;
     camera.position.y = (y - (HEIGHT - BELOW) - top) * unit;
     camera.updateProjectionMatrix();
-    renderer.render(rig.scene, camera);
+    sampleGpu(() => renderer.render(rig.scene, camera));
     frames += 1;
     const spent = performance.now() - start;
-    cost = { samples: cost.samples + 1, total: cost.total + spent, max: Math.max(cost.max, spent) };
+    cost = {
+      samples: cost.samples + 1,
+      total: cost.total + spent,
+      max: Math.max(cost.max, spent),
+      maxFrame: spent > cost.max ? frames : cost.maxFrame,
+    };
+    recentCosts.push(spent);
+    if (recentCosts.length > 600) recentCosts.shift();
     canvas.dataset['mascotX'] = motion.x.toFixed(2);
   }
 
@@ -195,6 +290,8 @@ export async function createMascotEngine(
       phase: state.phase,
       targetX: onCard && state.landing ? state.landing.x : state.targetX,
       size: current.size,
+      metrics,
+      jump: character.jump,
       riseTo: wantsRise(),
       run,
       token: state.token,
@@ -210,7 +307,7 @@ export async function createMascotEngine(
     (seatedAtRest() ||
       (state.phase === 'perched' && motion.point === 0 && motion.jumpBlend === 0)) &&
     motion.rise === (wantsRise() ? 1 : 0) &&
-    (reducedMotion || motion.idle >= IDLE_SECONDS);
+    (reducedMotion || motion.idle >= (state.phase === 'perched' ? PERCHED_SECONDS : IDLE_SECONDS));
 
   /** Tells the director once per arrival on the nav. */
   function notifySeated() {
@@ -222,11 +319,8 @@ export async function createMascotEngine(
     }
   }
 
-  function frame(now: number) {
-    frameRequest = 0;
-    if (disposed || !anchor) return;
-    const dt = lastTime ? Math.min((now - lastTime) / 1000, MAX_STEP) : 1 / 60;
-    lastTime = now;
+  function step(current: NavAnchor, dt: number) {
+    const anchor = current;
     const { motion: next, done } = stepMotion(motion, flightGoal(anchor), dt);
     motion = next;
     if (done) {
@@ -241,13 +335,32 @@ export async function createMascotEngine(
     }
     draw();
     notifySeated();
-    if (!settled() && !document.hidden) frameRequest = requestAnimationFrame(frame);
+  }
+
+  function frame(now: number) {
+    frameRequest = 0;
+    if (disposed || failed || !anchor) return;
+    try {
+      if (breakNext) throw new Error('Broken on purpose, for the test.');
+      if (lastTime && watchRealFrames && watchdog.record(now - lastTime)) {
+        fail('slowdown');
+        return;
+      }
+      const dt = lastTime ? Math.min((now - lastTime) / 1000, MAX_STEP) : 1 / 60;
+      lastTime = now;
+      step(anchor, dt);
+    } catch {
+      fail('frame-error');
+      return;
+    }
+    if (!settled() && !document.hidden && !failed) frameRequest = requestAnimationFrame(frame);
   }
 
   /** Starts the loop if it isn't running. */
   function request() {
-    if (frameRequest || disposed || document.hidden) return;
+    if (frameRequest || disposed || failed || document.hidden) return;
     lastTime = 0;
+    watchdog.notePause();
     frameRequest = requestAnimationFrame(frame);
   }
 
@@ -263,6 +376,20 @@ export async function createMascotEngine(
     request();
   }
 
+  function timing(): FrameCosts {
+    const sorted = [...recentCosts].sort((a, b) => a - b);
+    const at = (fraction: number) => sorted[Math.floor(sorted.length * fraction)] ?? 0;
+    return {
+      samples: cost.samples,
+      meanMs: cost.samples ? cost.total / cost.samples : 0,
+      p50Ms: at(0.5),
+      p95Ms: at(0.95),
+      maxMs: cost.max,
+      maxFrame: cost.maxFrame,
+      gpuMeanMs: gpuSamples ? gpuTotal / gpuSamples : null,
+    };
+  }
+
   const onVisibility = () => {
     if (document.hidden) {
       cancelAnimationFrame(frameRequest);
@@ -275,8 +402,13 @@ export async function createMascotEngine(
 
   const onContextLost = (event: Event) => {
     event.preventDefault();
-    options.onContextLost();
+    fail('context-lost');
   };
+  // Restored from the back/forward cache: the context may not have survived the wait.
+  const onPageShow = (event: PageTransitionEvent) => {
+    if (event.persisted && gl.isContextLost()) fail('context-lost');
+  };
+  window.addEventListener('pageshow', onPageShow);
   canvas.addEventListener('webglcontextlost', onContextLost);
 
   const pixelBox = (): PixelBox | null => {
@@ -312,6 +444,7 @@ export async function createMascotEngine(
   };
 
   return {
+    metrics,
     place(next) {
       anchor = next;
       dispatch({ type: 'PLACE', x: next.x });
@@ -368,55 +501,102 @@ export async function createMascotEngine(
       cancelAnimationFrame(frameRequest);
       document.removeEventListener('visibilitychange', onVisibility);
       canvas.removeEventListener('webglcontextlost', onContextLost);
+      window.removeEventListener('pageshow', onPageShow);
+      if (gpuQuery) gl.deleteQuery(gpuQuery);
+      rig.dispose();
       renderer.dispose();
+      renderer.forceContextLoss();
       canvas.remove();
     },
     debug: {
       state: () => state,
       motion: () => motion,
       frames: () => frames,
-      timing: () => ({
-        samples: cost.samples,
-        meanMs: cost.samples ? cost.total / cost.samples : 0,
-        maxMs: cost.max,
+      timing,
+      report() {
+        const info = gl.getExtension('WEBGL_debug_renderer_info');
+        const name = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : 'unknown';
+        const t = timing();
+        const round = (value: number) => value.toFixed(2);
+        const gpu =
+          t.gpuMeanMs === null ? 'GPU time not available' : `GPU ${round(t.gpuMeanMs)} ms`;
+        return `${name} | DPR ${window.devicePixelRatio} | ${t.samples} frames | JS p50 ${round(t.p50Ms)} p95 ${round(t.p95Ms)} max ${round(t.maxMs)} ms (frame ${t.maxFrame}) | ${gpu}`;
+      },
+      memory: () => ({
+        geometries: renderer.info.memory.geometries,
+        textures: renderer.info.memory.textures,
+        programs: renderer.info.programs?.length ?? 0,
       }),
-      pixelBox,
-      clipTop(clip, samples) {
-        if (!anchor) return 0;
-        const duration = rig.clipDuration(clip);
-        let highest = 0;
-        const gl = renderer.getContext();
-        const w = gl.drawingBufferWidth;
-        const h = gl.drawingBufferHeight;
-        const pixels = new Uint8Array(w * h * 4);
-        const pxPerCss = h / HEIGHT;
-        const unit = rig.height / anchor.size;
-        for (let i = 0; i < samples; i += 1) {
-          rig.apply({ layers: [{ clip, time: (duration * i) / samples }] });
-          camera.left = -(WIDTH / 2) * unit;
-          camera.right = (WIDTH / 2) * unit;
-          camera.top = (HEIGHT - BELOW) * unit;
-          camera.bottom = -BELOW * unit;
-          camera.position.x = 0;
-          camera.position.y = 0;
-          camera.updateProjectionMatrix();
-          renderer.render(rig.scene, camera);
-          gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-          for (let row = h - 1; row >= 0; row -= 1) {
-            let found = false;
-            for (let column = 0; column < w; column += 1) {
-              if ((pixels[(row * w + column) * 4 + 3] ?? 0) > 32) {
-                found = true;
-                break;
-              }
-            }
-            if (found) {
-              highest = Math.max(highest, ((row + 1) / pxPerCss - BELOW) / anchor.size);
-              break;
-            }
+      settle() {
+        cancelAnimationFrame(frameRequest);
+        frameRequest = 0;
+        for (let i = 0; i < 5000 && anchor; i += 1) {
+          if (state.phase === 'seated' && seatedAtRest()) break;
+          if (state.phase === 'perched' && motion.point === 0 && motion.jumpBlend === 0) break;
+          step(anchor, MAX_STEP);
+        }
+      },
+      simulateFrames(frameMs, count) {
+        for (let i = 0; i < count; i += 1) {
+          if (watchdog.record(frameMs)) {
+            fail('slowdown');
+            return;
           }
         }
+      },
+      breakNextFrame() {
+        breakNext = true;
+        request();
+      },
+      measurePose(pose) {
+        if (!anchor) return null;
+        // Larger than life, for accuracy, and small enough for the highest jump to fit.
+        const size = 90;
+        const unit = rig.height / size;
+        const w = gl.drawingBufferWidth;
+        const h = gl.drawingBufferHeight;
+        const perCss = h / HEIGHT;
+        poser(rig, { ...intentFor(seatedMotion(0)), sit: 0, ...pose });
+        camera.left = -(WIDTH / 2) * unit;
+        camera.right = (WIDTH / 2) * unit;
+        camera.top = (HEIGHT - BELOW) * unit;
+        camera.bottom = -BELOW * unit;
+        camera.position.x = 0;
+        camera.position.y = 0;
+        camera.updateProjectionMatrix();
+        renderer.render(rig.scene, camera);
+        const pixels = new Uint8Array(w * h * 4);
+        gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
         draw();
+        let top = -1;
+        let bottom = h;
+        let left = w;
+        let right = -1;
+        for (let row = 0; row < h; row += 1) {
+          for (let column = 0; column < w; column += 1) {
+            if ((pixels[(row * w + column) * 4 + 3] ?? 0) <= 32) continue;
+            top = Math.max(top, row + 1);
+            bottom = Math.min(bottom, row);
+            left = Math.min(left, column);
+            right = Math.max(right, column + 1);
+          }
+        }
+        if (top < 0) return null;
+        const toHeights = (px: number) => px / perCss / size;
+        return {
+          top: toHeights(top) - BELOW / size,
+          bottom: toHeights(bottom) - BELOW / size,
+          left: toHeights(left) - WIDTH / 2 / size,
+          right: toHeights(right) - WIDTH / 2 / size,
+        };
+      },
+      pixelBox,
+      jumpReach(samples) {
+        let highest = 0;
+        for (let i = 0; i < samples; i += 1) {
+          const box = this.measurePose({ jump: 1, jumpTime: (character.jump.end * i) / samples });
+          highest = Math.max(highest, box?.top ?? 0);
+        }
         return highest;
       },
       size: () => anchor?.size ?? 0,

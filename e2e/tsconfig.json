@@ -28,9 +28,11 @@
     "playwright.config.ts",
     "playwright.smoke.config.ts",
     "playwright.mascot3d.config.ts",
+    "playwright.mascot3d-browsers.config.ts",
     "support",
     "tests",
     "tests-mascot3d",
+    "tests-mascot3d-browsers",
     "smoke",
     "../apps/shell/src/env.d.ts"
   ]

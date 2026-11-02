@@ -79,9 +79,12 @@ decisions live in **`docs/ROADMAP.md`** (version-controlled source of truth; kee
 The API runs Ruby 4.0.9, Rails 8.1.4 and PostgreSQL 18.6 (ADR-0011). Do not add Python, Redis,
 Sidekiq or Vue until their phase.
 
-**3D mascot proof of concept** (branch `poc/mascot-3d`, not released; M1–M3 done, M4 not started;
+**3D mascot proof of concept** (branch `poc/mascot-3d`, not released; M1–M4 done, M5 not started;
 reports in `poc/mascot-3d/`): a persistent 3D character on the nav and the Fun Fact card, in
-`apps/shell/src/mascot/three/`. It exists only in builds with `VITE_MASCOT_3D=1`: the comparison in
+`apps/shell/src/mascot/three/`. **What the character is** lives in its `character/` folder (see its README and
+`docs/assets/MASCOT-3D-SPEC.md`), and everything else knows it only through `character/contract.ts`:
+`boundary.test.ts` rejects a bone, clip or measurement anywhere else. Every failure (an error in a frame, a lost
+context, a failed load, sustained slowness) takes one path back to the 2D mascot. Keep the watchdog conservative. It exists only in builds with `VITE_MASCOT_3D=1`: the comparison in
 `RootLayout.tsx` must stay an inline literal or a normal build keeps `three` and the model (a test builds
 with the flag off and checks). `prepare-pages` refuses a flagged build: it is never deployed. The robot is
 a temporary CC0 model, not the mascot. The approved 2D mascots stay, and take over on any failure. No
@@ -178,8 +181,8 @@ E2E_BASE_URL=https://…` tests a deployed site (read-only, starts nothing). `_h
   (`RequestLogger`); `/up` (`HealthController`) checks PostgreSQL and never returns error
   details. The browser smoke fails on any CSP violation; `SMOKE_WRITE=1` only against a
   throwaway database.
-- **CI** (ADR-0010, `.github/workflows/ci.yml`): on pushes to `main` and pull requests, five
-  parallel jobs: `quality` (`npm ci`, format, lint, typecheck, unit tests, `content:check`,
+- **CI** (ADR-0010, `.github/workflows/ci.yml`): on pushes to `main` and `poc/**`, and on pull requests,
+  parallel jobs (on this branch, also an advisory `e2e-mascot3d`): `quality` (`npm ci`, format, lint, typecheck, unit tests, `content:check`,
   build), `e2e` (full stack since Step 3.1: PostgreSQL service and Ruby, then Playwright + axe
   against the e2e API and the shell's full-stack preview; HTML report artifact), `e2e-static`
   (the same suite against the static build, no API; since Step 3.3) and `api` (`ruby/setup-ruby` from
@@ -404,6 +407,8 @@ Run from the repository root (after `nvm use`):
 | `npm run test:e2e`                       | Full-stack E2E: the e2e API plus the preview                                          |
 | `npm run test:e2e:static`                | Static E2E: the static build alone, no API                                            |
 | `npm run test:e2e:mascot3d`              | Flagged 3D mascot E2E, in its own build, under the Pages emulator                     |
+| `npm run test:e2e:mascot3d:browsers`     | Flagged 3D mascot smoke test in Firefox and WebKit (local only)                       |
+| `npm run mascot:check-model -- <file>`   | Check a 3D character's GLB (CSP rules, clips, size targets)                           |
 | `npm run build:pages`                    | Static build prepared for Cloudflare Pages (Step 4.4)                                 |
 | `npm run pages:emulator:install`         | Install the Pages emulator once (the static E2E suite needs it)                       |
 | `docker build -t portfolio:local .`      | Build the production image (Step 4.2)                                                 |

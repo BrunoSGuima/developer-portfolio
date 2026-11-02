@@ -126,7 +126,8 @@ runs it).
 ```bash
 npm run test:e2e         # Playwright + axe against the full stack (both languages)
 npm run test:e2e:static  # the same suite against the static build, served as Cloudflare Pages would
-npm run test:e2e:mascot3d  # the flagged 3D mascot proof of concept (its own build; not part of CI)
+npm run test:e2e:mascot3d  # the flagged 3D mascot proof of concept (its own build; advisory on CI)
+npm run test:e2e:mascot3d:browsers  # its smoke test in Firefox and WebKit (local only)
 
 # The deployed static site (read-only, starts nothing)
 E2E_MODE=static E2E_STATIC_SERVER=remote E2E_BASE_URL=https://bruno-guimaraes.pages.dev npm run e2e -w e2e
@@ -155,5 +156,8 @@ request, with five jobs:
 - **`e2e-static`:** the static suite under the Cloudflare Pages emulator
 - **`api`:** the Rails API's `bin/ci` (RuboCop, audits, Brakeman, RSpec against PostgreSQL)
 - **`image`:** builds the production image and smoke-tests it
+
+The `poc/mascot-3d` branch adds a sixth, advisory job, `e2e-mascot3d`, which runs the flagged 3D mascot
+suite and doesn't block, and also runs CI on pushes to `poc/**`.
 
 CI calls the same npm scripts and `bin/ci` you run locally.

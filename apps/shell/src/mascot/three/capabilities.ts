@@ -14,11 +14,24 @@ function usableWebGL(allowSoftware: boolean): boolean {
   return allowSoftware || !isSoftwareRenderer(renderer);
 }
 
+interface DeviceHints {
+  deviceMemory?: number;
+  hardwareConcurrency?: number;
+}
+
+/** Only what browsers report: a browser that reports nothing isn't assumed to be weak. */
+export const isLowEndDevice = ({ deviceMemory, hardwareConcurrency }: DeviceHints) =>
+  (deviceMemory !== undefined && deviceMemory <= 2) ||
+  (hardwareConcurrency !== undefined && hardwareConcurrency > 0 && hardwareConcurrency <= 2);
+
 /** Whether this visit should use the 3D mascot at all; otherwise the 2D one simply stays. */
 export function canRun3D(): boolean {
   if (!window.matchMedia(DESKTOP_QUERY).matches) return false;
   const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
   if (connection?.saveData) return false;
-  // Set only by the flagged E2E build: headless browsers have nothing but a software renderer.
-  return usableWebGL(import.meta.env.VITE_MASCOT_3D_ALLOW_SOFTWARE === '1');
+  // Set only by the flagged E2E build: headless browsers have nothing but a software renderer, and
+  // CI machines have few cores.
+  const testBuild = import.meta.env.VITE_MASCOT_3D_ALLOW_SOFTWARE === '1';
+  if (!testBuild && isLowEndDevice(navigator)) return false;
+  return usableWebGL(testBuild);
 }

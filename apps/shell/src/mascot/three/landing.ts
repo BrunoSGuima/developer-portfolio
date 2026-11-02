@@ -1,3 +1,5 @@
+import type { CharacterMetrics } from './character/contract.ts';
+
 /** Where the character can stand on the Fun Fact card. All values are document pixels. */
 
 export interface Box {
@@ -22,24 +24,26 @@ export interface LandingInput {
   /** The active link's x: the nearest free spot makes the shortest jump. */
   fromX: number;
   size: number;
+  metrics: CharacterMetrics;
 }
 
-// Measured from the temporary model's pixels, as multiples of its height: half its standing width,
-// how far the pointing arm reaches, and how far it reaches above its feet.
-const HALF_WIDTH = 0.36;
-const POINT_REACH = 0.62;
-const STANDING_TOP = 1.01;
 /** Pixels kept between the character and anything else. */
 const CLEARANCE = 4;
 
 /** The free spot nearest `fromX`, or null if nothing fits and the character should stay on the nav. */
-export function resolveLanding({ card, obstacles, fromX, size }: LandingInput): CardLanding | null {
-  const min = card.left + HALF_WIDTH * size + CLEARANCE;
-  const max = card.right - HALF_WIDTH * size - CLEARANCE;
+export function resolveLanding({
+  card,
+  obstacles,
+  fromX,
+  size,
+  metrics,
+}: LandingInput): CardLanding | null {
+  const min = card.left + metrics.halfWidth * size + CLEARANCE;
+  const max = card.right - metrics.halfWidth * size - CLEARANCE;
   if (min > max) return null;
 
-  const headTop = card.top - STANDING_TOP * size - CLEARANCE;
-  const reach = POINT_REACH * size + CLEARANCE;
+  const headTop = card.top - metrics.standingTop * size - CLEARANCE;
+  const reach = metrics.pointReach * size + CLEARANCE;
   const blocked = obstacles
     .filter((box) => box.bottom > headTop && box.top < card.top)
     .map((box) => [box.left - reach, box.right + reach] as const)
@@ -98,6 +102,7 @@ function headerObstacles(doc: Document): Box[] {
 export function measureLanding(
   fromX: number,
   size: number,
+  metrics: CharacterMetrics,
   doc: Document = document,
 ): CardLanding | null {
   const card = doc.querySelector('[data-fun-fact]');
@@ -110,5 +115,6 @@ export function measureLanding(
     obstacles: [...mascots2d, ...headerObstacles(doc)],
     fromX,
     size,
+    metrics,
   });
 }

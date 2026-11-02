@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { robot } from './character/robot/profile.ts';
 import type { NavPhase } from './machine.ts';
 import {
   jumpTop,
   type Motion,
   type MotionGoal,
+  PERCHED_SECONDS,
   POINT_SECONDS,
   seatedMotion,
   stepMotion,
@@ -14,6 +16,8 @@ const goal = (phase: NavPhase, targetX = 300, riseTo = false): MotionGoal => ({
   phase,
   targetX,
   size: 48,
+  metrics: robot.metrics,
+  jump: robot.jump,
   riseTo,
   run: false,
   token: 1,
@@ -191,9 +195,9 @@ describe('the jump', () => {
   });
 
   it('reaches higher than standing in mid-air only', () => {
-    expect(jumpTop(0)).toBeCloseTo(1.003);
-    expect(jumpTop(0.33)).toBeCloseTo(1.313);
-    expect(jumpTop(0.7)).toBeCloseTo(1.003);
+    expect(jumpTop(0, robot.jump, robot.metrics)).toBeCloseTo(1.003);
+    expect(jumpTop(0.33, robot.jump, robot.metrics)).toBeCloseTo(1.313);
+    expect(jumpTop(0.7, robot.jump, robot.metrics)).toBeCloseTo(1.003);
   });
 });
 
@@ -235,5 +239,26 @@ describe('on the card', () => {
   it('follows a landing that moved, without a phase change', () => {
     const moved = { ...on('perched'), dest: { x: 950, y: 300 } };
     expect(stepMotion(landed, moved, DT).motion).toMatchObject({ x: 950, y: 300 });
+  });
+});
+
+describe('the motion that starts on its own', () => {
+  it('stays under 5 s, even on the longest flight (WCAG 2.2.2)', () => {
+    const far = { x: 3000, y: 900 };
+    let motion = seatedMotion(100);
+    let seconds = 0;
+    const until = (target: MotionGoal) => {
+      for (let i = 0; i < 2000; i += 1) {
+        const result = stepMotion(motion, target, DT);
+        motion = result.motion;
+        seconds += DT;
+        if (result.done) return;
+      }
+      throw new Error('never finished');
+    };
+    until({ ...goal('standing', far.x), goal: 'card' });
+    until({ ...goal('jumping', far.x), dest: far, goal: 'card' });
+    expect(seconds + PERCHED_SECONDS).toBeLessThan(5);
+    expect(PERCHED_SECONDS).toBeGreaterThan(POINT_SECONDS);
   });
 });

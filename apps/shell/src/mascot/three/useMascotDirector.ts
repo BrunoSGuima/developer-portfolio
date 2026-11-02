@@ -90,8 +90,8 @@ export function useMascotDirector(
     if (latest.current.reducedMotion || latest.current.sectionId === undefined) return;
     pending.current = true;
     if (focusHoldsJump() || !landingOnScreen()) return;
-    const anchor = measureNavAnchor();
-    const landing = anchor ? measureLanding(anchor.x, anchor.size) : null;
+    const anchor = measureNavAnchor(current.metrics);
+    const landing = anchor ? measureLanding(anchor.x, anchor.size, current.metrics) : null;
     if (!landing) return; // no room in this layout: a later resize may make some
     pending.current = false;
     jumped.current = true;
@@ -133,15 +133,16 @@ export function useMascotDirector(
         .then(({ createMascotEngine }) =>
           createMascotEngine(host, {
             reducedMotion: latest.current.reducedMotion,
-            onContextLost: () => {
+            onFailure: (reason) => {
               failed = true;
               stop();
+              document.documentElement.dataset['mascot3dFallback'] = reason;
             },
             onSeated: () => startDelay.current(),
           }),
         )
         .then((created) => {
-          const anchor = measureNavAnchor();
+          const anchor = measureNavAnchor(created.metrics);
           if (cancelled || !anchor) {
             created.dispose();
             return;
@@ -159,16 +160,18 @@ export function useMascotDirector(
             timerRunning: () => timer.current?.running ?? false,
             delayStartedAt: () => delayStartedAt.current,
             landing: () => {
-              const now = measureNavAnchor();
-              return now ? measureLanding(now.x, now.size) : null;
+              const now = measureNavAnchor(created.metrics);
+              return now ? measureLanding(now.x, now.size, created.metrics) : null;
             },
           };
           created.place(anchor);
           document.documentElement.dataset['mascot3d'] = 'active';
         })
         .catch(() => {
-          // A failed chunk, model or context: the 2D mascot was never hidden.
+          // A failed chunk, model or context, or a model its profile can't use: the 2D mascot was never
+          // hidden.
           failed = true;
+          document.documentElement.dataset['mascot3dFallback'] = 'load-failed';
         });
     });
 
@@ -199,7 +202,7 @@ export function useMascotDirector(
     timer.current?.cancel();
     pending.current = false;
     jumped.current = false;
-    const anchor = measureNavAnchor();
+    const anchor = measureNavAnchor(current.metrics);
     if (anchor) current.navigate(anchor);
   }, [sectionId]);
 
@@ -207,8 +210,9 @@ export function useMascotDirector(
   useEffect(() => {
     if (placedLocale.current === locale) return;
     placedLocale.current = locale;
-    const anchor = measureNavAnchor();
-    if (anchor) engine.current?.reanchor(anchor);
+    const current = engine.current;
+    const anchor = current && measureNavAnchor(current.metrics);
+    if (anchor) current?.reanchor(anchor);
   }, [locale]);
 
   // Layout changes (resize, scrollbars, fonts, the card's text): re-measure. Events only, never per
@@ -219,11 +223,12 @@ export function useMascotDirector(
     if (!header || typeof ResizeObserver === 'undefined') return;
     const remeasure = () => {
       const current = engine.current;
-      const anchor = measureNavAnchor();
+      const anchor = current && measureNavAnchor(current.metrics);
       if (!current || !anchor) return;
       current.reanchor(anchor);
       current.setFocusRing(measureFocusRing());
-      if (current.isOnCardTrip()) current.moveLanding(measureLanding(anchor.x, anchor.size));
+      if (current.isOnCardTrip())
+        current.moveLanding(measureLanding(anchor.x, anchor.size, current.metrics));
       else if (pending.current) tryJump.current();
     };
     const observer = new ResizeObserver(remeasure);
@@ -231,7 +236,12 @@ export function useMascotDirector(
     observer.observe(document.documentElement);
     if (card) observer.observe(card);
     void document.fonts?.ready.then(remeasure);
-    return () => observer.disconnect();
+    // Restored from the back/forward cache: the layout may have changed while it was away.
+    window.addEventListener('pageshow', remeasure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('pageshow', remeasure);
+    };
   }, [sectionId, locale]);
 
   // The jump waits for its landing spot to be on screen: scrolling changes how much of the card shows.

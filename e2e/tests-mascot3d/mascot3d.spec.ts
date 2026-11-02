@@ -452,7 +452,7 @@ test.describe('focus indicators and the top of the page', () => {
     page,
   }) => {
     await openReady(page, pageOf('about', 'en').path);
-    const top = await page.evaluate(() => window.__mascot3d!.clipTop('Jump', 24));
+    const top = await page.evaluate(() => window.__mascot3d!.jumpReach(24));
     // The clip really does rise above the standing height: otherwise this proves nothing.
     expect(top).toBeGreaterThan(1.1);
     const { restLine, ringLine } = await page.evaluate(() => window.__mascot3d!.anchor()!);

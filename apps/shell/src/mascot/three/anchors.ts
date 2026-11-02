@@ -1,3 +1,5 @@
+import type { CharacterMetrics } from './character/contract.ts';
+
 /**
  * Geometry of the character on the nav. All values are document pixels (the header scrolls with the
  * page, so the character is positioned in the document and never needs a scroll listener).
@@ -16,19 +18,6 @@ export const HEAD_MARGIN = 1;
  */
 export const NAV_RING_OUTSET = -2;
 
-/**
- * Measured from the rendered pixels of the temporary model, as multiples of its standing height
- * above its feet (poc/mascot-3d/M1-REPORT.md). A new model means measuring these again; the E2E
- * pixel checks fail otherwise.
- */
-export const POSE = {
-  standingTop: 1.003,
-  seatedTop: 0.69,
-  seatedBottom: -0.083,
-  /** Halfway between standing and seated, the bent limbs reach this much below the straight line. */
-  sitBulge: 0.08,
-} as const;
-
 /** Pixels between the character's lowest point and the ink of the nav labels when it rests there. */
 export const LABEL_GAP = 2;
 
@@ -41,6 +30,8 @@ export interface NavAnchor {
   ringLine: number;
   /** The character's standing height. */
   size: number;
+  /** The active character's measurements. */
+  metrics: CharacterMetrics;
   /** The centres of the nav's items, in menu order. */
   items: readonly number[];
   /** Which of them is the active link. */
@@ -57,6 +48,7 @@ interface LinkGeometry {
   top: number;
   /** Top of the nav labels' ink. */
   inkTop: number;
+  metrics: CharacterMetrics;
   /** The centres of the nav's items in menu order, and which is active, when known. */
   items?: readonly number[];
   activeIndex?: number;
@@ -67,6 +59,7 @@ export function anchorFrom({
   width,
   top,
   inkTop,
+  metrics,
   items,
   activeIndex = 0,
 }: LinkGeometry): NavAnchor {
@@ -75,8 +68,8 @@ export function anchorFrom({
   // its head.
   const size = Math.min(
     TARGET_SIZE,
-    (ringLine - HEAD_MARGIN) / POSE.standingTop,
-    (ringLine - HEAD_MARGIN) / (POSE.seatedTop - POSE.seatedBottom),
+    (ringLine - HEAD_MARGIN) / metrics.standingTop,
+    (ringLine - HEAD_MARGIN) / (metrics.seatedTop - metrics.seatedBottom),
   );
   const x = left + width / 2;
   return {
@@ -84,6 +77,7 @@ export function anchorFrom({
     restLine: inkTop - LABEL_GAP,
     ringLine,
     size,
+    metrics,
     items: items ?? [x],
     activeIndex,
     spanLeft: items?.[0] ?? x,
@@ -110,7 +104,10 @@ function labelInkTop(link: Element, doc: Document): number {
 }
 
 /** The active nav link in document coordinates; null when there is none, or it isn't displayed. */
-export function measureNavAnchor(doc: Document = document): NavAnchor | null {
+export function measureNavAnchor(
+  metrics: CharacterMetrics,
+  doc: Document = document,
+): NavAnchor | null {
   // Data attributes, not labels: the accessible names are translated.
   // Only the menu's own items: its panel can also hold the language switcher.
   const links = [...doc.querySelectorAll('[data-nav="main"] ul > li > a')].filter(
@@ -122,6 +119,7 @@ export function measureNavAnchor(doc: Document = document): NavAnchor | null {
   const scrollX = doc.defaultView?.scrollX ?? 0;
   const scrollY = doc.defaultView?.scrollY ?? 0;
   return anchorFrom({
+    metrics,
     left: box.left + scrollX,
     width: box.width,
     top: box.top + scrollY,
@@ -158,15 +156,14 @@ export function measureFocusRing(doc: Document = document): RingBox | null {
   };
 }
 
-// Half the character's measured width, plus the distance it covers while it rises, so a moving
-// character is already above a ring when it gets there.
-const HALF_WIDTH = 0.36;
+// Added to half the character's width: the distance it covers while it rises, so a moving character
+// is already above a ring when it gets there.
 const RISE_LEAD = 0.4;
 
 /** Whether the character at `x` would touch this ring if it stayed on its rest line. */
 export function ringReaches(ring: RingBox | null, x: number, anchor: NavAnchor): boolean {
   if (!ring || ring.top >= anchor.restLine) return false;
-  const reach = (HALF_WIDTH + RISE_LEAD) * anchor.size;
+  const reach = (anchor.metrics.halfWidth + RISE_LEAD) * anchor.size;
   return x + reach > ring.left && x - reach < ring.right;
 }
 
@@ -187,10 +184,11 @@ export function headSafeFeetY(feetY: number, poseTop: number, size: number): num
  * by as much.
  */
 export function feetY(anchor: NavAnchor, sit: number, rise = 0): number {
+  const { standingTop, seatedTop, seatedBottom, sitBulge } = anchor.metrics;
   const line = anchor.restLine + (anchor.ringLine - anchor.restLine) * rise;
-  const seatedPlane = line + POSE.seatedBottom * anchor.size;
-  const bulge = POSE.sitBulge * anchor.size * 4 * sit * (1 - sit);
-  const top = POSE.standingTop + (POSE.seatedTop - POSE.standingTop) * sit;
+  const seatedPlane = line + seatedBottom * anchor.size;
+  const bulge = sitBulge * anchor.size * 4 * sit * (1 - sit);
+  const top = standingTop + (seatedTop - standingTop) * sit;
   return headSafeFeetY(line + (seatedPlane - line) * sit - bulge, top, anchor.size);
 }
 
@@ -207,10 +205,6 @@ export function tripRuns(fromX: number, { items, activeIndex }: NavAnchor): bool
   return Math.abs(activeIndex - nearest) > 1;
 }
 
-// In character heights per second: what each clip covers without its feet sliding.
-const WALK_SPEED = 1.05;
-const RUN_SPEED = 2.4;
-
 /** Document pixels per second. `run` blends, so a change of gait mid-trip never jerks. */
-export const gaitSpeed = (run: number, size: number) =>
-  (WALK_SPEED + (RUN_SPEED - WALK_SPEED) * run) * size;
+export const gaitSpeed = (run: number, size: number, { walkSpeed, runSpeed }: CharacterMetrics) =>
+  (walkSpeed + (runSpeed - walkSpeed) * run) * size;

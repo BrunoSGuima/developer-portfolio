@@ -779,9 +779,15 @@ _None._ Phase 4 cost nothing: Cloudflare Pages Free, no domain.
 
 A persistent 3D character on the nav and the Fun Fact card, using a temporary CC0 model. It exists only in
 builds with `VITE_MASCOT_3D=1`, is never deployed, and leaves the published site unchanged. M1
-(feasibility), M2 (the nav) and M3 (the jump to the Fun Fact and back) are done; M4 (robustness and
-acceptance) has not started and needs approval. Reports: `poc/mascot-3d/M1-REPORT.md`, `M2-REPORT.md`,
-`M3-REPORT.md`.
+(feasibility), M2 (the nav), M3 (the jump to the Fun Fact and back) and M4 (robustness, and readiness for the custom
+character) are done; M5 (the production decision) has not started and needs approval. The custom character's brief is
+`docs/assets/MASCOT-3D-SPEC.md`. Reports: `poc/mascot-3d/M1-REPORT.md` to `M4-REPORT.md`.
+
+Found in M4, on the published site, with or without the 3D mascot, and not fixed there:
+
+- The 2D nav mascot can start about 17 px off-centre on a page's first load, until the next navigation or resize.
+- Very rapid navigation reports `Transition was skipped` as uncaught errors, from View Transitions.
+- In Forced Colors mode, axe reports one contrast finding on the active language button.
 
 ### Optional future backlog (not scheduled)
 

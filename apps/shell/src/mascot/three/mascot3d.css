@@ -44,3 +44,14 @@ html[data-mascot3d='active'] [data-nav='main'] a:focus-visible {
 html[data-mascot3d='active'] [data-mascot='header'] {
   visibility: hidden;
 }
+
+/* On paper the 2D nav mascot stands in: a canvas prints poorly, at a place that means nothing there. */
+@media print {
+  .mascot3d {
+    display: none;
+  }
+
+  html[data-mascot3d='active'] [data-mascot='header'] {
+    visibility: visible;
+  }
+}
