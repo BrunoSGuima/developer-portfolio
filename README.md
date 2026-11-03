@@ -7,7 +7,7 @@ Rails, React, TypeScript). It's both a showcase and an engineering project: a Re
 TypeScript site built as a persistent shell, a tested Ruby on Rails API with PostgreSQL behind it,
 and a **Fun Fact** on every page that tells you which technology is really running there.
 
-> **Live:** [bruno-guimaraes.pages.dev](https://brunosguimaraes.com), the static build on
+> **Live:** [brunosguimaraes.com](https://brunosguimaraes.com), the static build on
 > Cloudflare Pages ([ADR-0016](./docs/adr/0016-static-first-deployment.md)). The Rails API and
 > PostgreSQL run locally and aren't deployed. Still evolving; see the
 > [roadmap](./docs/ROADMAP.md).
