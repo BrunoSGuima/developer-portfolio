@@ -25,6 +25,13 @@
   color: var(--color-text-muted);
 }
 
+/* When the card is taller than its content (a row's taller neighbour), the free space goes
+   above the tags, so the title, status and description stay at the top and the tags (and the
+   links after them) sit at the bottom. */
+.badges {
+  margin-block-start: auto;
+}
+
 .badges,
 .links {
   display: flex;

@@ -5,6 +5,12 @@
   --grid-max: 32rem; /* a single project never stretches across a wide column */
 }
 
+/* Each item already stretches to its row's tallest card; the card fills it, so cards in a row
+   share one height (ProjectCard pushes its tags and links to the bottom). */
+.cards > li {
+  display: grid;
+}
+
 /* The list's place on the page: the same spacing whatever it shows (cards or a state). It takes
    focus programmatically when Retry replaces the error message. */
 .region {

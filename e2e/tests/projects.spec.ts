@@ -58,6 +58,43 @@ test.describe(`the Projects page (${e2eMode} build)`, () => {
       );
       expect(overflow).toBeLessThanOrEqual(0);
     });
+
+    // Cards in one grid row share the tallest one's height (never a page-wide height), with the
+    // title and description at the top and the tags and links at the bottom.
+    test(`gives cards in a row one height, tags at the bottom, at ${path}`, async ({ page }) => {
+      await page.goto(path);
+      await expect(page.getByRole('article')).toHaveCount(staticProjects.length);
+
+      const cards = await page.getByRole('article').evaluateAll((articles) =>
+        articles.map((article) => {
+          const box = article.getBoundingClientRect();
+          const style = getComputedStyle(article);
+          const last = article.lastElementChild!.getBoundingClientRect();
+          const description = article.querySelector(':scope > p:not([class])')!;
+          const above = description.previousElementSibling!.getBoundingClientRect();
+          return {
+            top: Math.round(box.top),
+            height: box.height,
+            bottomGap: box.bottom - parseFloat(style.paddingBlockEnd) - last.bottom,
+            // The free space never goes above the description: it follows its header by the
+            // card's ordinary gap.
+            descriptionGap:
+              description.getBoundingClientRect().top - above.bottom - parseFloat(style.rowGap),
+          };
+        }),
+      );
+
+      const rows = new Map<number, typeof cards>();
+      for (const card of cards) rows.set(card.top, [...(rows.get(card.top) ?? []), card]);
+      for (const row of rows.values()) {
+        const tallest = Math.max(...row.map((card) => card.height));
+        for (const card of row) expect(card.height).toBeCloseTo(tallest, 0);
+      }
+      for (const card of cards) {
+        expect(card.bottomGap).toBeCloseTo(0, 0);
+        expect(card.descriptionGap).toBeCloseTo(0, 0);
+      }
+    });
   }
 });
 
