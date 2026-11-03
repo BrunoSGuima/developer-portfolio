@@ -2,7 +2,8 @@
 
 The portfolio's public home (ADR-0016): the **static** build (`VITE_APP_MODE=static`, local data,
 no backend) on Cloudflare Pages Free. The full stack isn't deployed; it runs locally. Prepared and
-tested in Phase 4, Step 4.4; published in Steps 4.11–4.12 (v4, the static site release).
+tested in Phase 4, Step 4.4; published in Steps 4.11–4.12 (v4, the static site release). The Pages
+build includes the 3D mascot ([ADR-0018](../../docs/adr/0018-publishing-the-3d-mascot.md)); no other build does.
 
 **Deployed (Step 4.11, 2026-10-29):** the owner's Pages project `bruno-guimaraes`, at
 **https://bruno-guimaraes.pages.dev/**, built from `main` (first deployment: `ab12700`, also at
@@ -21,7 +22,7 @@ noindex`, the owner's choice). A custom domain and search indexing are an option
 They live here, not in `apps/shell/public/`, so the production image and `vite preview` never
 serve them. `npm run build:pages` builds the static site and copies them into `apps/shell/dist`
 (`scripts/prepare-pages.mjs`, which also refuses any build whose `build-mode.json` isn't
-`static` and validates `_headers`).
+`static`, refuses the 3D mascot's test build, and validates `_headers`).
 
 ## Pages project settings (Step 4.11; the owner's project, as configured)
 
@@ -43,7 +44,11 @@ clean clone (Step 4.11).
 | Leave off              | Web Analytics (its injected script would break the CSP), the Access policy, Functions, bindings, custom domains (backlog), paid plans |
 
 No secrets, no API, no database. A successful build log ends with
-`prepare-pages: … is a static build, ready for Cloudflare Pages.`
+`prepare-pages: … is a static build with the 3D mascot, ready for Cloudflare Pages.`
+
+**The 3D mascot needs no change to these settings** (ADR-0018): `build:pages` sets `VITE_MASCOT_3D=1` itself. Don't
+set `VITE_MASCOT_3D_ALLOW_SOFTWARE` here: `prepare-pages` fails the build if it's set. **A merge to `main` deploys**, with
+no preview and no wait for CI.
 
 **Confirmed by the owner (Step 4.11, 2026-10-29):**
 
@@ -111,6 +116,15 @@ anyone can fetch anyway; `Cross-Origin-Resource-Policy: same-origin` still appli
 parity rule covers the headers this project sets. Removing it (`! Access-Control-Allow-Origin`)
 would be a new decision with a parity note. `report-to` / `nel` are Cloudflare's network-error
 reporting (`success_fraction` 0), not page content.
+
+## After deploying the 3D mascot
+
+The remote suite above also runs `production-3d.spec.ts`, which makes the browser report a GPU, so it covers the 3D path on the deployed site as well as the 2D fallback. Its renderer is still software, so also check in a real browser:
+
+1. On a desktop browser with a GPU, `document.documentElement.dataset.mascot3d` is `active`, he walks and jumps, and the console has no CSP errors.
+2. `/assets/*.glb` and `/assets/*.webp` return 200 with the immutable cache and `X-Content-Type-Options: nosniff`.
+3. About and Architecture show their mascot facts on desktop and the originals on a phone, which downloads no engine or model.
+4. If anything is wrong, roll back to the previous deployment in the Pages dashboard.
 
 ## Status
 

@@ -94,8 +94,10 @@ One workflow, `.github/workflows/ci.yml`, on `push` to `main` and on `pull_reque
 - Validated before the first push: `actionlint` + `shellcheck` on the workflow, and both jobs
   rehearsed in a clean copy of the repository with `CI=true`.
 
-## Update: the 3D mascot proof of concept
+## Update: the 3D mascot
 
 A sixth job, `e2e-mascot3d`, runs the flagged 3D mascot's browser suite. It also runs on `poc/**` branches, which have no pull
 request yet. It starts as advisory (`continue-on-error`) until real runs show it is stable on CI's machines. Its unit tests
 already run, and block, in `quality`. Firefox and WebKit run locally only.
+
+The mascot is now prepared for the public site (ADR-0018): `e2e-static` runs on the published build, including `production-3d.spec.ts`, and blocks. `e2e-mascot3d` tests the mascot's own test build and stays advisory until a third stable run.

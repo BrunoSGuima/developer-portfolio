@@ -21,6 +21,7 @@ import {
 import type { CharacterMetrics, PoseIntent } from './character/contract.ts';
 import { loadCharacter } from './character/index.ts';
 import { Rig } from './rig.ts';
+import { currentTheme, subscribeTheme } from '../../theme/theme.ts';
 import { SlowdownWatchdog } from './watchdog.ts';
 
 /** The small moving canvas, in CSS pixels: kept in step with mascot3d.css. */
@@ -80,6 +81,8 @@ export interface MascotDebug {
   simulateFrames: (frameMs: number, count: number) => void;
   /** Makes the next frame throw, as a bug would. */
   breakNextFrame: () => void;
+  /** Whether its outline is showing: only a character with one, in the light theme. */
+  outlineVisible: () => boolean;
   /** Measures a pose from rendered pixels, in multiples of the height relative to the feet. */
   measurePose: (pose: Partial<PoseIntent>) => PoseBox | null;
   /** The character's visible pixels, in document coordinates. */
@@ -126,6 +129,7 @@ export async function createMascotEngine(
   const poser = await character.loadPoser();
   const rig = await Rig.load(character, poser);
   const { metrics } = character;
+  const drawScale = character.look?.scale ?? 1;
   // Slow frames in a headless test build say nothing about a visitor's machine.
   const watchRealFrames = import.meta.env.VITE_MASCOT_3D_ALLOW_SOFTWARE !== '1';
   const watchdog = new SlowdownWatchdog();
@@ -141,6 +145,8 @@ export async function createMascotEngine(
   camera.position.z = 10;
   // Compiles its shaders now, while loading, not during the first thing it does.
   renderer.compile(rig.scene, camera);
+  if (character.look?.darkHalo) canvas.dataset['mascotHalo'] = '';
+  rig.setOutlineVisible(currentTheme() === 'light');
 
   let state = initialNavState;
   let anchor: NavAnchor | null = null;
@@ -222,6 +228,12 @@ export async function createMascotEngine(
     }
   }
 
+  // It may be at rest, with nothing rendering: the new look has to reach the screen.
+  const stopFollowingTheme = subscribeTheme(() => {
+    rig.setOutlineVisible(currentTheme() === 'light');
+    draw();
+  });
+
   function drawFrame(current: NavAnchor) {
     const anchor = current;
     const start = performance.now();
@@ -240,7 +252,7 @@ export async function createMascotEngine(
     const left = Math.floor(motion.x - WIDTH / 2);
     const top = Math.floor(y - (HEIGHT - BELOW));
     canvas.style.transform = `translate3d(${left}px, ${top}px, 0)`;
-    const unit = rig.height / anchor.size;
+    const unit = rig.height / (anchor.size * drawScale);
     camera.left = -(WIDTH / 2) * unit;
     camera.right = (WIDTH / 2) * unit;
     camera.top = (HEIGHT - BELOW) * unit;
@@ -502,6 +514,7 @@ export async function createMascotEngine(
       document.removeEventListener('visibilitychange', onVisibility);
       canvas.removeEventListener('webglcontextlost', onContextLost);
       window.removeEventListener('pageshow', onPageShow);
+      stopFollowingTheme();
       if (gpuQuery) gl.deleteQuery(gpuQuery);
       rig.dispose();
       renderer.dispose();
@@ -548,11 +561,12 @@ export async function createMascotEngine(
         breakNext = true;
         request();
       },
+      outlineVisible: () => rig.outlineVisible,
       measurePose(pose) {
         if (!anchor) return null;
         // Larger than life, for accuracy, and small enough for the highest jump to fit.
         const size = 90;
-        const unit = rig.height / size;
+        const unit = rig.height / (size * drawScale);
         const w = gl.drawingBufferWidth;
         const h = gl.drawingBufferHeight;
         const perCss = h / HEIGHT;

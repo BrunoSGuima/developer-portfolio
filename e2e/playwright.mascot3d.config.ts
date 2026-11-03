@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * The flagged 3D mascot proof of concept, on its own (`npm run test:e2e:mascot3d`): a separate
+ * The 3D mascot's test build, on its own (`npm run test:e2e:mascot3d`): a separate
  * build in apps/shell/.mascot3d-dist (never apps/shell/dist), served under the Pages emulator with
  * the site's real headers, so its CSP applies. Headless browsers have only
  * a software renderer, which the app normally refuses: this build alone allows it.

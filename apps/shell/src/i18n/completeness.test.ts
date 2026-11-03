@@ -18,6 +18,7 @@ const SAME_IN_BOTH = new Set([
   'GitHub',
   'TypeScript',
   'Python FastAPI',
+  'Easy TV App',
 ]);
 
 /** Every string leaf of a dictionary, with its dotted key. */

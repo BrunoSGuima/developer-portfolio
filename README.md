@@ -26,8 +26,9 @@ and a **Fun Fact** on every page that tells you which technology is really runni
   night version.
 - **A Fun Fact on every page** describing the real stack behind it, and an **Architecture** page
   that separates what's built from what's planned.
-- **An illustrated Home and a mascot** that walks along the navigation (purely decorative; it
-  doesn't animate when you prefer reduced motion).
+- **An illustrated Home and a 3D mascot** that walks along the navigation on desktop and jumps onto
+  the Fun Fact card. It's purely decorative and doesn't animate when you prefer reduced motion. Phones
+  and browsers that can't run 3D get the 2D mascots.
 - **Accessibility built in:** semantic landmarks, keyboard navigation, visible focus, reduced
   motion and high-contrast support, aiming at WCAG 2.2 AA (automated axe checks in CI).
 
@@ -38,6 +39,10 @@ and a **Fun Fact** on every page that tells you which technology is really runni
 - **A React shell** (React 19, TypeScript, Vite, React Router): one app that owns the layout,
   navigation, routing, page transitions, the Fun Fact and the mascot, and stays mounted while
   pages change.
+- **A 3D mascot** drawn with **Three.js** and WebGL, under the site's strict Content Security Policy.
+  The character was generated with Tripo AI from the 2D art, then refined and rigged in Blender and
+  animated with custom scripts. The engine and model load only where 3D can run, and any failure
+  returns to the 2D mascots ([ADR-0018](./docs/adr/0018-publishing-the-3d-mascot.md)).
 - **A section registry:** one list that defines every page, its route, its Fun Fact and its
   technologies.
 - **A microfrontend host:** the shell can mount independently built apps through a small
@@ -67,6 +72,7 @@ and a **Fun Fact** on every page that tells you which technology is really runni
 | Area            | Technologies                                                                   |
 | --------------- | ------------------------------------------------------------------------------ |
 | Frontend        | React 19, TypeScript, Vite, React Router, CSS Modules with design tokens       |
+| 3D mascot       | Three.js, WebGL, glTF; modelled with Tripo AI and Blender                      |
 | Backend (local) | Ruby 4.0, Ruby on Rails 8.1 (API-only), PostgreSQL 18, OpenAPI 3.0             |
 | Testing         | Vitest, React Testing Library, Playwright with axe-core, RSpec, FactoryBot     |
 | Quality and CI  | ESLint, Prettier, RuboCop, Brakeman, bundler-audit, GitHub Actions             |
@@ -74,7 +80,7 @@ and a **Fun Fact** on every page that tells you which technology is really runni
 
 ## Quality
 
-Every push and pull request runs five CI jobs:
+Every push and pull request runs five CI jobs, plus an advisory browser suite for the 3D mascot:
 
 - formatting, lint, types and unit tests
 - the end-to-end suite with automated accessibility checks, in both languages and both themes,

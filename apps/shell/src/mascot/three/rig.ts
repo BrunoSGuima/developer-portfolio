@@ -20,6 +20,7 @@ import {
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { CharacterProfile, Poser } from './character/contract.ts';
 import { missingFromModel } from './character/validate.ts';
+import { applyLook, loadLookTexture } from './look.ts';
 
 export interface ClipLayer {
   clip: string;
@@ -44,6 +45,7 @@ export class Rig {
     scale: Vector3;
   }[] = [];
   private feetOffset = 0;
+  private outlines: Object3D[] = [];
 
   /** Loads a character. Rejects if its model lacks what its profile requires: the caller stays on 2D. */
   static async load(profile: CharacterProfile, poser: Poser): Promise<Rig> {
@@ -53,7 +55,8 @@ export class Rig {
     gltf.scene.traverse((node) => nodeNames.push(node.name));
     const missing = missingFromModel(profile, { clipNames, nodeNames });
     if (missing.length > 0) throw new Error(`Character model lacks ${missing.join(', ')}`);
-    return new Rig(gltf.scene, gltf.animations, profile, poser);
+    const texture = profile.look ? await loadLookTexture(profile.look.texture) : null;
+    return new Rig(gltf.scene, gltf.animations, profile, poser, texture);
   }
 
   private constructor(
@@ -61,6 +64,7 @@ export class Rig {
     clips: readonly AnimationClip[],
     profile: CharacterProfile,
     poser: Poser,
+    texture: Texture | null,
   ) {
     this.model = model;
     this.root = new Object3D();
@@ -107,6 +111,10 @@ export class Rig {
     this.height = box.max.y - box.min.y;
     this.feetOffset = -box.min.y;
 
+    if (profile.look && texture) {
+      this.outlines = applyLook(model, profile.look, texture, this.height);
+      return;
+    }
     this.scene.add(new AmbientLight(0xffffff, 0.75));
     this.scene.add(new HemisphereLight(0xfff0e0, 0x8f6e58, 0.8));
     const key = new DirectionalLight(0xffe7cc, 2.6);
@@ -122,16 +130,25 @@ export class Rig {
     return this.nodes.get(name);
   }
 
+  get outlineVisible() {
+    return this.outlines.some((outline) => outline.visible);
+  }
+
+  /** An outline belongs to the light theme, if the character has one. */
+  setOutlineVisible(visible: boolean) {
+    for (const outline of this.outlines) outline.visible = visible;
+  }
+
   /** Back to rest, then the clips. A clip only writes the nodes it animates. */
   applyClips(layers: readonly ClipLayer[], yaw: number) {
+    // Stopped first: the mixer only writes a value that changed since its last apply, and a held pose
+    // doesn't change, so it would stay at the rest values set below. Re-activated actions compare
+    // against rest instead.
+    this.mixer.stopAllAction();
     for (const { node, position, quaternion, scale } of this.rest) {
       node.position.copy(position);
       node.quaternion.copy(quaternion);
       node.scale.copy(scale);
-    }
-    for (const action of this.actions.values()) {
-      action.enabled = false;
-      action.setEffectiveWeight(0);
     }
     for (const layer of layers) {
       const action = this.actions.get(layer.clip);

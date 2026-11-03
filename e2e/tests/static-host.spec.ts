@@ -148,8 +148,13 @@ test.describe('the static site under the Cloudflare Pages emulator', () => {
       expect((await image.body()).subarray(0, 3)).toEqual(Buffer.from([0xff, 0xd8, 0xff]));
     });
 
-    test('the build is marked static (build-mode.json)', async ({ request }) => {
-      expect(await (await request.get('/build-mode.json')).json()).toEqual({ mode: 'static' });
+    test('the build is marked static, with the mascot and not its test build', async ({
+      request,
+    }) => {
+      expect(await (await request.get('/build-mode.json')).json()).toEqual({
+        mode: 'static',
+        mascot3d: true,
+      });
     });
   });
 

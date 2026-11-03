@@ -22,6 +22,11 @@
   view-transition-name: mascot3d;
 }
 
+/* Dark clothes on a dark page: a soft halo, for a character that asks for one (its `look`). */
+html[data-theme='dark'] .mascot3d canvas[data-mascot-halo] {
+  filter: drop-shadow(0 0 1.2px rgb(214 224 255 / 28%));
+}
+
 ::view-transition-group(mascot3d),
 ::view-transition-new(mascot3d) {
   animation: none;

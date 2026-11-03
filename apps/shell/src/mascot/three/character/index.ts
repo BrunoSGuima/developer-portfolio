@@ -13,5 +13,5 @@ export async function loadCharacter(): Promise<CharacterProfile> {
       if (character) return character;
     }
   }
-  return (await import('./robot/profile.ts')).robot;
+  return (await import('./bruno/profile.ts')).bruno;
 }

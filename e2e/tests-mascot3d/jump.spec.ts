@@ -228,10 +228,13 @@ test.describe('where he lands', () => {
           for (const other of geometry.controls) expect(intersects(box, other)).toBe(false);
           for (const other of geometry.text) expect(intersects(box, other)).toBe(false);
           expect(await horizontalOverflow(page)).toBe(0);
-          for (const element of await page
-            .locator('[data-slot="peek"], [data-slot="presenter"]')
-            .all()) {
+          // Home's illustration is really there beside him; a hidden peeking mascot keeps its space.
+          for (const element of await page.locator('[data-slot="presenter"]').all()) {
             await expect(element).toBeVisible();
+          }
+          for (const element of await page.locator('[data-slot="peek"]').all()) {
+            await expect(element).toHaveCSS('visibility', 'hidden');
+            expect((await element.boundingBox())!.height).toBeGreaterThan(0);
           }
         });
       }

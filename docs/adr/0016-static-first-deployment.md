@@ -132,3 +132,7 @@ domain, search indexing and social sharing metadata are optional improvements, n
 static release (v4): they're in the roadmap's optional backlog, so the domain purchase and the
 HSTS revisit described above happen only if that item is taken up. The Rails API and PostgreSQL
 remain local, as decided here.
+
+## Update (2026-11-02, ADR-0018)
+
+The Pages build gains the 3D mascot. No server, cost or backend change: this ADR's decisions stand.

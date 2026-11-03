@@ -8,7 +8,7 @@ interface ImportMetaEnv {
   readonly VITE_CONTENT_STRICT?: string;
   /** The build's mode: 'static' (default) or 'fullstack' (src/config/mode.ts, ADR-0014). */
   readonly VITE_APP_MODE?: 'static' | 'fullstack';
-  /** '1' builds in the 3D mascot proof of concept (src/app/RootLayout.tsx). */
+  /** '1' builds in the 3D mascot, set only by `build:pages` (src/app/RootLayout.tsx, ADR-0018). */
   readonly VITE_MASCOT_3D?: string;
   /** Test-only: lets the flagged E2E build run on a headless software renderer. */
   readonly VITE_MASCOT_3D_ALLOW_SOFTWARE?: string;

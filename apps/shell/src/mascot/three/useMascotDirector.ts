@@ -18,7 +18,10 @@ interface DirectorDebug {
   landing: () => CardLanding | null;
 }
 
-/** Set by the flagged build's tests and the report; nothing reads it in the app. */
+/**
+ * For the test build's specs, in full. A published build exposes only `report()`, for diagnosing a
+ * visitor's GPU. Nothing reads it in the app.
+ */
 declare global {
   interface Window {
     __mascot3d?: MascotEngine['debug'] & DirectorDebug;
@@ -27,6 +30,14 @@ declare global {
 
 /** Once WebGL has failed in this visit, stay on the 2D mascot: no retry loop. */
 let failed = false;
+
+/** gate.css keeps the 2D mascots hidden until 3D has really failed, or can't happen here. */
+const show2D = () => {
+  document.documentElement.dataset['mascot2d'] = '';
+};
+
+/** A load still not done by now counts as failed for what the visitor sees, until it ever finishes. */
+const LOAD_BUDGET_MS = 10_000;
 
 export const resetFailureForTests = () => {
   failed = false;
@@ -60,8 +71,8 @@ function landingOnScreen(): boolean {
 
 /**
  * Connects the shell to the engine: route, language and layout events go in as commands, and React
- * never renders per frame. The engine loads after the first paint, only on desktop, and the 2D nav
- * mascot is hidden only once the first 3D frame exists.
+ * never renders per frame. The engine loads after the first paint, only on desktop. The 2D mascots stay
+ * hidden throughout (gate.css), unless 3D fails or can't run.
  */
 export function useMascotDirector(
   overlay: RefObject<HTMLElement | null>,
@@ -113,8 +124,10 @@ export function useMascotDirector(
   // The engine's lifetime depends only on the width: routes must never remount it.
   useEffect(() => {
     const host = overlay.current;
+    if (failed) show2D();
     if (!isDesktop || !host || failed) return;
     let cancelled = false;
+    const budget = setTimeout(show2D, LOAD_BUDGET_MS);
 
     const stop = () => {
       timer.current?.cancel();
@@ -128,7 +141,12 @@ export function useMascotDirector(
     };
 
     const cancelIdle = whenIdle(() => {
-      if (cancelled || !canRun3D()) return;
+      if (cancelled) return;
+      if (!canRun3D()) {
+        clearTimeout(budget);
+        show2D();
+        return;
+      }
       import('./engine.ts')
         .then(({ createMascotEngine }) =>
           createMascotEngine(host, {
@@ -136,6 +154,7 @@ export function useMascotDirector(
             onFailure: (reason) => {
               failed = true;
               stop();
+              show2D();
               document.documentElement.dataset['mascot3dFallback'] = reason;
             },
             onSeated: () => startDelay.current(),
@@ -150,33 +169,40 @@ export function useMascotDirector(
           engine.current = created;
           placedSection.current = latest.current.sectionId;
           placedLocale.current = locale;
-          window.__mascot3d = {
-            ...created.debug,
-            jumpNow: () => tryJump.current(),
-            holdTimer: () => {
-              held.current = true;
-              timer.current?.cancel();
-            },
-            timerRunning: () => timer.current?.running ?? false,
-            delayStartedAt: () => delayStartedAt.current,
-            landing: () => {
-              const now = measureNavAnchor(created.metrics);
-              return now ? measureLanding(now.x, now.size, created.metrics) : null;
-            },
-          };
+          window.__mascot3d =
+            import.meta.env.VITE_MASCOT_3D_ALLOW_SOFTWARE !== '1'
+              ? ({ report: created.debug.report } as NonNullable<Window['__mascot3d']>)
+              : {
+                  ...created.debug,
+                  jumpNow: () => tryJump.current(),
+                  holdTimer: () => {
+                    held.current = true;
+                    timer.current?.cancel();
+                  },
+                  timerRunning: () => timer.current?.running ?? false,
+                  delayStartedAt: () => delayStartedAt.current,
+                  landing: () => {
+                    const now = measureNavAnchor(created.metrics);
+                    return now ? measureLanding(now.x, now.size, created.metrics) : null;
+                  },
+                };
           created.place(anchor);
+          clearTimeout(budget);
+          delete document.documentElement.dataset['mascot2d'];
           document.documentElement.dataset['mascot3d'] = 'active';
         })
         .catch(() => {
-          // A failed chunk, model or context, or a model its profile can't use: the 2D mascot was never
-          // hidden.
+          // A failed chunk, model or context, or a model its profile can't use.
+          clearTimeout(budget);
           failed = true;
+          show2D();
           document.documentElement.dataset['mascot3dFallback'] = 'load-failed';
         });
     });
 
     return () => {
       cancelled = true;
+      clearTimeout(budget);
       cancelIdle();
       stop();
     };

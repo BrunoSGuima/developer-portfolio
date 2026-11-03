@@ -1,7 +1,7 @@
 # 3D mascot: model specification
 
-The brief for whoever builds the custom 3D character. It replaces a temporary robot in a working system, so the behaviour
-already exists: this document is about what the model must provide. No model has been created yet.
+What a 3D character must provide to the working system: the behaviour already exists. The current character meets it, and is
+described in [`character/bruno/README.md`](../../apps/shell/src/mascot/three/character/bruno/README.md).
 
 ## Who he is
 
@@ -41,7 +41,7 @@ is viewed while being made, so judge it at that size, on the real site.
 **These are not preferences: the browser blocks anything else, and the check fails.** The site's Content Security Policy
 stays as it is.
 
-- **No images embedded in the GLB.** Use vertex colours or material colours, or separate same-origin image files.
+- **No images embedded in the GLB.** Use vertex colours or material colours, or a separate same-origin image, given as the profile's `look.texture`.
 - **No Draco, KTX2/Basis or Meshopt compression:** their decoders need WASM or `blob:` workers.
 - `KHR_mesh_quantization` is allowed, because it needs no decoder.
 
@@ -79,6 +79,9 @@ that speed.
 
 **Motion stays short and calm.** Behaviour limits automatic motion to under 5 s so that visitors never need to pause it
 (WCAG 2.2.2), and with reduced motion he holds still.
+
+**A clip that holds a pose must animate every bone it depends on, and `Rig.applyClips` keeps it applied each frame.** Clips blend by weight, so a
+partial clip can't fully override another: a full-body clip for each pose is the simple way.
 
 ## The laptop is optional
 

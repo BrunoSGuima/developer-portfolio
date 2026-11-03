@@ -70,6 +70,21 @@ export interface Accessory {
   visible: boolean;
 }
 
+/** How a character is drawn, when not by its model's own materials and the scene's lights. */
+export interface CharacterLook {
+  /** A same-origin base-colour image, drawn unlit: images embedded in a model break the CSP. */
+  texture: string;
+  /** An outline in the light theme, where the page is bright behind it. Sizes are multiples of its height. */
+  outline?: { width: number; push: number; color: number };
+  /**
+   * Draws it this much larger than `size`. Its metrics describe what is drawn, so they include this:
+   * landing, head room and speeds all follow.
+   */
+  scale?: number;
+  /** A soft halo in the dark theme instead (mascot3d.css), so dark clothes don't vanish. */
+  darkHalo?: boolean;
+}
+
 export interface CharacterProfile {
   modelUrl: string;
   metrics: CharacterMetrics;
@@ -77,6 +92,7 @@ export interface CharacterProfile {
   /** Loading fails safely to 2D if any of these is missing from the model. */
   requiredClips: readonly string[];
   requiredNodes: readonly string[];
+  look?: CharacterLook;
   /** Never required: no motion may depend on one. */
   accessories?: Readonly<Record<string, Accessory>>;
   /** Loaded with the engine: it needs `three`, which the profile itself doesn't. */

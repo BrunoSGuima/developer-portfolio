@@ -5,7 +5,8 @@
 //      shell's Vite config from the validated VITE_APP_MODE, must say "static" (a full-stack
 //      build would call an API that the public site doesn't have).
 //   2. deploy/cloudflare-pages/_headers must follow Pages' documented syntax and limits.
-//   3. The build must not include the flagged 3D mascot proof of concept.
+//   3. The build must not be the 3D mascot's test build, which accepts software renderers and test
+//      characters (ADR-0018). The published build includes the mascot itself.
 //   4. The Pages files (everything in deploy/cloudflare-pages except README.md) are copied into
 //      dist. They live outside apps/shell/public so no other build or server ever serves them.
 //
@@ -75,9 +76,11 @@ function prepare(dist) {
       `${dist} is not a shell build (no index.html or build-mode.json); run the static build first.`,
     );
   }
-  const { mode, mascot3d } = JSON.parse(readFileSync(marker, 'utf8'));
-  if (mascot3d) {
-    fail(`${dist} includes the 3D mascot proof of concept (VITE_MASCOT_3D); it is never deployed.`);
+  const { mode, mascot3d, mascot3dTestBuild } = JSON.parse(readFileSync(marker, 'utf8'));
+  if (mascot3dTestBuild) {
+    fail(
+      `${dist} is the 3D mascot's test build (VITE_MASCOT_3D_ALLOW_SOFTWARE); it is never deployed.`,
+    );
   }
   if (mode !== 'static') {
     fail(
@@ -89,7 +92,8 @@ function prepare(dist) {
     if (entry === 'README.md') continue;
     cpSync(join(source, entry), join(dist, entry), { recursive: true });
   }
-  console.log(`prepare-pages: ${dist} is a static build, ready for Cloudflare Pages.`);
+  const mascot = mascot3d ? 'with the 3D mascot' : 'without the 3D mascot';
+  console.log(`prepare-pages: ${dist} is a static build ${mascot}, ready for Cloudflare Pages.`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

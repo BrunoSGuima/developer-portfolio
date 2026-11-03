@@ -207,13 +207,13 @@ jobs:
           retention-days: 14
 
   e2e-mascot3d:
-    name: 3D mascot proof of concept, flagged build (Playwright + axe)
+    name: 3D mascot, test build (Playwright + axe)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     # Not blocking yet: it starts as advisory until a few real runs show it is stable on CI's slower
     # machines. Its unit tests already run, and block, in the quality job.
     continue-on-error: true
-    # Its own flagged build, under the Pages emulator with the site's real headers. It also checks that
+    # Its own test build, under the Pages emulator with the site's real headers. It also checks that
     # a normal build contains none of it. Chromium only: other engines run locally.
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -257,7 +257,7 @@ jobs:
         if: steps.browser-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
 
-      - name: End-to-end tests (flagged 3D mascot build)
+      - name: End-to-end tests (3D mascot test build)
         run: npm run test:e2e:mascot3d
 
       - name: Upload the Playwright report

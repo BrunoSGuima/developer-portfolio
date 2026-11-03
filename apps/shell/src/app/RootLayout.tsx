@@ -10,6 +10,7 @@ import HeaderMascot from '../mascot/HeaderMascot.tsx';
 import HomeBackdrop from '../mascot/HomeBackdrop.tsx';
 import { DESKTOP_QUERY, useMediaQuery } from '../mascot/useMediaQuery.ts';
 import { appMode } from '../config/mode.ts';
+import PageFunFact from '../mascot/three/PageFunFact.tsx';
 import { sectionInMode, sections, shellFunFact } from '../sections/registry.ts';
 import AppLayout from './layout/AppLayout.tsx';
 import Metadata from './Metadata.tsx';
@@ -20,15 +21,16 @@ import { useRouteFocus } from './useRouteFocus.ts';
 
 const homeSection = sections.find((section) => section.path === '/');
 
-// Flagged proof of concept. The comparison must stay inline, a literal that Vite replaces at build
+// The 3D mascot, in the published build only (ADR-0018). The comparison must stay inline, a literal that Vite replaces at build
 // time, or a normal build keeps the chunk, `three` and the model (checked by the flagged E2E run's
-// build test). A failed chunk must not take the page down: the 2D mascot simply stays.
+// build test). A failed chunk must not take the page down: the 2D mascot takes over.
 const Mascot3DHost =
   import.meta.env.VITE_MASCOT_3D === '1'
     ? lazy(() =>
-        import('../mascot/three/Mascot3DHost.tsx').catch(() => ({
-          default: () => null as ReactElement | null,
-        })),
+        import('../mascot/three/Mascot3DHost.tsx').catch(() => {
+          document.documentElement.dataset['mascot2d'] = '';
+          return { default: () => null as ReactElement | null };
+        }),
       )
     : null;
 
@@ -80,7 +82,14 @@ function RootLayout() {
         context={
           // Home: the mascot presents the card in the illustrated hero. Elsewhere: it peeks over it.
           <FunFactStage composition={isHome ? 'hero' : 'peek'} sectionId={sectionId}>
-            <FunFact fact={section ? sectionInMode(section, appMode).funFact : shellFunFact} />
+            {import.meta.env.VITE_MASCOT_3D === '1' ? (
+              <PageFunFact
+                fact={section ? sectionInMode(section, appMode).funFact : shellFunFact}
+                sectionId={sectionId}
+              />
+            ) : (
+              <FunFact fact={section ? sectionInMode(section, appMode).funFact : shellFunFact} />
+            )}
           </FunFactStage>
         }
       >

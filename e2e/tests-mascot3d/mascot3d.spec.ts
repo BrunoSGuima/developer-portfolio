@@ -7,11 +7,13 @@ import { fileURLToPath } from 'node:url';
 import { expect, type Page, test } from '@playwright/test';
 import sharp from 'sharp';
 import {
+  HEAD_MARGIN,
   NAV_RING_OUTSET,
   headSafeFeetY,
   TARGET_SIZE,
 } from '../../apps/shell/src/mascot/three/anchors.ts';
 import type { PixelBox } from '../../apps/shell/src/mascot/three/engine.ts';
+import { mascotFacts } from '../../apps/shell/src/mascot/three/funFacts.ts';
 import type {} from '../../apps/shell/src/mascot/three/useMascotDirector.ts';
 import { clickLanguage, clickNav, horizontalOverflow, mainNav, open } from '../support/shell.ts';
 import { languageOf, LOCALES, pageOf, pagesIn } from '../support/site.ts';
@@ -81,7 +83,20 @@ test.describe('placement', () => {
         await openReady(page, pageOf('about', locale).path);
         await expect.poll(() => offsetFromActiveLink(page)).toBeLessThanOrEqual(2);
         expect(await phase(page)).toBe('seated');
-        expect(await page.evaluate(() => window.__mascot3d!.size())).toBe(TARGET_SIZE);
+        // The largest that fits above the focus ring, never smaller on the page than the approved size.
+        const { size, fit, standingTop } = await page.evaluate(() => {
+          const { size, ringLine, metrics } = window.__mascot3d!.anchor()!;
+          return {
+            size,
+            standingTop: metrics.standingTop,
+            fit: Math.min(
+              (ringLine - 1) / metrics.standingTop,
+              (ringLine - 1) / (metrics.seatedTop - metrics.seatedBottom),
+            ),
+          };
+        });
+        expect(size).toBeCloseTo(Math.min(TARGET_SIZE, fit));
+        expect(size * standingTop).toBeGreaterThanOrEqual(TARGET_SIZE);
         const box = await pixelBox(page);
         expect(box.top).toBeGreaterThanOrEqual(0);
         expect(await horizontalOverflow(page)).toBe(0);
@@ -89,10 +104,24 @@ test.describe('placement', () => {
     }
   }
 
-  test('replaces only the 2D nav mascot: the Fun Fact mascots stay', async ({ page }) => {
+  test('takes the part of the interactive 2D mascots, keeping the space they take up', async ({
+    page,
+  }) => {
+    await openReady(page, pageOf('about', 'en').path);
+    await expect(headerMascot(page)).toHaveCSS('visibility', 'hidden');
+    for (const slot of ['peek', 'fingertips']) {
+      const layer = page.locator(`[data-slot="${slot}"]`);
+      await expect(layer).toHaveCSS('visibility', 'hidden');
+      expect((await layer.boundingBox())!.height).toBeGreaterThan(0);
+    }
+  });
+
+  test('Home’s presenting illustration stays: it is part of the page, not a stand-in', async ({
+    page,
+  }) => {
     await openReady(page, '/');
     await expect(headerMascot(page)).toHaveCSS('visibility', 'hidden');
-    await expect(page.locator('[data-mascot="fun-fact"]')).toBeVisible();
+    await expect(page.locator('[data-slot="presenter"]')).toBeVisible();
   });
 });
 
@@ -448,16 +477,73 @@ test.describe('focus indicators and the top of the page', () => {
     expect(crossed).toBe(true);
   });
 
-  test('the design for the jump keeps the head on the page in every sampled frame', async ({
+  // The clip and the flight arc together: what the page shows, not the clip or the arc alone.
+  const recordFlight = (page: Page) =>
+    page.evaluate(async () => {
+      const mascot = window.__mascot3d!;
+      const standing = mascot.anchor()!.metrics.standingTop;
+      const size = mascot.anchor()!.size;
+      const frames: { phase: string; top: number; arcTop: number | null }[] = [];
+      mascot.jumpNow();
+      await new Promise<void>((done) => {
+        const tick = () => {
+          const phase = mascot.state().phase;
+          const box = mascot.pixelBox();
+          const feet = mascot.motion().y;
+          if (box) {
+            frames.push({
+              phase,
+              top: box.top,
+              arcTop: feet === null ? null : feet - standing * size,
+            });
+          }
+          if (phase === 'pointing' || frames.length > 2000) done();
+          else requestAnimationFrame(tick);
+        };
+        tick();
+      });
+      return frames;
+    });
+
+  test('the jump, clip and flight arc together, really rises and keeps the head on the page', async ({
     page,
   }) => {
     await openReady(page, pageOf('about', 'en').path);
+    await page.waitForTimeout(600);
+    const frames = await recordFlight(page);
+    const flying = frames.filter((frame) => frame.phase === 'jumping');
+    expect(flying.length).toBeGreaterThan(5);
+    const before = frames.filter((frame) => frame.phase === 'standing').at(-1)!.top;
+    const peak = Math.min(...flying.map((frame) => frame.top));
+    // It leaves the ground and goes up: otherwise the head check below proves nothing.
+    expect(before - peak).toBeGreaterThanOrEqual(2);
+    for (const frame of frames) expect(frame.top).toBeGreaterThanOrEqual(HEAD_MARGIN - 1);
+  });
+
+  test('with the nav at the very top of the page, the head stays on it through the whole flight', async ({
+    page,
+  }) => {
+    await openReady(page, pageOf('about', 'en').path);
+    await page.waitForTimeout(600);
+    await page.evaluate(() => {
+      const mascot = window.__mascot3d!;
+      const { size, metrics } = mascot.anchor()!;
+      const line = metrics.standingTop * size;
+      mascot.setLines(line, line);
+    });
+    await page.waitForTimeout(400);
+    const frames = await recordFlight(page);
+    const flying = frames.filter((frame) => frame.phase === 'jumping');
+    expect(flying.length).toBeGreaterThan(5);
+    // The arc alone would break the margin here: the protection has real work to do.
+    const arcTops = flying.flatMap((frame) => (frame.arcTop === null ? [] : [frame.arcTop]));
+    expect(Math.min(...arcTops)).toBeLessThan(HEAD_MARGIN);
+    for (const frame of frames) expect(frame.top).toBeGreaterThanOrEqual(HEAD_MARGIN - 1);
+    // And the rule itself, for the clip's highest reach.
     const top = await page.evaluate(() => window.__mascot3d!.jumpReach(24));
-    // The clip really does rise above the standing height: otherwise this proves nothing.
-    expect(top).toBeGreaterThan(1.1);
-    const { restLine, ringLine } = await page.evaluate(() => window.__mascot3d!.anchor()!);
-    const feet = headSafeFeetY(Math.min(restLine, ringLine), top, TARGET_SIZE);
-    expect(feet - top * TARGET_SIZE).toBeGreaterThanOrEqual(0);
+    expect(headSafeFeetY(0, top, TARGET_SIZE) - top * TARGET_SIZE).toBeGreaterThanOrEqual(
+      HEAD_MARGIN - 1e-6,
+    );
   });
 });
 
@@ -697,6 +783,11 @@ test.describe('with the flag off', () => {
         const text = readFileSync(join(out, 'assets', name), 'utf8');
         expect(text.includes('WebGLRenderer'), name).toBe(false);
         expect(text.includes('mascot3d'), name).toBe(false);
+        for (const fact of mascotFacts) {
+          for (const copy of [...Object.values(fact.title), ...Object.values(fact.text)]) {
+            expect(text.includes(copy), name).toBe(false);
+          }
+        }
       }
       expect(JSON.parse(readFileSync(join(out, 'build-mode.json'), 'utf8'))).toEqual({
         mode: 'static',

@@ -126,7 +126,7 @@ runs it).
 ```bash
 npm run test:e2e         # Playwright + axe against the full stack (both languages)
 npm run test:e2e:static  # the same suite against the static build, served as Cloudflare Pages would
-npm run test:e2e:mascot3d  # the flagged 3D mascot proof of concept (its own build; advisory on CI)
+npm run test:e2e:mascot3d  # the 3D mascot's test build (its own build; advisory on CI)
 npm run test:e2e:mascot3d:browsers  # its smoke test in Firefox and WebKit (local only)
 
 # The deployed static site (read-only, starts nothing)
@@ -157,7 +157,10 @@ request, with five jobs:
 - **`api`:** the Rails API's `bin/ci` (RuboCop, audits, Brakeman, RSpec against PostgreSQL)
 - **`image`:** builds the production image and smoke-tests it
 
-The `poc/mascot-3d` branch adds a sixth, advisory job, `e2e-mascot3d`, which runs the flagged 3D mascot
-suite and doesn't block, and also runs CI on pushes to `poc/**`.
+A sixth, advisory job, `e2e-mascot3d`, runs the 3D mascot's test build and doesn't block. CI also runs on pushes to `poc/**`.
+
+Only `npm run build:pages` includes the 3D mascot (`VITE_MASCOT_3D=1`,
+[ADR-0018](adr/0018-publishing-the-3d-mascot.md)), so the static suite tests it as a visitor without a GPU sees it: the 2D fallback.
+`e2e/tests/production-3d.spec.ts` covers the 3D path of that build, and `npm run test:e2e:mascot3d` the behaviour in detail.
 
 CI calls the same npm scripts and `bin/ci` you run locally.

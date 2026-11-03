@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { APP_MODES } from '../config/mode.ts';
 import { isPlaceholderArt } from '../mascot/assets.ts';
 import RemoteSection from '../microfrontends/RemoteSection.tsx';
@@ -219,5 +219,49 @@ describe('static-first truthfulness (ADR-0016)', () => {
     expect(ADR_DIRECTORY_URL).toBe(
       'https://github.com/BrunoSGuima/developer-portfolio/tree/main/docs/adr',
     );
+  });
+});
+
+// ADR-0018: the 3D mascot is described only by the build that has it.
+describe('the 3D mascot on the Architecture page', () => {
+  const load = async (flag: string) => {
+    vi.resetModules();
+    vi.stubEnv('VITE_MASCOT_3D', flag);
+    return import('./architecture.ts');
+  };
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.resetModules();
+  });
+
+  it('is described, in both languages, in the build that has it', async () => {
+    const { components: flagged, runModes: modes } = await load('1');
+    const mascot = flagged.find((item) => item.id === 'mascot');
+    const staticSite = modes.find((mode) => mode.id === 'static');
+    for (const locale of LOCALES) {
+      expect(mascot?.description[locale]).toMatch(/Three\.js/);
+      expect(mascot?.description[locale]).toMatch(/WebGL/);
+      expect(staticSite?.points.some((point) => /Three\.js/.test(point[locale]))).toBe(true);
+    }
+  });
+
+  it('keeps saying where it does not run, and that the 2D walker is a placeholder', async () => {
+    const { components: flagged } = await load('1');
+    const description = flagged.find((item) => item.id === 'mascot')?.description;
+    expect(description?.en).toMatch(/Phones.*2D mascots.*placeholder/);
+    expect(description?.['pt-BR']).toMatch(/celulares.*mascotes 2D.*provisória/);
+  });
+
+  it('is not mentioned in any other build, and the full stack never gets it', async () => {
+    const { components: plain, runModes: modes } = await load('');
+    for (const locale of LOCALES) {
+      expect(plain.find((item) => item.id === 'mascot')?.description[locale]).not.toMatch(/3D/);
+      for (const mode of modes) {
+        for (const point of mode.points) expect(point[locale]).not.toMatch(/Three\.js/);
+      }
+    }
+    const flagged = await load('1');
+    const fullStack = flagged.runModes.find((mode) => mode.id === 'fullstack');
+    for (const point of fullStack?.points ?? []) expect(point.en).not.toMatch(/Three\.js/);
   });
 });

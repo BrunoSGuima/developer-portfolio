@@ -81,6 +81,12 @@ describe('the model check', () => {
     expect(result.stderr).toMatch(/Target: 43 bones/);
   });
 
+  it('the character himself passes cleanly', () => {
+    const result = run('apps/shell/src/mascot/three/character/bruno/bruno.glb');
+    expect(result.status).toBe(0);
+    expect(result.stderr).toBe('');
+  });
+
   it('the test character passes cleanly', () => {
     const result = run('apps/shell/src/mascot/three/character/fixture/fixture.glb');
     expect(result.status).toBe(0);

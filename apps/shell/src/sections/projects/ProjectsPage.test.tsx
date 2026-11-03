@@ -80,17 +80,24 @@ describe('ProjectsPage, static build (the default)', () => {
     expect(container.querySelector('[data-slot="page-body"]')).toBeNull();
   });
 
-  it('shows the three projects in order, each with its status in words', async () => {
+  it('shows the projects in order, each with its status in words', async () => {
     renderRoute('/projects');
     await screen.findAllByRole('article', undefined, ROUTE_WAIT);
 
     const cards = screen.getAllByRole('article');
     expect(
       cards.map((card) => within(card).getByRole('heading', { level: 2 }).textContent),
-    ).toEqual(['Developer Portfolio (this site)', 'Personal Finance App', 'Auction House']);
+    ).toEqual([
+      'Developer Portfolio (this site)',
+      'Personal Finance App',
+      'Easy TV App',
+      'Auction House',
+    ]);
     expect(
-      cards.map((card) => within(card).getByText(/^(Completed|In progress)$/).textContent),
-    ).toEqual(['In progress', 'In progress', 'Completed']);
+      cards.map(
+        (card) => within(card).getByText(/^(Completed|In progress|In Development)$/).textContent,
+      ),
+    ).toEqual(['In progress', 'In progress', 'In Development', 'Completed']);
   });
 
   it('links each public project to its own repository', async () => {
@@ -113,6 +120,37 @@ describe('ProjectsPage, static build (the default)', () => {
       'https://github.com/BrunoSGuima/auction-house',
     );
   });
+
+  it.each([
+    [
+      '/projects',
+      'In Development',
+      'Mobile Application',
+      'Mobile Development',
+      'Product Development',
+    ],
+    [
+      '/pt-br/projects',
+      'Em desenvolvimento',
+      'Aplicativo móvel',
+      'Desenvolvimento Mobile',
+      'Desenvolvimento de Produto',
+    ],
+  ])(
+    'shows the private Easy TV App with no link or image (%s)',
+    async (path, status, category, ...tags) => {
+      renderRoute(path);
+      await screen.findAllByRole('article', undefined, ROUTE_WAIT);
+
+      const card = screen.getByRole('article', { name: 'Easy TV App' });
+      expect(within(card).getByText(status)).toBeInTheDocument();
+      expect(within(card).getByText(category)).toBeInTheDocument();
+      for (const tag of [...tags, 'Android'])
+        expect(within(card).getByText(tag)).toBeInTheDocument();
+      expect(within(card).queryAllByRole('link')).toHaveLength(0);
+      expect(within(card).queryAllByRole('img')).toHaveLength(0);
+    },
+  );
 
   it('shows no link at all for the private Personal Finance App, and its stack as badges', async () => {
     renderRoute('/projects');

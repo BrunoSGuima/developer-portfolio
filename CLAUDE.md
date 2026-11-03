@@ -79,16 +79,18 @@ decisions live in **`docs/ROADMAP.md`** (version-controlled source of truth; kee
 The API runs Ruby 4.0.9, Rails 8.1.4 and PostgreSQL 18.6 (ADR-0011). Do not add Python, Redis,
 Sidekiq or Vue until their phase.
 
-**3D mascot proof of concept** (branch `poc/mascot-3d`, not released; M1–M4 done, M5 not started;
+**3D mascot** (branch `poc/mascot-3d`, not yet published; M1–M5 done and approved, prepared for publishing by ADR-0018, pushed to the branch; merging awaits the owner's approval;
 reports in `poc/mascot-3d/`): a persistent 3D character on the nav and the Fun Fact card, in
 `apps/shell/src/mascot/three/`. **What the character is** lives in its `character/` folder (see its README and
 `docs/assets/MASCOT-3D-SPEC.md`), and everything else knows it only through `character/contract.ts`:
 `boundary.test.ts` rejects a bone, clip or measurement anywhere else. Every failure (an error in a frame, a lost
 context, a failed load, sustained slowness) takes one path back to the 2D mascot. Keep the watchdog conservative. It exists only in builds with `VITE_MASCOT_3D=1`: the comparison in
 `RootLayout.tsx` must stay an inline literal or a normal build keeps `three` and the model (a test builds
-with the flag off and checks). `prepare-pages` refuses a flagged build: it is never deployed. The robot is
-a temporary CC0 model, not the mascot. The approved 2D mascots stay, and take over on any failure. No
-inline styles or decoders: the CSP is unchanged.
+with the flag off and checks). Only `npm run build:pages` sets the flag, so the public site has it and the local builds don't; `prepare-pages` refuses the test build (`VITE_MASCOT_3D_ALLOW_SOFTWARE`), and a published build exposes only `__mascot3d.report()`. Text about the mascot on the Architecture page depends on the flag too. The static suite therefore runs on the 2D fallback of the published build, and `e2e/tests/production-3d.spec.ts` covers its 3D path. The active character is `character/bruno/` (its README records
+provenance and licensing; **its licence (a paid Tripo plan with "Private Models · Commercial Use") and the model's Private setting were confirmed by the owner on 2026-11-03; a push to this public repository publishes it**, and its Blender scripts stay out of the
+repo); the CC0 robot stays until the owner approves deleting it. A character's optional `look` is drawn by `look.ts`: unlit, an outline in the
+light theme, a CSS halo in the dark one (`mascot3d.css`), following theme changes live. In the 3D experience (desktop width, unless 3D has failed: the same rule as `gate.css`), About and Architecture show a fixed mascot Fun Fact instead of their own (`funFacts.ts`, `PageFunFact.tsx`); phones, the 2D fallback and flag-off builds keep the originals; `funFacts.test.ts` pins their numbers to the model. The 2D mascots stay in the page, hidden from the first paint in flagged builds at desktop widths by `gate.css` (added to `index.html` by `vite.config.ts`, flagged only), and take over on any failure through `<html data-mascot2d>`.
+No inline styles or decoders: the CSP is unchanged.
 
 ## Architecture
 
@@ -199,7 +201,7 @@ E2E_BASE_URL=https://…` tests a deployed site (read-only, starts nothing). `_h
 
 - TypeScript `strict` mode (plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`).
 - Minimal dependencies. The shell's runtime deps: `react`, `react-dom`, `react-router` (v8),
-  `@fontsource-variable/inter` (self-hosted font), and on the proof-of-concept branch `three` (only in
+  `@fontsource-variable/inter` (self-hosted font), and `three` (only in
   flagged builds). Adding a dependency requires a stated reason.
 - Styling (ADR-0003): CSS Modules next to each component; global styles only in
   `apps/shell/src/styles/` (`reset.css`, `tokens.css`, `global.css`, plus the `.container`
@@ -253,7 +255,7 @@ E2E_BASE_URL=https://…` tests a deployed site (read-only, starts nothing). `_h
   models); pages render it. The owner's résumé is the source of truth: **never invent**
   experience, metrics, achievements or projects; no confidential employer/client details; private
   professional work is not a portfolio project; a personal project in a private repository is
-  shown without any link (`content/projects.test.ts`); a new project technology goes in four
+  shown without any link (`content/projects.test.ts`); wording only a card shows, like a category, goes in `content/projectDisplay.ts` (the API stores neither it nor that status wording); a new project technology goes in four
   places (`openapi.yaml` first, then `npm run api:types`, `Project::TECHNOLOGIES`,
   `sections/technologies.ts`); Python and AI engineering are presented only as
   areas of ongoing development. **Never publish a phone number** (`privacy.test.ts` rejects

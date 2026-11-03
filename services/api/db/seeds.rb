@@ -57,6 +57,22 @@ projects = [
     links: []
   },
   {
+    # The repository is private: no link. The owner's wording: no features, architecture or release date.
+    slug: "easy-tv-app",
+    name: { "en" => "Easy TV App", "pt-BR" => "Easy TV App" },
+    description: {
+      "en" => "A mobile application currently under development, focused on delivering a simple and " \
+              "accessible user experience. Preparing for a future release on Google Play.",
+      "pt-BR" => "Um aplicativo móvel em desenvolvimento, com foco em oferecer uma experiência simples e " \
+                 "acessível. Em preparação para um futuro lançamento no Google Play."
+    },
+    status: "in-progress",
+    technologies: %w[mobile-development android product-development],
+    position: 2,
+    published: true,
+    links: []
+  },
+  {
     slug: "auction-house",
     name: { "en" => "Auction House", "pt-BR" => "Casa de Leilões" },
     description: {
@@ -72,7 +88,7 @@ projects = [
     },
     status: "done",
     technologies: %w[rails rspec bootstrap],
-    position: 2,
+    position: 3,
     published: true,
     links: [
       { label: { "en" => "Source code", "pt-BR" => "Código-fonte" },

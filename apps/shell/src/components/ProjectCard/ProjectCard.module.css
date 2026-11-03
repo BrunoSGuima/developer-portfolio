@@ -20,6 +20,11 @@
   font-size: var(--text-xl);
 }
 
+.category {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
 .badges,
 .links {
   display: flex;
