@@ -302,7 +302,10 @@ export interface components {
       | 'flutter'
       | 'dart'
       | 'rspec'
-      | 'bootstrap';
+      | 'bootstrap'
+      | 'mobile-development'
+      | 'android'
+      | 'product-development';
     LocalizedText120: {
       en: string;
       'pt-BR': string;

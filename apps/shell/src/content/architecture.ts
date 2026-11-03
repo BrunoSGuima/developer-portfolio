@@ -19,6 +19,9 @@ export interface ArchitectureComponent {
 // remote section yet; the build modes include the local full stack; testing and CI run in
 // development and GitHub Actions). Planned work lives in the timeline. Reading order:
 // architecture foundations, then cross-cutting features, then quality.
+//
+// The 3D mascot exists only in the published build (ADR-0018), so what's said about it is too. Keep each
+// comparison inline, a literal Vite replaces at build time, so other builds carry none of this text.
 export const components: readonly ArchitectureComponent[] = [
   {
     id: 'react-shell',
@@ -102,9 +105,14 @@ export const components: readonly ArchitectureComponent[] = [
     id: 'mascot',
     name: { en: 'Mascot guide', 'pt-BR': 'Mascote guia' },
     description: {
-      en: 'The Home and Fun Fact mascot uses the final illustrations; the walking navigation mascot still uses placeholder art until its final frames are ready.',
+      en:
+        import.meta.env.VITE_MASCOT_3D === '1'
+          ? "On desktop, a 3D character (Three.js and WebGL, loaded on demand) walks along the navigation and jumps onto the Fun Fact card. Home keeps its illustration on every device. Phones show the illustrated Fun Fact mascot, and browsers that can't run 3D return to the 2D mascots, whose walking one still uses placeholder art."
+          : 'The Home and Fun Fact mascot uses the final illustrations; the walking navigation mascot still uses placeholder art until its final frames are ready.',
       'pt-BR':
-        'O mascote da página inicial e da Curiosidade usa as ilustrações finais; o mascote que caminha pela navegação ainda usa uma arte provisória até que seus quadros finais fiquem prontos.',
+        import.meta.env.VITE_MASCOT_3D === '1'
+          ? 'No desktop, um personagem 3D (Three.js e WebGL, carregado sob demanda) caminha pela navegação e pula para o card da Curiosidade. A página inicial mantém sua ilustração em todos os dispositivos. Nos celulares aparece o mascote ilustrado da Curiosidade, e os navegadores que não conseguem rodar 3D voltam aos mascotes 2D, cujo mascote que caminha ainda usa uma arte provisória.'
+          : 'O mascote da página inicial e da Curiosidade usa as ilustrações finais; o mascote que caminha pela navegação ainda usa uma arte provisória até que seus quadros finais fiquem prontos.',
     },
     status: 'live',
   },
@@ -319,6 +327,15 @@ export const runModes: readonly RunMode[] = [
         en: 'The Contact page links to email, LinkedIn and GitHub.',
         'pt-BR': 'A página de Contato indica e-mail, LinkedIn e GitHub.',
       },
+      ...(import.meta.env.VITE_MASCOT_3D === '1'
+        ? [
+            {
+              en: 'On desktop, the navigation mascot is a 3D character drawn with Three.js; the engine and the model load only where it can run.',
+              'pt-BR':
+                'No desktop, o mascote da navegação é um personagem 3D desenhado com Three.js; o motor e o modelo só são carregados onde ele pode rodar.',
+            },
+          ]
+        : []),
     ],
     // Published (Steps 4.11–4.12): https://bruno-guimaraes.pages.dev.
     hosting: { name: 'Cloudflare Pages', status: 'live' },

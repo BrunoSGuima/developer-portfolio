@@ -344,7 +344,22 @@ components:
     Technology:
       description: Technology ids (the shell's sections/technologies.ts).
       type: string
-      enum: [react, typescript, vite, react-router, vue, rails, flutter, dart, rspec, bootstrap]
+      enum:
+        [
+          react,
+          typescript,
+          vite,
+          react-router,
+          vue,
+          rails,
+          flutter,
+          dart,
+          rspec,
+          bootstrap,
+          mobile-development,
+          android,
+          product-development,
+        ]
     LocalizedText120:
       type: object
       required: [en, pt-BR]

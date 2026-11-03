@@ -1,0 +1,13 @@
+html,
+body {
+  margin: 0;
+  background: #fbf3ea;
+  font-family: system-ui, sans-serif;
+  color: #2a2b30;
+}
+canvas {
+  display: block;
+}
+#root {
+  position: relative;
+}

@@ -3,6 +3,7 @@ node_modules/
 
 # Build output
 dist/
+apps/shell/.mascot3d-dist/
 build/
 *.tsbuildinfo
 

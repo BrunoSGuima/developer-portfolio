@@ -775,6 +775,24 @@ Every approved expense (purchases, paid plans, upgrades), recorded when approved
 
 _None._ Phase 4 cost nothing: Cloudflare Pages Free, no domain.
 
+### 3D mascot (branch `poc/mascot-3d`, prepared for release, not published)
+
+A persistent 3D character on the nav and the Fun Fact card. It exists only in
+builds with `VITE_MASCOT_3D=1`, which only `build:pages` sets once this is merged
+([ADR-0018](adr/0018-publishing-the-3d-mascot.md)). Until then the published site is unchanged. M1
+(feasibility), M2 (the nav), M3 (the jump to the Fun Fact and back) and M4 (robustness, and readiness for the custom
+character) are done. The custom character's brief is
+`docs/assets/MASCOT-3D-SPEC.md`. Reports: `poc/mascot-3d/M1-REPORT.md` to `M5-REPORT.md`.
+
+M5, the custom character: approved by the owner, including its 57 px size and the fixed Fun Facts, and prepared for publishing. A merge to `main` deploys it. The owner confirmed the model's licence (a paid Tripo plan with "Private Models · Commercial Use") and that it is set to Private, and
+authorized pushing it to `poc/mascot-3d` (2026-11-03). The temporary CC0 robot was deleted with the owner's approval (2026-11-03). Still needing explicit approval: the merge into `main` (which deploys it). Release checks: `poc/mascot-3d/M5-REPORT.md`.
+
+Found in M4, on the published site, with or without the 3D mascot, and not fixed there:
+
+- The 2D nav mascot can start about 17 px off-centre on a page's first load, until the next navigation or resize.
+- Very rapid navigation reports `Transition was skipped` as uncaught errors, from View Transitions.
+- In Forced Colors mode, axe reports one contrast finding on the active language button.
+
 ### Optional future backlog (not scheduled)
 
 Not part of v4; each item needs the owner's approval before it starts (and, for the domain, a

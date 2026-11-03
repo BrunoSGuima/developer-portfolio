@@ -1,0 +1,30 @@
+/*
+ * Loaded before the first paint, and only by flagged builds (see vite.config.ts): with the flag on, the
+ * 3D character takes the part of the interactive 2D mascots, the nav's and the one peeking over the Fun
+ * Fact card. They appear only when `data-mascot2d` says 3D can't happen. Home's presenting mascot isn't
+ * one of them: it's part of that page's design, and shows either way.
+ * Hidden, not removed: nothing shifts, they keep their state, and they take over in the right place.
+ *
+ * The strip above a peeking card is sized for the 2D head, much bigger than what stands there in 3D. So
+ * the room between the page's top and the card is set to fit him instead: 72px, for his 57px, the 4px he
+ * keeps from anything, and some air. The strip is what's left after the space the layout already has.
+ */
+@media screen and (min-width: 48rem) {
+  html:not([data-mascot2d]) [data-composition='peek'] [data-slot='frame'] {
+    padding-block-start: calc(4.5rem - var(--space-5));
+  }
+
+  html:not([data-mascot2d])
+    :is([data-mascot='header'], [data-slot='peek'], [data-slot='fingertips']) {
+    visibility: hidden;
+  }
+}
+
+@media screen and (min-width: 64rem) {
+  html:not([data-mascot2d])
+    :is([data-context='aside'], [data-context='intro'])
+    [data-composition='peek']
+    [data-slot='frame'] {
+    padding-block-start: calc(4.5rem - var(--space-7));
+  }
+}

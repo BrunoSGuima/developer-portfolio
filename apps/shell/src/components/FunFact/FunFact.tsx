@@ -1,11 +1,15 @@
 import { useLocale, useMessages } from '../../i18n/context.ts';
 import { pick } from '../../i18n/localized.ts';
+import type { MascotFact } from '../../mascot/three/funFacts.ts';
 import type { FunFact as FunFactContent } from '../../sections/registry.ts';
+import badgeStyles from '../TechBadge/TechBadge.module.css';
 import TechBadge from '../TechBadge/TechBadge.tsx';
 import styles from './FunFact.module.css';
 
 interface FunFactProps {
   fact: FunFactContent;
+  /** Shown in `fact`'s place, with its own title and tags (mascot/three/PageFunFact.tsx). */
+  mascotFact?: MascotFact | null;
 }
 
 /**
@@ -15,13 +19,18 @@ interface FunFactProps {
  * fade-in replays when the section (or the language) changes. No aria-live: focus already moves to the new page
  * heading on navigation, and the landmark keeps the Fun Fact reachable.
  */
-function FunFact({ fact }: FunFactProps) {
+function FunFact({ fact, mascotFact = null }: FunFactProps) {
   const locale = useLocale();
   const messages = useMessages();
-  const text = pick(fact.text, locale);
+  const text = pick((mascotFact ?? fact).text, locale);
 
   return (
-    <aside aria-label={messages.funFact.region} className={styles.card} data-fun-fact>
+    <aside
+      aria-label={messages.funFact.region}
+      className={styles.card}
+      data-fun-fact
+      data-fun-fact-mascot={mascotFact ? '' : undefined}
+    >
       <svg className={styles.icon} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path
           className={styles.bulb}
@@ -31,20 +40,33 @@ function FunFact({ fact }: FunFactProps) {
       </svg>
       <div key={text} className={styles.content}>
         <p className={styles.label}>
-          <strong>{messages.funFact.label}</strong>
+          <strong>{mascotFact ? pick(mascotFact.title, locale) : messages.funFact.label}</strong>
         </p>
         <p className={styles.text}>{text}</p>
         <ul aria-label={messages.funFact.technologies} className={styles.badges}>
-          {fact.tech.map((tech) => (
-            <li key={tech}>
-              <TechBadge tech={tech} />
-            </li>
-          ))}
-          {fact.plannedTech?.map((tech) => (
-            <li key={tech}>
-              <TechBadge tech={tech} status="planned" />
-            </li>
-          ))}
+          {mascotFact ? (
+            mascotFact.tags.map((tag) => (
+              <li key={tag.label.en}>
+                <span className={badgeStyles.badge} data-tone={tag.tone} data-status="live">
+                  <span className={badgeStyles.dot} aria-hidden="true" />
+                  {pick(tag.label, locale)}
+                </span>
+              </li>
+            ))
+          ) : (
+            <>
+              {fact.tech.map((tech) => (
+                <li key={tech}>
+                  <TechBadge tech={tech} />
+                </li>
+              ))}
+              {fact.plannedTech?.map((tech) => (
+                <li key={tech}>
+                  <TechBadge tech={tech} status="planned" />
+                </li>
+              ))}
+            </>
+          )}
         </ul>
       </div>
     </aside>

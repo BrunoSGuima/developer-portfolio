@@ -1,0 +1,27 @@
+{
+  "React only (baseline, already in the shell)": {
+    "raw": 185.8,
+    "gzip": 57.7,
+    "brotli": 49.8
+  },
+  "Plain three + GLTFLoader (no React; total added to the shell)": {
+    "raw": 616.2,
+    "gzip": 152.7,
+    "brotli": 125.2
+  },
+  "R3F + three + GLTFLoader + React (total)": {
+    "raw": 1135.1,
+    "gzip": 307.1,
+    "brotli": 237.7
+  },
+  "R3F added to the shell (total minus baseline)": {
+    "raw": 949.3,
+    "gzip": 249.4,
+    "brotli": 187.9
+  },
+  "R3F extra over plain three": {
+    "raw": 333,
+    "gzip": 96.7,
+    "brotli": 62.7
+  }
+}

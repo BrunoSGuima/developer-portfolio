@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.wrangler/
+
+# Generated evidence and inputs: large, reproducible with scripts/, and kept out of history.
+# The reports and the measurements (*.json) are committed.
+out/**/*.png
+out/**/*.jpg
+out/**/*.mp4
+out/frames/
+out/check/
+public/plates/*.png

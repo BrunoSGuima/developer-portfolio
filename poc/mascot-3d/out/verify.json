@@ -1,0 +1,89 @@
+{
+  "servedCsp": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
+  "csp": {
+    "model without images (RobotExpressive)": {
+      "outcome": "loaded",
+      "violations": []
+    },
+    "NEGATIVE CONTROL: GLB with embedded PNG": {
+      "outcome": "failed: Error: no texture image was decoded",
+      "violations": [
+        {
+          "directive": "connect-src",
+          "blocked": "blob"
+        }
+      ]
+    },
+    "glTF with same-origin external PNG": {
+      "outcome": "loaded",
+      "violations": []
+    },
+    "blob: worker (how Draco and KTX2 decoders start)": {
+      "outcome": "failed: Error: worker blocked",
+      "violations": [
+        {
+          "directive": "worker-src",
+          "blocked": "blob"
+        }
+      ]
+    },
+    "WebAssembly compile (Draco, KTX2, Meshopt WASM)": {
+      "outcome": "failed: CompileError: WebAssembly.compile(): Compiling or instantiating WebAssembly module violates the following Content Securi",
+      "violations": [
+        {
+          "directive": "script-src",
+          "blocked": "wasm-eval"
+        }
+      ]
+    }
+  },
+  "compare": {
+    "plain": {
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "runs": 5,
+      "firstFrameMsMedian": 290.7,
+      "frameMeanMsMedian": 9.26,
+      "frameP95MsMedian": 19.1,
+      "violations": []
+    },
+    "r3f": {
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "runs": 5,
+      "firstFrameMsMedian": 661.6,
+      "frameMeanMsMedian": 8.25,
+      "frameP95MsMedian": 19.4,
+      "violations": []
+    }
+  },
+  "bench": {
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "results": [
+      {
+        "canvas": "200x200 @1x",
+        "pixels": 40000,
+        "meanMs": 6.13,
+        "p95Ms": 11,
+        "maxMs": 23.4,
+        "gpuMeanMs": null
+      },
+      {
+        "canvas": "200x200 @2x",
+        "pixels": 160000,
+        "meanMs": 8.22,
+        "p95Ms": 17.4,
+        "maxMs": 29.2,
+        "gpuMeanMs": null
+      },
+      {
+        "canvas": "1920x1080 @1x",
+        "pixels": 2073600,
+        "meanMs": 30.74,
+        "p95Ms": 42,
+        "maxMs": 51.8,
+        "gpuMeanMs": null
+      }
+    ]
+  },
+  "benchViolations": [],
+  "filmStageViolations": []
+}

@@ -1,0 +1,776 @@
+{
+  "light-home": {
+    "theme": "light",
+    "links": [
+      {
+        "label": "Home",
+        "active": true,
+        "box": {
+          "left": 652.90625,
+          "top": 57.046875,
+          "right": 721.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 664.90625,
+          "top": 67.046875,
+          "right": 709.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "About",
+        "active": false,
+        "box": {
+          "left": 725.90625,
+          "top": 57.046875,
+          "right": 794.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 737.90625,
+          "top": 67.046875,
+          "right": 782.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "Projects",
+        "active": false,
+        "box": {
+          "left": 798.90625,
+          "top": 57.046875,
+          "right": 883.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 810.90625,
+          "top": 67.046875,
+          "right": 871.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "Architecture",
+        "active": false,
+        "box": {
+          "left": 887.90625,
+          "top": 57.046875,
+          "right": 1002.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 899.90625,
+          "top": 67.046875,
+          "right": 990.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "Contact",
+        "active": false,
+        "box": {
+          "left": 1006.90625,
+          "top": 57.046875,
+          "right": 1089.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 1018.90625,
+          "top": 67.046875,
+          "right": 1077.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "EN",
+        "active": false,
+        "box": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "text": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      },
+      {
+        "label": "PT",
+        "active": false,
+        "box": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "text": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      }
+    ],
+    "card": {
+      "left": 802.671875,
+      "top": 155.6875,
+      "right": 1224,
+      "bottom": 367.65625
+    },
+    "header": {
+      "left": 0,
+      "top": 0,
+      "right": 1280,
+      "bottom": 115.6875
+    }
+  },
+  "light-about": {
+    "theme": "light",
+    "links": [
+      {
+        "label": "Home",
+        "active": false,
+        "box": {
+          "left": 649.90625,
+          "top": 57.046875,
+          "right": 718.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 661.90625,
+          "top": 67.046875,
+          "right": 706.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "About",
+        "active": true,
+        "box": {
+          "left": 722.90625,
+          "top": 57.046875,
+          "right": 794.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 734.90625,
+          "top": 67.046875,
+          "right": 782.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "Projects",
+        "active": false,
+        "box": {
+          "left": 798.90625,
+          "top": 57.046875,
+          "right": 883.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 810.90625,
+          "top": 67.046875,
+          "right": 871.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "Architecture",
+        "active": false,
+        "box": {
+          "left": 887.90625,
+          "top": 57.046875,
+          "right": 1002.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 899.90625,
+          "top": 67.046875,
+          "right": 990.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "Contact",
+        "active": false,
+        "box": {
+          "left": 1006.90625,
+          "top": 57.046875,
+          "right": 1089.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 1018.90625,
+          "top": 67.046875,
+          "right": 1077.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "EN",
+        "active": false,
+        "box": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "text": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      },
+      {
+        "label": "PT",
+        "active": false,
+        "box": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "text": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      }
+    ],
+    "card": {
+      "left": 864,
+      "top": 274.34375,
+      "right": 1216,
+      "bottom": 523.90625
+    },
+    "header": {
+      "left": 0,
+      "top": 0,
+      "right": 1280,
+      "bottom": 115.6875
+    }
+  },
+  "light-projects": {
+    "theme": "light",
+    "links": [
+      {
+        "label": "Home",
+        "active": false,
+        "box": {
+          "left": 650.90625,
+          "top": 57.046875,
+          "right": 719.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 662.90625,
+          "top": 67.046875,
+          "right": 707.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "About",
+        "active": false,
+        "box": {
+          "left": 723.90625,
+          "top": 57.046875,
+          "right": 792.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 735.90625,
+          "top": 67.046875,
+          "right": 780.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "Projects",
+        "active": true,
+        "box": {
+          "left": 796.90625,
+          "top": 57.046875,
+          "right": 883.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 808.90625,
+          "top": 67.046875,
+          "right": 871.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "Architecture",
+        "active": false,
+        "box": {
+          "left": 887.90625,
+          "top": 57.046875,
+          "right": 1002.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 899.90625,
+          "top": 67.046875,
+          "right": 990.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "Contact",
+        "active": false,
+        "box": {
+          "left": 1006.90625,
+          "top": 57.046875,
+          "right": 1089.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 1018.90625,
+          "top": 67.046875,
+          "right": 1077.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "EN",
+        "active": false,
+        "box": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "text": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      },
+      {
+        "label": "PT",
+        "active": false,
+        "box": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "text": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      }
+    ],
+    "card": {
+      "left": 864,
+      "top": 274.34375,
+      "right": 1216,
+      "bottom": 563.09375
+    },
+    "header": {
+      "left": 0,
+      "top": 0,
+      "right": 1280,
+      "bottom": 115.6875
+    }
+  },
+  "dark-home": {
+    "theme": "dark",
+    "links": [
+      {
+        "label": "Home",
+        "active": true,
+        "box": {
+          "left": 652.90625,
+          "top": 57.046875,
+          "right": 721.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 664.90625,
+          "top": 67.046875,
+          "right": 709.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "About",
+        "active": false,
+        "box": {
+          "left": 725.90625,
+          "top": 57.046875,
+          "right": 794.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 737.90625,
+          "top": 67.046875,
+          "right": 782.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "Projects",
+        "active": false,
+        "box": {
+          "left": 798.90625,
+          "top": 57.046875,
+          "right": 883.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 810.90625,
+          "top": 67.046875,
+          "right": 871.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "Architecture",
+        "active": false,
+        "box": {
+          "left": 887.90625,
+          "top": 57.046875,
+          "right": 1002.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 899.90625,
+          "top": 67.046875,
+          "right": 990.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "Contact",
+        "active": false,
+        "box": {
+          "left": 1006.90625,
+          "top": 57.046875,
+          "right": 1089.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 1018.90625,
+          "top": 67.046875,
+          "right": 1077.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "EN",
+        "active": false,
+        "box": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "text": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      },
+      {
+        "label": "PT",
+        "active": false,
+        "box": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "text": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      }
+    ],
+    "card": {
+      "left": 802.671875,
+      "top": 155.6875,
+      "right": 1224,
+      "bottom": 367.65625
+    },
+    "header": {
+      "left": 0,
+      "top": 0,
+      "right": 1280,
+      "bottom": 115.6875
+    }
+  },
+  "dark-about": {
+    "theme": "dark",
+    "links": [
+      {
+        "label": "Home",
+        "active": false,
+        "box": {
+          "left": 649.90625,
+          "top": 57.046875,
+          "right": 718.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 661.90625,
+          "top": 67.046875,
+          "right": 706.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "About",
+        "active": true,
+        "box": {
+          "left": 722.90625,
+          "top": 57.046875,
+          "right": 794.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 734.90625,
+          "top": 67.046875,
+          "right": 782.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "Projects",
+        "active": false,
+        "box": {
+          "left": 798.90625,
+          "top": 57.046875,
+          "right": 883.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 810.90625,
+          "top": 67.046875,
+          "right": 871.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "Architecture",
+        "active": false,
+        "box": {
+          "left": 887.90625,
+          "top": 57.046875,
+          "right": 1002.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 899.90625,
+          "top": 67.046875,
+          "right": 990.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "Contact",
+        "active": false,
+        "box": {
+          "left": 1006.90625,
+          "top": 57.046875,
+          "right": 1089.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 1018.90625,
+          "top": 67.046875,
+          "right": 1077.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "EN",
+        "active": false,
+        "box": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "text": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      },
+      {
+        "label": "PT",
+        "active": false,
+        "box": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "text": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      }
+    ],
+    "card": {
+      "left": 864,
+      "top": 274.34375,
+      "right": 1216,
+      "bottom": 523.90625
+    },
+    "header": {
+      "left": 0,
+      "top": 0,
+      "right": 1280,
+      "bottom": 115.6875
+    }
+  },
+  "dark-projects": {
+    "theme": "dark",
+    "links": [
+      {
+        "label": "Home",
+        "active": false,
+        "box": {
+          "left": 650.90625,
+          "top": 57.046875,
+          "right": 719.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 662.90625,
+          "top": 67.046875,
+          "right": 707.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "About",
+        "active": false,
+        "box": {
+          "left": 723.90625,
+          "top": 57.046875,
+          "right": 792.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 735.90625,
+          "top": 67.046875,
+          "right": 780.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "Projects",
+        "active": true,
+        "box": {
+          "left": 796.90625,
+          "top": 57.046875,
+          "right": 883.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 808.90625,
+          "top": 67.046875,
+          "right": 871.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "Architecture",
+        "active": false,
+        "box": {
+          "left": 887.90625,
+          "top": 57.046875,
+          "right": 1002.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 899.90625,
+          "top": 67.046875,
+          "right": 990.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "Contact",
+        "active": false,
+        "box": {
+          "left": 1006.90625,
+          "top": 57.046875,
+          "right": 1089.90625,
+          "bottom": 98.640625
+        },
+        "text": {
+          "left": 1018.90625,
+          "top": 67.046875,
+          "right": 1077.90625,
+          "bottom": 87.046875
+        }
+      },
+      {
+        "label": "EN",
+        "active": false,
+        "box": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "text": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      },
+      {
+        "label": "PT",
+        "active": false,
+        "box": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "text": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      }
+    ],
+    "card": {
+      "left": 864,
+      "top": 274.34375,
+      "right": 1216,
+      "bottom": 563.09375
+    },
+    "header": {
+      "left": 0,
+      "top": 0,
+      "right": 1280,
+      "bottom": 115.6875
+    }
+  }
+}

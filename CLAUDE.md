@@ -79,6 +79,19 @@ decisions live in **`docs/ROADMAP.md`** (version-controlled source of truth; kee
 The API runs Ruby 4.0.9, Rails 8.1.4 and PostgreSQL 18.6 (ADR-0011). Do not add Python, Redis,
 Sidekiq or Vue until their phase.
 
+**3D mascot** (branch `poc/mascot-3d`, not yet published; M1–M5 done and approved, prepared for publishing by ADR-0018, pushed to the branch; merging awaits the owner's approval;
+reports in `poc/mascot-3d/`): a persistent 3D character on the nav and the Fun Fact card, in
+`apps/shell/src/mascot/three/`. **What the character is** lives in its `character/` folder (see its README and
+`docs/assets/MASCOT-3D-SPEC.md`), and everything else knows it only through `character/contract.ts`:
+`boundary.test.ts` rejects a bone, clip or measurement anywhere else. Every failure (an error in a frame, a lost
+context, a failed load, sustained slowness) takes one path back to the 2D mascot. Keep the watchdog conservative. It exists only in builds with `VITE_MASCOT_3D=1`: the comparison in
+`RootLayout.tsx` must stay an inline literal or a normal build keeps `three` and the model (a test builds
+with the flag off and checks). Only `npm run build:pages` sets the flag, so the public site has it and the local builds don't; `prepare-pages` refuses the test build (`VITE_MASCOT_3D_ALLOW_SOFTWARE`), and a published build exposes only `__mascot3d.report()`. Text about the mascot on the Architecture page depends on the flag too. The static suite therefore runs on the 2D fallback of the published build, and `e2e/tests/production-3d.spec.ts` covers its 3D path. The active character is `character/bruno/` (its README records
+provenance and licensing; **its licence (a paid Tripo plan with "Private Models · Commercial Use") and the model's Private setting were confirmed by the owner on 2026-11-03; a push to this public repository publishes it**, and its Blender scripts stay out of the
+repo); the CC0 robot that stood in during M1–M4 was deleted with the owner's approval (2026-11-03). A character's optional `look` is drawn by `look.ts`: unlit, an outline in the
+light theme, a CSS halo in the dark one (`mascot3d.css`), following theme changes live. In the 3D experience (desktop width, unless 3D has failed: the same rule as `gate.css`), About and Architecture show a fixed mascot Fun Fact instead of their own (`funFacts.ts`, `PageFunFact.tsx`); phones, the 2D fallback and flag-off builds keep the originals; `funFacts.test.ts` pins their numbers to the model. The 2D mascots stay in the page, hidden from the first paint in flagged builds at desktop widths by `gate.css` (added to `index.html` by `vite.config.ts`, flagged only), and take over on any failure through `<html data-mascot2d>`.
+No inline styles or decoders: the CSP is unchanged.
+
 ## Architecture
 
 - **Shell** (`apps/shell`, React + TypeScript + Vite): a single SPA that owns the layout, main
@@ -170,8 +183,8 @@ E2E_BASE_URL=https://…` tests a deployed site (read-only, starts nothing). `_h
   (`RequestLogger`); `/up` (`HealthController`) checks PostgreSQL and never returns error
   details. The browser smoke fails on any CSP violation; `SMOKE_WRITE=1` only against a
   throwaway database.
-- **CI** (ADR-0010, `.github/workflows/ci.yml`): on pushes to `main` and pull requests, five
-  parallel jobs: `quality` (`npm ci`, format, lint, typecheck, unit tests, `content:check`,
+- **CI** (ADR-0010, `.github/workflows/ci.yml`): on pushes to `main` and `poc/**`, and on pull requests,
+  parallel jobs (on this branch, also an advisory `e2e-mascot3d`): `quality` (`npm ci`, format, lint, typecheck, unit tests, `content:check`,
   build), `e2e` (full stack since Step 3.1: PostgreSQL service and Ruby, then Playwright + axe
   against the e2e API and the shell's full-stack preview; HTML report artifact), `e2e-static`
   (the same suite against the static build, no API; since Step 3.3) and `api` (`ruby/setup-ruby` from
@@ -187,8 +200,9 @@ E2E_BASE_URL=https://…` tests a deployed site (read-only, starts nothing). `_h
 ## Conventions
 
 - TypeScript `strict` mode (plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`).
-- Minimal dependencies. The shell's runtime deps (unchanged since Phase 1): `react`, `react-dom`,
-  `react-router` (v8), and `@fontsource-variable/inter` (self-hosted font). Adding a dependency requires a stated reason.
+- Minimal dependencies. The shell's runtime deps: `react`, `react-dom`, `react-router` (v8),
+  `@fontsource-variable/inter` (self-hosted font), and `three` (only in
+  flagged builds). Adding a dependency requires a stated reason.
 - Styling (ADR-0003): CSS Modules next to each component; global styles only in
   `apps/shell/src/styles/` (`reset.css`, `tokens.css`, `global.css`, plus the `.container`
   utility). Components use **purpose-named tokens only** (`--color-text`, `--color-accent`, ...),
@@ -241,7 +255,7 @@ E2E_BASE_URL=https://…` tests a deployed site (read-only, starts nothing). `_h
   models); pages render it. The owner's résumé is the source of truth: **never invent**
   experience, metrics, achievements or projects; no confidential employer/client details; private
   professional work is not a portfolio project; a personal project in a private repository is
-  shown without any link (`content/projects.test.ts`); a new project technology goes in four
+  shown without any link (`content/projects.test.ts`); wording only a card shows, like a category, goes in `content/projectDisplay.ts` (the API stores neither it nor that status wording); a new project technology goes in four
   places (`openapi.yaml` first, then `npm run api:types`, `Project::TECHNOLOGIES`,
   `sections/technologies.ts`); Python and AI engineering are presented only as
   areas of ongoing development. **Never publish a phone number** (`privacy.test.ts` rejects
@@ -394,6 +408,9 @@ Run from the repository root (after `nvm use`):
 | `npm run og-image -w apps/shell`         | Rebuild the social sharing image (`public/og-image.jpg`) from the art derivatives     |
 | `npm run test:e2e`                       | Full-stack E2E: the e2e API plus the preview                                          |
 | `npm run test:e2e:static`                | Static E2E: the static build alone, no API                                            |
+| `npm run test:e2e:mascot3d`              | Flagged 3D mascot E2E, in its own build, under the Pages emulator                     |
+| `npm run test:e2e:mascot3d:browsers`     | Flagged 3D mascot smoke test in Firefox and WebKit (local only)                       |
+| `npm run mascot:check-model -- <file>`   | Check a 3D character's GLB (CSP rules, clips, size targets)                           |
 | `npm run build:pages`                    | Static build prepared for Cloudflare Pages (Step 4.4)                                 |
 | `npm run pages:emulator:install`         | Install the Pages emulator once (the static E2E suite needs it)                       |
 | `docker build -t portfolio:local .`      | Build the production image (Step 4.2)                                                 |

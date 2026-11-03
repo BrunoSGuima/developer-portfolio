@@ -1,4 +1,5 @@
-import { useMessages } from '../../i18n/context.ts';
+import { useLocale, useMessages } from '../../i18n/context.ts';
+import { text } from '../../i18n/localized.ts';
 import { type TechId, technologies } from '../../sections/technologies.ts';
 import styles from './TechBadge.module.css';
 
@@ -11,11 +12,12 @@ interface TechBadgeProps {
 function TechBadge({ tech, status = 'live' }: TechBadgeProps) {
   const { label, tone } = technologies[tech];
   const messages = useMessages();
+  const locale = useLocale();
 
   return (
     <span className={styles.badge} data-tone={tone} data-status={status}>
       <span className={styles.dot} aria-hidden="true" />
-      {label}
+      {text(label, locale)}
       {status === 'planned' && (
         <>
           {' '}

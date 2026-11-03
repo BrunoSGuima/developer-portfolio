@@ -1,5 +1,6 @@
 node_modules
 dist
+.mascot3d-dist
 coverage
 playwright-report
 test-results

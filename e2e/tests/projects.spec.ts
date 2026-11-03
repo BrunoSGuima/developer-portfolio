@@ -1,7 +1,9 @@
 import { expect, test } from '@playwright/test';
 import { toProject } from '../../apps/shell/src/api/projects.ts';
 import type { ApiProjectList } from '../../apps/shell/src/api/types.ts';
+import { projectDisplay } from '../../apps/shell/src/content/projectDisplay.ts';
 import { projects as staticProjects } from '../../apps/shell/src/content/projects.ts';
+import { technologies } from '../../apps/shell/src/sections/technologies.ts';
 import { e2eMode } from '../support/mode.ts';
 import { clickLanguage } from '../support/shell.ts';
 import { languageOf, messages } from '../support/site.ts';
@@ -15,7 +17,7 @@ test.describe(`the Projects page (${e2eMode} build)`, () => {
   for (const locale of ['en', 'pt-BR'] as const) {
     const path = locale === 'en' ? '/projects' : '/pt-br/projects';
 
-    test(`shows the three projects in order at ${path}, each linked only where public`, async ({
+    test(`shows the projects in order at ${path}, each linked only where public`, async ({
       page,
     }) => {
       await page.goto(path);
@@ -35,6 +37,26 @@ test.describe(`the Projects page (${e2eMode} build)`, () => {
         }
       }
       await expect(page.getByRole('alert')).toHaveCount(0);
+    });
+
+    test(`shows the Easy TV App's full wording, with no link or image, at ${path}`, async ({
+      page,
+    }) => {
+      const display = projectDisplay['easy-tv-app']!;
+      await page.goto(path);
+
+      const card = page.getByRole('article', { name: 'Easy TV App' });
+      await expect(card).toContainText(display.statusLabel[locale]);
+      await expect(card).toContainText(display.category[locale]);
+      for (const tech of ['mobile-development', 'android', 'product-development'] as const) {
+        const { label } = technologies[tech];
+        await expect(card).toContainText(typeof label === 'string' ? label : label[locale]);
+      }
+      await expect(card.locator('a, img')).toHaveCount(0);
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      expect(overflow).toBeLessThanOrEqual(0);
     });
   }
 });

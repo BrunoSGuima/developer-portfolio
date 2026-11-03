@@ -1,0 +1,169 @@
+{
+  "seated home-light-1280": {
+    "size": 48,
+    "box": {
+      "left": 673,
+      "right": 701,
+      "top": 13.5,
+      "bottom": 51
+    },
+    "overflow": 0
+  },
+  "seated about-light-1280": {
+    "size": 48,
+    "box": {
+      "left": 744.5,
+      "right": 772.5,
+      "top": 13.5,
+      "bottom": 51
+    },
+    "overflow": 0
+  },
+  "seated contact-dark-1280": {
+    "size": 48,
+    "box": {
+      "left": 1032.5,
+      "right": 1060.5,
+      "top": 13.5,
+      "bottom": 51
+    },
+    "overflow": 0
+  },
+  "seated projects-ptbr-800": {
+    "size": 48,
+    "box": {
+      "left": 510.5,
+      "right": 539,
+      "top": 12.5,
+      "bottom": 50
+    },
+    "overflow": 0
+  },
+  "seated home-1920": {
+    "size": 48,
+    "box": {
+      "left": 1185,
+      "right": 1213,
+      "top": 13.5,
+      "bottom": 51
+    },
+    "overflow": 0
+  },
+  "trip walk phases": [
+    "a-rising",
+    "b-turning",
+    "c-moving",
+    "d-turning-back",
+    "e-sitting",
+    "f-seated"
+  ],
+  "trip walk JS cost per frame (software)": {
+    "samples": 179,
+    "meanMs": 1.2346368768361693,
+    "maxMs": 67.40000009536743
+  },
+  "trip walk errors": [],
+  "trip run phases": [
+    "a-rising",
+    "b-turning",
+    "c-moving",
+    "d-turning-back",
+    "e-sitting",
+    "f-seated"
+  ],
+  "trip run JS cost per frame (software)": {
+    "samples": 333,
+    "meanMs": 1.3003003053121023,
+    "maxMs": 63.700000047683716
+  },
+  "trip run errors": [],
+  "view transition": {
+    "started": 1,
+    "pseudo": [
+      "::view-transition-group(page)",
+      "::view-transition-new(page)",
+      "::view-transition-new(page)",
+      "::view-transition-old(page)",
+      "::view-transition-old(page)"
+    ],
+    "canvas": "mascot3d",
+    "sameCanvas": 1
+  },
+  "focus clearance": [
+    {
+      "label": "Home",
+      "fv": true,
+      "active": false,
+      "ringTop": 52.046875,
+      "width": 69,
+      "characterBottom": 51,
+      "clearance": 1.05
+    },
+    {
+      "label": "About",
+      "fv": true,
+      "active": true,
+      "ringTop": 52.046875,
+      "width": 72,
+      "characterBottom": 51,
+      "clearance": 1.05
+    },
+    {
+      "label": "Projects",
+      "fv": true,
+      "active": false,
+      "ringTop": 52.046875,
+      "width": 85,
+      "characterBottom": 51,
+      "clearance": 1.05
+    },
+    {
+      "label": "Architecture",
+      "fv": true,
+      "active": false,
+      "ringTop": 52.046875,
+      "width": 115,
+      "characterBottom": 51,
+      "clearance": 1.05
+    },
+    {
+      "label": "Contact",
+      "fv": true,
+      "active": false,
+      "ringTop": 52.046875,
+      "width": 83,
+      "characterBottom": 51,
+      "clearance": 1.05
+    },
+    {
+      "label": "Contact",
+      "fv": true,
+      "active": false,
+      "ringTop": 52.046875,
+      "width": 83,
+      "characterBottom": 51,
+      "clearance": 1.05
+    },
+    {
+      "label": "Contact",
+      "fv": true,
+      "active": false,
+      "ringTop": 52.046875,
+      "width": 83,
+      "characterBottom": 51,
+      "clearance": 1.05
+    }
+  ],
+  "scroll 60 px: canvas moved by": 60,
+  "frames rendered during 2 s at rest, after the idle": 0,
+  "fallback, no WebGL": {
+    "active": null,
+    "canvas": 0,
+    "header2d": "visible"
+  },
+  "flag off, Pages build under the emulator": {
+    "overlay": 0,
+    "header2d": "visible"
+  },
+  "flag off, 3D requests": []
+}

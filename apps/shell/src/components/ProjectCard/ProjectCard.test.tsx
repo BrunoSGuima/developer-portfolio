@@ -18,6 +18,13 @@ const project: Project = {
 };
 
 describe('ProjectCard', () => {
+  it('shows the usual status word and no category for a project with no extra wording', () => {
+    const { container } = render(<ProjectCard project={project} />);
+
+    expect(screen.getByText('In progress')).toBeInTheDocument();
+    expect(container.querySelectorAll('article > p')).toHaveLength(1);
+  });
+
   it('is an article named by its heading, with status, description and technologies', () => {
     render(<ProjectCard project={project} />);
 

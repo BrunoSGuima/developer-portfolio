@@ -1,0 +1,481 @@
+{
+  "landings": [
+    {
+      "width": 800,
+      "lang": "en",
+      "page": "/",
+      "x": 365.5,
+      "side": "L",
+      "cardTop": 157,
+      "cardLeft": 128,
+      "cardRight": 768,
+      "peek": null
+    },
+    {
+      "width": 800,
+      "lang": "en",
+      "page": "/about",
+      "x": 446.556875,
+      "side": "L",
+      "cardTop": 248,
+      "cardLeft": 128,
+      "cardRight": 768,
+      "peek": [253, 413]
+    },
+    {
+      "width": 800,
+      "lang": "en",
+      "page": "/projects",
+      "x": 518.5,
+      "side": "R",
+      "cardTop": 248,
+      "cardLeft": 128,
+      "cardRight": 768,
+      "peek": [253, 413]
+    },
+    {
+      "width": 800,
+      "lang": "en",
+      "page": "/architecture",
+      "x": 621,
+      "side": "R",
+      "cardTop": 248,
+      "cardLeft": 128,
+      "cardRight": 768,
+      "peek": [253, 413]
+    },
+    {
+      "width": 800,
+      "lang": "en",
+      "page": "/contact",
+      "x": 725,
+      "side": "R",
+      "cardTop": 248,
+      "cardLeft": 128,
+      "cardRight": 768,
+      "peek": [253, 413]
+    },
+    {
+      "width": 800,
+      "lang": "/pt-br",
+      "page": "/",
+      "x": null,
+      "side": null,
+      "cardTop": 138,
+      "cardLeft": 128,
+      "cardRight": 768,
+      "peek": null
+    },
+    {
+      "width": 800,
+      "lang": "/pt-br",
+      "page": "/about",
+      "x": 446.556875,
+      "side": "L",
+      "cardTop": 229,
+      "cardLeft": 128,
+      "cardRight": 768,
+      "peek": [253, 413]
+    },
+    {
+      "width": 800,
+      "lang": "/pt-br",
+      "page": "/projects",
+      "x": 525,
+      "side": "R",
+      "cardTop": 229,
+      "cardLeft": 128,
+      "cardRight": 768,
+      "peek": [253, 413]
+    },
+    {
+      "width": 800,
+      "lang": "/pt-br",
+      "page": "/architecture",
+      "x": 624,
+      "side": "R",
+      "cardTop": 229,
+      "cardLeft": 128,
+      "cardRight": 768,
+      "peek": [253, 413]
+    },
+    {
+      "width": 800,
+      "lang": "/pt-br",
+      "page": "/contact",
+      "x": 724.5,
+      "side": "R",
+      "cardTop": 229,
+      "cardLeft": 128,
+      "cardRight": 768,
+      "peek": [253, 413]
+    },
+    {
+      "width": 1024,
+      "lang": "en",
+      "page": "/",
+      "x": 663.951875,
+      "side": "L",
+      "cardTop": 156,
+      "cardLeft": 643,
+      "cardRight": 968,
+      "peek": null
+    },
+    {
+      "width": 1024,
+      "lang": "en",
+      "page": "/about",
+      "x": 878.54125,
+      "side": "R",
+      "cardTop": 261,
+      "cardLeft": 640,
+      "cardRight": 992,
+      "peek": [660, 845]
+    },
+    {
+      "width": 1024,
+      "lang": "en",
+      "page": "/projects",
+      "x": 878.54125,
+      "side": "R",
+      "cardTop": 261,
+      "cardLeft": 640,
+      "cardRight": 992,
+      "peek": [660, 845]
+    },
+    {
+      "width": 1024,
+      "lang": "en",
+      "page": "/architecture",
+      "x": 878.54125,
+      "side": "R",
+      "cardTop": 261,
+      "cardLeft": 640,
+      "cardRight": 992,
+      "peek": [660, 845]
+    },
+    {
+      "width": 1024,
+      "lang": "en",
+      "page": "/contact",
+      "x": 878.54125,
+      "side": "R",
+      "cardTop": 261,
+      "cardLeft": 640,
+      "cardRight": 992,
+      "peek": [660, 845]
+    },
+    {
+      "width": 1024,
+      "lang": "/pt-br",
+      "page": "/",
+      "x": 663.951875,
+      "side": "L",
+      "cardTop": 156,
+      "cardLeft": 643,
+      "cardRight": 968,
+      "peek": null
+    },
+    {
+      "width": 1024,
+      "lang": "/pt-br",
+      "page": "/about",
+      "x": 878.54125,
+      "side": "R",
+      "cardTop": 261,
+      "cardLeft": 640,
+      "cardRight": 992,
+      "peek": [660, 845]
+    },
+    {
+      "width": 1024,
+      "lang": "/pt-br",
+      "page": "/projects",
+      "x": 878.54125,
+      "side": "R",
+      "cardTop": 261,
+      "cardLeft": 640,
+      "cardRight": 992,
+      "peek": [660, 845]
+    },
+    {
+      "width": 1024,
+      "lang": "/pt-br",
+      "page": "/architecture",
+      "x": 878.54125,
+      "side": "R",
+      "cardTop": 261,
+      "cardLeft": 640,
+      "cardRight": 992,
+      "peek": [660, 845]
+    },
+    {
+      "width": 1024,
+      "lang": "/pt-br",
+      "page": "/contact",
+      "x": 878.54125,
+      "side": "R",
+      "cardTop": 261,
+      "cardLeft": 640,
+      "cardRight": 992,
+      "peek": [660, 845]
+    },
+    {
+      "width": 1280,
+      "lang": "en",
+      "page": "/",
+      "x": 823.951875,
+      "side": "L",
+      "cardTop": 156,
+      "cardLeft": 803,
+      "cardRight": 1224,
+      "peek": null
+    },
+    {
+      "width": 1280,
+      "lang": "en",
+      "page": "/about",
+      "x": 1114.385,
+      "side": "R",
+      "cardTop": 274,
+      "cardLeft": 864,
+      "cardRight": 1216,
+      "peek": [873, 1081]
+    },
+    {
+      "width": 1280,
+      "lang": "en",
+      "page": "/projects",
+      "x": 1114.385,
+      "side": "R",
+      "cardTop": 274,
+      "cardLeft": 864,
+      "cardRight": 1216,
+      "peek": [873, 1081]
+    },
+    {
+      "width": 1280,
+      "lang": "en",
+      "page": "/architecture",
+      "x": 1114.385,
+      "side": "R",
+      "cardTop": 274,
+      "cardLeft": 864,
+      "cardRight": 1216,
+      "peek": [873, 1081]
+    },
+    {
+      "width": 1280,
+      "lang": "en",
+      "page": "/contact",
+      "x": 1114.385,
+      "side": "R",
+      "cardTop": 274,
+      "cardLeft": 864,
+      "cardRight": 1216,
+      "peek": [873, 1081]
+    },
+    {
+      "width": 1280,
+      "lang": "/pt-br",
+      "page": "/",
+      "x": 823.951875,
+      "side": "L",
+      "cardTop": 156,
+      "cardLeft": 803,
+      "cardRight": 1224,
+      "peek": null
+    },
+    {
+      "width": 1280,
+      "lang": "/pt-br",
+      "page": "/about",
+      "x": 1114.385,
+      "side": "R",
+      "cardTop": 274,
+      "cardLeft": 864,
+      "cardRight": 1216,
+      "peek": [873, 1081]
+    },
+    {
+      "width": 1280,
+      "lang": "/pt-br",
+      "page": "/projects",
+      "x": 1114.385,
+      "side": "R",
+      "cardTop": 274,
+      "cardLeft": 864,
+      "cardRight": 1216,
+      "peek": [873, 1081]
+    },
+    {
+      "width": 1280,
+      "lang": "/pt-br",
+      "page": "/architecture",
+      "x": 1114.385,
+      "side": "R",
+      "cardTop": 274,
+      "cardLeft": 864,
+      "cardRight": 1216,
+      "peek": [873, 1081]
+    },
+    {
+      "width": 1280,
+      "lang": "/pt-br",
+      "page": "/contact",
+      "x": 1114.385,
+      "side": "R",
+      "cardTop": 274,
+      "cardLeft": 864,
+      "cardRight": 1216,
+      "peek": [873, 1081]
+    },
+    {
+      "width": 1920,
+      "lang": "en",
+      "page": "/",
+      "x": 1207.951875,
+      "side": "L",
+      "cardTop": 156,
+      "cardLeft": 1187,
+      "cardRight": 1752,
+      "peek": null
+    },
+    {
+      "width": 1920,
+      "lang": "en",
+      "page": "/about",
+      "x": 1626.385,
+      "side": "R",
+      "cardTop": 274,
+      "cardLeft": 1376,
+      "cardRight": 1728,
+      "peek": [1385, 1593]
+    },
+    {
+      "width": 1920,
+      "lang": "en",
+      "page": "/projects",
+      "x": 1626.385,
+      "side": "R",
+      "cardTop": 274,
+      "cardLeft": 1376,
+      "cardRight": 1728,
+      "peek": [1385, 1593]
+    },
+    {
+      "width": 1920,
+      "lang": "en",
+      "page": "/architecture",
+      "x": 1626.385,
+      "side": "R",
+      "cardTop": 274,
+      "cardLeft": 1376,
+      "cardRight": 1728,
+      "peek": [1385, 1593]
+    },
+    {
+      "width": 1920,
+      "lang": "en",
+      "page": "/contact",
+      "x": 1626.385,
+      "side": "R",
+      "cardTop": 274,
+      "cardLeft": 1376,
+      "cardRight": 1728,
+      "peek": [1385, 1593]
+    },
+    {
+      "width": 1920,
+      "lang": "/pt-br",
+      "page": "/",
+      "x": 1207.951875,
+      "side": "L",
+      "cardTop": 156,
+      "cardLeft": 1187,
+      "cardRight": 1752,
+      "peek": null
+    },
+    {
+      "width": 1920,
+      "lang": "/pt-br",
+      "page": "/about",
+      "x": 1626.385,
+      "side": "R",
+      "cardTop": 274,
+      "cardLeft": 1376,
+      "cardRight": 1728,
+      "peek": [1385, 1593]
+    },
+    {
+      "width": 1920,
+      "lang": "/pt-br",
+      "page": "/projects",
+      "x": 1626.385,
+      "side": "R",
+      "cardTop": 274,
+      "cardLeft": 1376,
+      "cardRight": 1728,
+      "peek": [1385, 1593]
+    },
+    {
+      "width": 1920,
+      "lang": "/pt-br",
+      "page": "/architecture",
+      "x": 1626.385,
+      "side": "R",
+      "cardTop": 274,
+      "cardLeft": 1376,
+      "cardRight": 1728,
+      "peek": [1385, 1593]
+    },
+    {
+      "width": 1920,
+      "lang": "/pt-br",
+      "page": "/contact",
+      "x": 1626.385,
+      "side": "R",
+      "cardTop": 274,
+      "cardLeft": 1376,
+      "cardRight": 1728,
+      "peek": [1385, 1593]
+    }
+  ],
+  "timing": {
+    "about-en-light": {
+      "samples": 658,
+      "meanMs": 1.0759878417641195,
+      "maxMs": 67.70000004768372
+    },
+    "about-en-dark": {
+      "samples": 650,
+      "meanMs": 1.0069230776566727,
+      "maxMs": 67.89999997615814
+    },
+    "about-pt-light": {
+      "samples": 657,
+      "meanMs": 1.1312024346588228,
+      "maxMs": 70.5
+    },
+    "about-pt-dark": {
+      "samples": 648,
+      "meanMs": 1.239969136354364,
+      "maxMs": 143.69999992847443
+    },
+    "home-en-light": {
+      "samples": 504,
+      "meanMs": 1.228373015210742,
+      "maxMs": 65.79999995231628
+    },
+    "home-en-dark": {
+      "samples": 505,
+      "meanMs": 1.1291089124018603,
+      "maxMs": 78.60000002384186
+    },
+    "about-800": {
+      "samples": 497,
+      "meanMs": 1.1229376277213605,
+      "maxMs": 71.19999992847443
+    }
+  }
+}

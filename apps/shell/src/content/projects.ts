@@ -42,6 +42,20 @@ export const projects: readonly Project[] = [
     links: [],
   },
   {
+    // The repository is private: no link (nothing may point to it). The owner's wording: no features,
+    // architecture or release date.
+    id: 'easy-tv-app',
+    name: { en: 'Easy TV App', 'pt-BR': 'Easy TV App' },
+    status: 'in-progress',
+    description: {
+      en: 'A mobile application currently under development, focused on delivering a simple and accessible user experience. Preparing for a future release on Google Play.',
+      'pt-BR':
+        'Um aplicativo móvel em desenvolvimento, com foco em oferecer uma experiência simples e acessível. Em preparação para um futuro lançamento no Google Play.',
+    },
+    tech: ['mobile-development', 'android', 'product-development'],
+    links: [],
+  },
+  {
     id: 'auction-house',
     name: { en: 'Auction House', 'pt-BR': 'Casa de Leilões' },
     status: 'done',

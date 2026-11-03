@@ -1,0 +1,98 @@
+{
+  "A-today en light": {
+    "focusVisible": true,
+    "charBottom": 51,
+    "charTop": 13.5,
+    "indicatorHiddenPct": 0
+  },
+  "B-compact-rise en light": {
+    "focusVisible": true,
+    "charBottom": 58,
+    "charTop": 20.5,
+    "indicatorHiddenPct": 0
+  },
+  "C-compact-no-rise en light": {
+    "focusVisible": true,
+    "charBottom": 68,
+    "charTop": 30.5,
+    "indicatorHiddenPct": 11.3
+  },
+  "D-open-top-no-rise en light": {
+    "focusVisible": true,
+    "charBottom": 68,
+    "charTop": 30.5,
+    "indicatorHiddenPct": 7.5
+  },
+  "A-today pt light": {
+    "focusVisible": true,
+    "charBottom": 51,
+    "charTop": 13.5,
+    "indicatorHiddenPct": 0
+  },
+  "B-compact-rise pt light": {
+    "focusVisible": true,
+    "charBottom": 58,
+    "charTop": 20.5,
+    "indicatorHiddenPct": 0
+  },
+  "C-compact-no-rise pt light": {
+    "focusVisible": true,
+    "charBottom": 68,
+    "charTop": 30.5,
+    "indicatorHiddenPct": 11.7
+  },
+  "D-open-top-no-rise pt light": {
+    "focusVisible": true,
+    "charBottom": 68,
+    "charTop": 30.5,
+    "indicatorHiddenPct": 7.9
+  },
+  "A-today en dark": {
+    "focusVisible": true,
+    "charBottom": 51,
+    "charTop": 13.5,
+    "indicatorHiddenPct": 0
+  },
+  "B-compact-rise en dark": {
+    "focusVisible": true,
+    "charBottom": 58,
+    "charTop": 20.5,
+    "indicatorHiddenPct": 0
+  },
+  "C-compact-no-rise en dark": {
+    "focusVisible": true,
+    "charBottom": 68,
+    "charTop": 30.5,
+    "indicatorHiddenPct": 11.4
+  },
+  "D-open-top-no-rise en dark": {
+    "focusVisible": true,
+    "charBottom": 68,
+    "charTop": 30.5,
+    "indicatorHiddenPct": 7.4
+  },
+  "A-today pt dark": {
+    "focusVisible": true,
+    "charBottom": 51,
+    "charTop": 13.5,
+    "indicatorHiddenPct": 0
+  },
+  "B-compact-rise pt dark": {
+    "focusVisible": true,
+    "charBottom": 58,
+    "charTop": 20.5,
+    "indicatorHiddenPct": 0
+  },
+  "C-compact-no-rise pt dark": {
+    "focusVisible": true,
+    "charBottom": 68,
+    "charTop": 30.5,
+    "indicatorHiddenPct": 11.6
+  },
+  "D-open-top-no-rise pt dark": {
+    "focusVisible": true,
+    "charBottom": 68,
+    "charTop": 30.5,
+    "indicatorHiddenPct": 7.7
+  }
+}

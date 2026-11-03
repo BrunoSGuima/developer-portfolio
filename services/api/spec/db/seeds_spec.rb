@@ -15,15 +15,24 @@ RSpec.describe "Seeds" do
     expect(project.links.map(&:url)).to eq([ "https://github.com/BrunoSGuima/developer-portfolio" ])
   end
 
-  it "creates the three published projects in display order" do
+  it "creates the four published projects in display order" do
     load_seeds
 
     expect(Project.published.ordered.pluck(:slug))
-      .to eq(%w[developer-portfolio personal-finance-app auction-house])
+      .to eq(%w[developer-portfolio personal-finance-app easy-tv-app auction-house])
     expect(Project.find_by!(slug: "auction-house")).to have_attributes(status: "done",
                                                                        technologies: %w[rails rspec bootstrap])
     expect(Project.find_by!(slug: "auction-house").links.map(&:url))
       .to eq([ "https://github.com/BrunoSGuima/auction-house" ])
+  end
+
+  it "gives the Easy TV App (a private repository) no links" do
+    load_seeds
+
+    project = Project.find_by!(slug: "easy-tv-app")
+    expect(project).to have_attributes(status: "in-progress",
+                                       technologies: %w[mobile-development android product-development])
+    expect(project.links).to be_empty
   end
 
   it "gives the Personal Finance App (a private repository) no links" do

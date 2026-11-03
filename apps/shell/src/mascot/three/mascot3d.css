@@ -1,0 +1,62 @@
+/*
+ * Loaded only with the flagged 3D mascot. Never interactive. It clips only sideways, so the character
+ * can't cause horizontal scrolling yet can reach a card below the first screen of a short window.
+ */
+.mascot3d {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: var(--z-mascot);
+  height: 0;
+  overflow: clip visible;
+  pointer-events: none;
+}
+
+/* Keep its size in step with WIDTH and HEIGHT in engine.ts. */
+.mascot3d canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 180px;
+  height: 160px;
+  /* Its own transition group: otherwise the page's crossfade (ADR-0008) would paint over it. */
+  view-transition-name: mascot3d;
+}
+
+/* Dark clothes on a dark page: a soft halo, for a character that asks for one (its `look`). */
+html[data-theme='dark'] .mascot3d canvas[data-mascot-halo] {
+  filter: drop-shadow(0 0 1.2px rgb(214 224 255 / 28%));
+}
+
+::view-transition-group(mascot3d),
+::view-transition-new(mascot3d) {
+  animation: none;
+}
+
+::view-transition-old(mascot3d) {
+  display: none;
+}
+
+/*
+ * The same ring, moved inside the link's padding, so the character sits right on top of it instead of
+ * floating above where it would otherwise be. It hides none of the ring. Only while 3D is active:
+ * the rest of the site, and the 2D fallback, keep the usual ring. Keep in step with NAV_RING_OUTSET.
+ */
+html[data-mascot3d='active'] [data-nav='main'] a:focus-visible {
+  outline-offset: -5px;
+}
+
+/* The 2D nav mascot keeps running underneath, ready to take over if WebGL fails. */
+html[data-mascot3d='active'] [data-mascot='header'] {
+  visibility: hidden;
+}
+
+/* On paper the 2D nav mascot stands in: a canvas prints poorly, at a place that means nothing there. */
+@media print {
+  .mascot3d {
+    display: none;
+  }
+
+  html[data-mascot3d='active'] [data-mascot='header'] {
+    visibility: visible;
+  }
+}

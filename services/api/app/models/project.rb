@@ -6,7 +6,10 @@ class Project < ApplicationRecord
 
   # Technology ids a project can show as badges (shell: sections/technologies.ts). Labels and
   # colours are presentation and stay in the shell. Mirrored by the Technology enum in docs/openapi.yaml.
-  TECHNOLOGIES = %w[react typescript vite react-router vue rails flutter dart rspec bootstrap].freeze
+  TECHNOLOGIES = %w[
+    react typescript vite react-router vue rails flutter dart rspec bootstrap
+    mobile-development android product-development
+  ].freeze
 
   SLUG_FORMAT = /\A[a-z0-9]+(-[a-z0-9]+)*\z/
 

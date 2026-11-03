@@ -1,4 +1,5 @@
 import { isPlaceholder } from '../../content/placeholder.ts';
+import { projectDisplay } from '../../content/projectDisplay.ts';
 import type { Project } from '../../projects/model.ts';
 import { useLocale, useMessages } from '../../i18n/context.ts';
 import { pick } from '../../i18n/localized.ts';
@@ -11,6 +12,7 @@ function ProjectCard({ project }: { project: Project }) {
   const locale = useLocale();
   const messages = useMessages();
   const headingId = `project-${project.id}`;
+  const display = projectDisplay[project.id];
 
   return (
     <article className={styles.card} aria-labelledby={headingId}>
@@ -18,8 +20,12 @@ function ProjectCard({ project }: { project: Project }) {
         <h2 id={headingId} className={styles.name}>
           {pick(project.name, locale)}
         </h2>
-        <StatusTag status={project.status} />
+        <StatusTag
+          status={project.status}
+          {...(display ? { label: pick(display.statusLabel, locale) } : {})}
+        />
       </div>
+      {display && <p className={styles.category}>{pick(display.category, locale)}</p>}
       <p>{pick(project.description, locale)}</p>
       <ul aria-label={messages.projectCard.technologies} className={styles.badges}>
         {project.tech.map((tech) => (

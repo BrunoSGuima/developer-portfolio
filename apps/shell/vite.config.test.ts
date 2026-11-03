@@ -1,10 +1,20 @@
 // @vitest-environment node
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { createServer as createHttpServer, type IncomingMessage, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer, type ViteDevServer } from 'vite';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import config, { apiProxy, buildModeFile, checkAppMode } from './vite.config.ts';
+import config, {
+  apiProxy,
+  buildModeFile,
+  checkAppMode,
+  checkMascot3d,
+  checkMascot3dTestBuild,
+} from './vite.config.ts';
 
 describe('the build mode (VITE_APP_MODE)', () => {
   it('defaults to static', () => {
@@ -161,5 +171,69 @@ describe('the /api proxy, end to end through a Vite server', () => {
       host: new URL(base).host,
       body,
     });
+  });
+});
+
+describe('the 3D mascot flag', () => {
+  it('is off when unset or empty', () => {
+    expect(checkMascot3d({})).toBe(false);
+    expect(checkMascot3d({ VITE_MASCOT_3D: '' })).toBe(false);
+  });
+
+  it('is on only for "1"', () => {
+    expect(checkMascot3d({ VITE_MASCOT_3D: '1' })).toBe(true);
+  });
+
+  it('fails the build on anything else', () => {
+    expect(() => checkMascot3d({ VITE_MASCOT_3D: 'true' })).toThrow(/VITE_MASCOT_3D/);
+  });
+
+  function prepareWith(marker: object) {
+    const dist = mkdtempSync(join(tmpdir(), 'pages-guard-'));
+    writeFileSync(join(dist, 'index.html'), '');
+    writeFileSync(join(dist, 'build-mode.json'), JSON.stringify(marker));
+    const script = fileURLToPath(new URL('../../scripts/prepare-pages.mjs', import.meta.url));
+    return spawnSync(process.execPath, [script, dist], { encoding: 'utf8' });
+  }
+
+  it('reaches Cloudflare Pages in the published build, ADR-0018', () => {
+    const result = prepareWith({ mode: 'static', mascot3d: true });
+    expect(result.status).toBe(0);
+    expect(result.stdout).toMatch(/with the 3D mascot/);
+  });
+
+  it('never lets the test build reach Cloudflare Pages: it accepts software renderers', () => {
+    const result = prepareWith({ mode: 'static', mascot3d: true, mascot3dTestBuild: true });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/test build/);
+  });
+
+  it('never lets a full-stack build with the mascot reach Cloudflare Pages', () => {
+    expect(prepareWith({ mode: 'fullstack', mascot3d: true }).status).toBe(1);
+  });
+
+  it('still accepts a static build without it, the one-line way back', () => {
+    const result = prepareWith({ mode: 'static' });
+    expect(result.status).toBe(0);
+    expect(result.stdout).toMatch(/without the 3D mascot/);
+  });
+
+  it('is on in the Pages build and in no other build script', () => {
+    const { scripts } = JSON.parse(
+      readFileSync(fileURLToPath(new URL('../../package.json', import.meta.url)), 'utf8'),
+    ) as { scripts: Record<string, string> };
+    const flagged = Object.entries(scripts)
+      .filter(([, command]) => command.includes('VITE_MASCOT_3D'))
+      .map(([name]) => name);
+    expect(flagged).toEqual(['build:pages']);
+    expect(scripts['build:pages']).not.toContain('ALLOW_SOFTWARE');
+  });
+
+  it('marks the test build, and only it, in build-mode.json', () => {
+    expect(checkMascot3dTestBuild({})).toBe(false);
+    expect(checkMascot3dTestBuild({ VITE_MASCOT_3D_ALLOW_SOFTWARE: '1' })).toBe(true);
+    expect(() => checkMascot3dTestBuild({ VITE_MASCOT_3D_ALLOW_SOFTWARE: 'yes' })).toThrow(
+      /ALLOW_SOFTWARE/,
+    );
   });
 });

@@ -1,3 +1,5 @@
+import type { Text } from '../i18n/localized.ts';
+
 /**
  * Technologies that can appear as Fun Fact badges. Add an entry only when a section references
  * it; `TechId` is derived from the keys, so a misspelled badge is a compile error.
@@ -6,7 +8,8 @@
 export type BadgeTone = 'blue' | 'slate' | 'green' | 'burgundy';
 
 export interface Technology {
-  label: string;
+  /** A name stays the same in every language; a skill or discipline is translated. */
+  label: Text;
   tone: BadgeTone;
 }
 
@@ -22,6 +25,15 @@ export const technologies = {
   dart: { label: 'Dart', tone: 'slate' },
   rspec: { label: 'RSpec', tone: 'burgundy' },
   bootstrap: { label: 'Bootstrap', tone: 'slate' },
+  'mobile-development': {
+    label: { en: 'Mobile Development', 'pt-BR': 'Desenvolvimento Mobile' },
+    tone: 'blue',
+  },
+  android: { label: 'Android', tone: 'green' },
+  'product-development': {
+    label: { en: 'Product Development', 'pt-BR': 'Desenvolvimento de Produto' },
+    tone: 'slate',
+  },
 } as const satisfies Record<string, Technology>;
 
 export type TechId = keyof typeof technologies;

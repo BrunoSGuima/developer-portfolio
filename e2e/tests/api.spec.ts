@@ -25,9 +25,11 @@ test.describe('the API through the /api proxy', () => {
     expect(data.map((item) => item.slug)).toEqual([
       'developer-portfolio',
       'personal-finance-app',
+      'easy-tv-app',
       'auction-house',
     ]);
     expect(data.find((item) => item.slug === 'personal-finance-app')?.links).toEqual([]);
+    expect(data.find((item) => item.slug === 'easy-tv-app')?.links).toEqual([]);
   });
 
   test('is same-origin for the page: a plain fetch works without CORS', async ({ page }) => {
