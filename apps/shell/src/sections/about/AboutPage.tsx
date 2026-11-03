@@ -39,7 +39,6 @@ function AboutPage() {
             );
           })}
         </ol>
-        <p className={page.note}>{pick(about.careerNote, locale)}</p>
       </section>
 
       <section className={page.section} aria-labelledby="skills">

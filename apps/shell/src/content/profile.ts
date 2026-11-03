@@ -72,7 +72,6 @@ export const home: HomeContent = {
 
 export interface AboutContent {
   lead: Localized<string>;
-  careerNote: Localized<string>;
   background: Localized<string>;
   backgroundDetail: Localized<Content>;
   /**
@@ -87,10 +86,6 @@ export const about: AboutContent = {
     en: "I'm a Full-Stack Software Engineer based in Salvador, Brazil. Since 2023 I've built and maintained production web applications with Ruby on Rails, React and Vue.js, working across back end, front end, background processing and search, and collaborating with Engineering, Product and QA.",
     'pt-BR':
       'Sou Engenheiro de Software Full-Stack e moro em Salvador, Bahia. Desde 2023, desenvolvo e mantenho aplicações web em produção com Ruby on Rails, React e Vue.js, atuando em back-end, front-end, processamento em segundo plano e busca, em colaboração com as equipes de Engenharia, Produto e QA.',
-  },
-  careerNote: {
-    en: 'A more detailed career section is planned for this site.',
-    'pt-BR': 'Uma seção mais detalhada sobre a minha carreira está planejada para este site.',
   },
   background: {
     en: "Before moving into software engineering, I earned a Bachelor's degree in Law.",
