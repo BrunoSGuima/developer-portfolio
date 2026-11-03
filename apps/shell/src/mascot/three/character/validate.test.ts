@@ -74,13 +74,6 @@ describe('the model check', () => {
     });
   }
 
-  it('the temporary robot passes, with its size targets to review', () => {
-    const result = run('apps/shell/src/mascot/three/character/robot/RobotExpressive.glb');
-    expect(result.status).toBe(0);
-    expect(result.stderr).toMatch(/Target: 453 KB/);
-    expect(result.stderr).toMatch(/Target: 43 bones/);
-  });
-
   it('the character himself passes cleanly', () => {
     const result = run('apps/shell/src/mascot/three/character/bruno/bruno.glb');
     expect(result.status).toBe(0);

@@ -75,7 +75,7 @@ test.describe('at a desktop width', () => {
     await reportHardwareGpu(page);
     const requests: string[] = [];
     page.on('request', (request) => requests.push(request.url()));
-    await page.goto('/?mascot-character=robot');
+    await page.goto('/?mascot-character=fixture');
     await expect(page.locator('html')).toHaveAttribute('data-mascot3d', 'active', {
       timeout: 20_000,
     });

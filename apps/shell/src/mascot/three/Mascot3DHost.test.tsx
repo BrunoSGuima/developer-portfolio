@@ -2,13 +2,13 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { setMedia } from '../../test/media.ts';
 import { canRun3D } from './capabilities.ts';
-import { robot } from './character/robot/profile.ts';
+import { unitMetrics } from './character/fixture/unitMetrics.ts';
 import { createMascotEngine, type MascotEngine } from './engine.ts';
 import Mascot3DHost from './Mascot3DHost.tsx';
 import { resetFailureForTests } from './useMascotDirector.ts';
 
 const anchor = {
-  metrics: robot.metrics,
+  metrics: unitMetrics,
   x: 100,
   restLine: 68,
   ringLine: 58,
@@ -34,7 +34,7 @@ vi.mock('./engine.ts', () => ({ createMascotEngine: vi.fn() }));
 
 function fakeEngine() {
   return {
-    metrics: robot.metrics,
+    metrics: unitMetrics,
     place: vi.fn(),
     navigate: vi.fn(),
     reanchor: vi.fn(),

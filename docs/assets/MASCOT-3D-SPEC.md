@@ -72,7 +72,7 @@ None so far.
 | Jump         | Yes      | In place: a crouch, flight and a landing, as one clip. Its takeoff, touchdown and end times go in the profile, and the system retimes the flight to fit the distance. The body may rise within the clip, within reason: the system keeps his head on the page |
 | Sit          | Yes      | From a clip or built from bones. **Nothing may hang below the seat**: his legs and hands would cover the nav's label. Sitting and standing must blend smoothly                                                                                                |
 | Point        | Yes      | **With either arm**, down and across, towards the card's content. From a clip or from bones                                                                                                                                                                   |
-| Blink, smile | Optional | The robot can't do these. They would add a lot of personality at this size                                                                                                                                                                                    |
+| Blink, smile | Optional | The stand-in robot of M1–M4 couldn't do these. They would add a lot of personality at this size                                                                                                                                                               |
 
 **Walk and run speeds:** record how many body heights per second each covers without the feet sliding. The system moves him at
 that speed.

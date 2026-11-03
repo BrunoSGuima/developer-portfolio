@@ -785,7 +785,7 @@ character) are done. The custom character's brief is
 `docs/assets/MASCOT-3D-SPEC.md`. Reports: `poc/mascot-3d/M1-REPORT.md` to `M5-REPORT.md`.
 
 M5, the custom character: approved by the owner, including its 57 px size and the fixed Fun Facts, and prepared for publishing. A merge to `main` deploys it. The owner confirmed the model's licence (a paid Tripo plan with "Private Models · Commercial Use") and that it is set to Private, and
-authorized pushing it to `poc/mascot-3d` (2026-11-03). Still needing explicit approval: the merge into `main` (which deploys it) and deleting the robot. Release checks: `poc/mascot-3d/M5-REPORT.md`.
+authorized pushing it to `poc/mascot-3d` (2026-11-03). The temporary CC0 robot was deleted with the owner's approval (2026-11-03). Still needing explicit approval: the merge into `main` (which deploys it). Release checks: `poc/mascot-3d/M5-REPORT.md`.
 
 Found in M4, on the published site, with or without the 3D mascot, and not fixed there:
 

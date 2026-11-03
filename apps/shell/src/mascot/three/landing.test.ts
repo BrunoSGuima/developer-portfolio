@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { robot } from './character/robot/profile.ts';
+import { unitMetrics } from './character/fixture/unitMetrics.ts';
 import { type Box, resolveLanding } from './landing.ts';
 
 const SIZE = 48;
@@ -28,7 +28,7 @@ describe('resolveLanding', () => {
       obstacles: [],
       fromX: 1000,
       size: SIZE,
-      metrics: robot.metrics,
+      metrics: unitMetrics,
     });
     expect(landing).toEqual({ x: 1000, y: 156, side: 'L' });
   });
@@ -39,7 +39,7 @@ describe('resolveLanding', () => {
       obstacles: [],
       fromX: 0,
       size: SIZE,
-      metrics: robot.metrics,
+      metrics: unitMetrics,
     });
     expect(landing?.x).toBeCloseTo(803 + 0.36 * SIZE + 4);
   });
@@ -51,7 +51,7 @@ describe('resolveLanding', () => {
       obstacles: [peek],
       fromX: linkX,
       size: SIZE,
-      metrics: robot.metrics,
+      metrics: unitMetrics,
     });
     expect(landing?.x).toBeCloseTo(peek.right + reach);
     expect(landing?.x).toBeLessThanOrEqual(card.right);
@@ -64,14 +64,14 @@ describe('resolveLanding', () => {
       obstacles: [peek],
       fromX: 150,
       size: SIZE,
-      metrics: robot.metrics,
+      metrics: unitMetrics,
     });
     const right = resolveLanding({
       card,
       obstacles: [peek],
       fromX: 700,
       size: SIZE,
-      metrics: robot.metrics,
+      metrics: unitMetrics,
     });
     expect(left?.x).toBeLessThanOrEqual(peek.left - reach);
     expect(right?.x).toBe(700);
@@ -84,7 +84,7 @@ describe('resolveLanding', () => {
       obstacles: [presenter],
       fromX: linkX,
       size: SIZE,
-      metrics: robot.metrics,
+      metrics: unitMetrics,
     });
     expect(landing?.x).toBeCloseTo(803 + 0.36 * SIZE + 4);
   });
@@ -97,7 +97,7 @@ describe('resolveLanding', () => {
       obstacles: [links],
       fromX: 374,
       size: SIZE,
-      metrics: robot.metrics,
+      metrics: unitMetrics,
     });
     expect(landing?.x).toBeLessThanOrEqual(links.left - reach);
     expect(landing?.x).toBeGreaterThanOrEqual(card.left);
@@ -107,14 +107,14 @@ describe('resolveLanding', () => {
     const card = box(128, 138, 768, 323);
     const wall = box(0, 100, 2000, 200);
     expect(
-      resolveLanding({ card, obstacles: [wall], fromX: 374, size: SIZE, metrics: robot.metrics }),
+      resolveLanding({ card, obstacles: [wall], fromX: 374, size: SIZE, metrics: unitMetrics }),
     ).toBeNull();
   });
 
   it('returns null on a card too narrow for him', () => {
     const card = box(100, 200, 130, 300);
     expect(
-      resolveLanding({ card, obstacles: [], fromX: 110, size: SIZE, metrics: robot.metrics }),
+      resolveLanding({ card, obstacles: [], fromX: 110, size: SIZE, metrics: unitMetrics }),
     ).toBeNull();
   });
 
@@ -126,7 +126,7 @@ describe('resolveLanding', () => {
       obstacles,
       fromX: 500,
       size: SIZE,
-      metrics: robot.metrics,
+      metrics: unitMetrics,
     });
     expect(landing?.x).toBeCloseTo(700 + reach);
   });
@@ -134,10 +134,10 @@ describe('resolveLanding', () => {
   it('points with the arm on the side of the card’s centre', () => {
     const card = box(0, 200, 1000, 300);
     expect(
-      resolveLanding({ card, obstacles: [], fromX: 200, size: SIZE, metrics: robot.metrics })?.side,
+      resolveLanding({ card, obstacles: [], fromX: 200, size: SIZE, metrics: unitMetrics })?.side,
     ).toBe('L');
     expect(
-      resolveLanding({ card, obstacles: [], fromX: 800, size: SIZE, metrics: robot.metrics })?.side,
+      resolveLanding({ card, obstacles: [], fromX: 800, size: SIZE, metrics: unitMetrics })?.side,
     ).toBe('R');
   });
 });

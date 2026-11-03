@@ -12,7 +12,7 @@
 
 ## What changed
 
-- `character/bruno/`: the approved model and texture, profile, pose and README. `character/index.ts` selects him. The robot stays until the owner approves deleting it.
+- `character/bruno/`: the approved model and texture, profile, pose and README. `character/index.ts` selects him. The temporary robot was deleted afterwards: see "Robot removal".
 - `character/contract.ts`: an optional `look`. `look.ts`: unlit material and skinned outline.
 - `rig.ts`: `applyClips` stops all actions first, so a held clip pose can't fall back to rest; applies the look.
 - `engine.ts`: follows theme changes live. `mascot3d.css`: the dark-theme halo.
@@ -162,6 +162,15 @@ A new card on the Projects page, third in the list, with the owner's text and PT
 - **Translated tags:** tag labels can now be translated.
 - **Layout:** captured at 320, 375, 800, 1280 and 1920 px, in both languages and themes, with no horizontal overflow. By eye: 1280 px in English and light, and 375 px in Portuguese and dark.
 
+## Robot removal (2026-11-03, approved by the owner)
+
+The CC0 `RobotExpressive` stand-in of M1–M4 is deleted: `character/robot/` (model, licence note, profile and pose) and the PoC's copy in `poc/mascot-3d/public/models/`. It was in no build: the published, flag-off and test builds were unchanged.
+
+- **Unit tests:** anchors, landing, motion and the host took the robot's measurements as inputs. They now read the same numbers from `character/fixture/unitMetrics.ts`, so their expectations didn't change.
+- **Robot-only tests removed:** the model check on its file, and its node names in `boundary.test.ts`, which keeps checking the character's clips and nodes, and the pointing clips by name.
+- **`production-3d.spec.ts`:** asks for the test character (`?mascot-character=fixture`) to show the published build ignores the parameter.
+- **The PoC's pages** (`bench`, `stage`, the comparisons and the CSP probe) loaded the robot. To run them again, restore it with `git show 1888ad0:poc/mascot-3d/public/models/RobotExpressive.glb`. The reports, scripts and control models stay.
+
 ## Release readiness
 
 **Assessment: ready for the branch push; the merge into `main` waits for the owner's approval.** Every suite that can run here passes, and the owner approved the results.
@@ -191,7 +200,6 @@ None open. The two raised on 2026-11-02 were closed by the owner on 2026-11-03:
 - Add a third-party notices file: the published bundle has no licence notices for `three` (MIT) or React.
 - Make `e2e-mascot3d` blocking after a third stable CI run.
 - Move the software-renderer check off the deprecated `WEBGL_debug_renderer_info`.
-- Delete the robot, with the owner's approval. It isn't in the published build.
 - Decide the Blender scripts' licence. They stay outside the repository.
 - Measure the halo's cost, and look at the lower end of the GPU range.
 - Tidy `.github/workflows/ci.yml`: its header still says "No deployment", and the `poc/**` trigger could go after the merge.

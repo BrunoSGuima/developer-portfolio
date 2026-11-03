@@ -10,7 +10,6 @@ can change without touching the other. `boundary.test.ts` enforces that.
 | `index.ts`    | Chooses the active character: its last line is the one to change                            |
 | `validate.ts` | Checks a loaded model has what its profile requires. If not, the visitor gets the 2D mascot |
 | `bruno/`      | **The character**, and what it is made of                                                   |
-| `robot/`      | The CC0 robot that stood in for him. Kept until the owner approves deleting it              |
 | `fixture/`    | Test character, made of boxes, with nothing in common with a real model                     |
 
 ## Replacing the character
@@ -19,7 +18,7 @@ The model's requirements are in [`docs/assets/MASCOT-3D-SPEC.md`](../../../../..
 
 1. **Check the file:** `npm run mascot:check-model -- <model.glb> --clips Idle,Walk,Run,Jump`. Problems (what the site's
    CSP blocks, or a missing clip) must be fixed. Warnings are size targets to review.
-2. **Add a folder** beside `robot/`, with the GLB and two files, using `robot/` as the example:
+2. **Add a folder** beside `bruno/`, with the GLB and two files, using `bruno/` as the example:
    - `profile.ts`: the model's URL, required clips and nodes, jump timings, measurements, and any accessories.
    - `pose.ts`: turns a `PoseIntent` into clips and bones, however this model does it.
    - Optionally a `look`: a same-origin texture drawn unlit, an outline for the light theme, a halo for the dark one.

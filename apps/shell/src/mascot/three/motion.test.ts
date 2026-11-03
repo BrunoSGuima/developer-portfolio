@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { robot } from './character/robot/profile.ts';
+import { unitJump, unitMetrics } from './character/fixture/unitMetrics.ts';
 import type { NavPhase } from './machine.ts';
 import {
   jumpTop,
@@ -16,8 +16,8 @@ const goal = (phase: NavPhase, targetX = 300, riseTo = false): MotionGoal => ({
   phase,
   targetX,
   size: 48,
-  metrics: robot.metrics,
-  jump: robot.jump,
+  metrics: unitMetrics,
+  jump: unitJump,
   riseTo,
   run: false,
   token: 1,
@@ -195,9 +195,9 @@ describe('the jump', () => {
   });
 
   it('reaches higher than standing in mid-air only', () => {
-    expect(jumpTop(0, robot.jump, robot.metrics)).toBeCloseTo(1.003);
-    expect(jumpTop(0.33, robot.jump, robot.metrics)).toBeCloseTo(1.313);
-    expect(jumpTop(0.7, robot.jump, robot.metrics)).toBeCloseTo(1.003);
+    expect(jumpTop(0, unitJump, unitMetrics)).toBeCloseTo(1.003);
+    expect(jumpTop(0.33, unitJump, unitMetrics)).toBeCloseTo(1.313);
+    expect(jumpTop(0.7, unitJump, unitMetrics)).toBeCloseTo(1.003);
   });
 });
 

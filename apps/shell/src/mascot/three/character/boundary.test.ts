@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { bruno } from './bruno/profile.ts';
-import { robot } from './robot/profile.ts';
 
 // Behaviour code: everything in mascot/three except the character folder and tests.
 const sources = import.meta.glob<string>(['../*.ts', '../*.tsx', '../*.css', '!../*.test.*'], {
@@ -11,7 +10,7 @@ const sources = import.meta.glob<string>(['../*.ts', '../*.tsx', '../*.css', '!.
 
 const quoted = (name: string) => new RegExp(`['"\`]${name}['"\`]`);
 
-const characters = [robot, bruno];
+const characters = [bruno];
 
 describe('behaviour code knows nothing about any character', () => {
   it('finds the files it is checking', () => {
@@ -25,10 +24,8 @@ describe('behaviour code knows nothing about any character', () => {
         expect(source).not.toMatch(quoted(name));
       }
     }
-    // Template-built node names, like the arms'
-    expect(source).not.toMatch(
-      /UpperArm|LowerArm|UpperLeg|LowerLeg|Palm2|Middle1|Index2|Thumb2|PointL|PointR/,
-    );
+    // The pointing clips, also as part of a longer or template-built name
+    expect(source).not.toMatch(/PointL|PointR/);
   });
 
   it.each(Object.keys(sources))('%s holds none of its measurements', (file) => {
@@ -47,8 +44,6 @@ describe('behaviour code knows nothing about any character', () => {
   });
 
   it.each(Object.keys(sources))('%s never reaches into a character’s folder', (file) => {
-    expect(sources[file]).not.toMatch(
-      /character\/(robot|fixture|bruno)|RobotExpressive|bruno\.glb/,
-    );
+    expect(sources[file]).not.toMatch(/character\/(fixture|bruno)|bruno\.glb/);
   });
 });

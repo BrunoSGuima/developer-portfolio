@@ -47,5 +47,5 @@ Three things constrain how:
   - Immediately: roll back to the previous deployment in the Pages dashboard.
   - In the repository: remove `VITE_MASCOT_3D=1` from `build:pages`, and the static-host spec's marker with it, then push. `prepare-pages` accepts the build without it.
 - **Licence:** pushing to this public repository publishes the `.glb`, even before a deploy. The owner confirmed its licence (a paid Tripo plan with "Private Models · Commercial Use") and that the model is set to Private on Tripo (2026-11-03).
-- **The Blender scripts stay out of the repository,** and the robot stays until the owner approves deleting it. Neither reaches the published build.
+- **The Blender scripts stay out of the repository** and never reach the published build. The temporary robot, which never did either, was deleted before the merge (2026-11-03).
 - **CI:** `e2e-mascot3d` stays advisory until a third stable run (ADR-0010), so that job alone wouldn't stop a bad change. `e2e-static` is blocking and now covers the published build, though Pages doesn't wait for CI in any case.
