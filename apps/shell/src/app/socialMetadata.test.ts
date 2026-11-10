@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
  * crawlers, which don't run JavaScript, find it in the initial HTML. One site-wide card, with
  * absolute production URLs; the image is built by scripts/build-og-image.mjs.
  */
-const ORIGIN = 'https://bruno-guimaraes.pages.dev';
+const ORIGIN = 'https://brunosguimaraes.com';
 const html = readFileSync(fileURLToPath(new URL('../../index.html', import.meta.url)), 'utf8');
 const imagePath = fileURLToPath(new URL('../../public/og-image.jpg', import.meta.url));
 

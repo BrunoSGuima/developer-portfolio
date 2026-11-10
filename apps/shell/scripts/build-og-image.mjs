@@ -118,7 +118,7 @@ const card = `<!doctype html>
   <div class="text">
     <h1>Bruno Guimarães</h1>
     <p class="role">Full Stack Software Engineer</p>
-    <p class="url">bruno-guimaraes.pages.dev</p>
+    <p class="url">brunosguimaraes.com</p>
   </div>
 </body>
 </html>`;
