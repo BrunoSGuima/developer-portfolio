@@ -5,6 +5,14 @@
   align-items: center;
   gap: var(--space-1);
   padding: var(--space-1);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-control-border); /* a control's outline: ≥ 3:1 */
   border-radius: var(--radius-pill);
+}
+
+/* Touch screens: the faces grow to 44px; without padding the pill (46px) still fits the
+   48–64rem header lane above the brand (SiteHeader). */
+@media (pointer: coarse) {
+  .pill {
+    padding: 0;
+  }
 }

@@ -78,6 +78,15 @@ describe('HomePage', () => {
     expect(homeCss).toMatch(/\.whatIDo > h2\s*\{[^}]*align-self:\s*end/);
   });
 
+  it('spans an odd last "What I do" card across the two-column (48–64rem) grid', () => {
+    const twoColumns = homeCss.slice(
+      homeCss.indexOf('@media (min-width: 48rem) and (max-width: 63.99rem)'),
+    );
+    expect(twoColumns).toMatch(
+      /\.threeUp > li:last-child:nth-child\(odd\)\s*\{\s*grid-column:\s*1 \/ -1;/,
+    );
+  });
+
   it('caps the hero text column, keeping its line breaks on wide screens', () => {
     expect(homeCss).toMatch(/max-width:\s*min\([^;]*var\(--home-hero-text-max\)\s*\);/);
   });

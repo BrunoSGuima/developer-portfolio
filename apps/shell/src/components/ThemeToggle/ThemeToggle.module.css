@@ -12,8 +12,20 @@
   transition: background-color var(--duration-fast) var(--ease-out);
 }
 
-.toggle:hover {
-  background: var(--color-bg);
+@media (hover: hover) {
+  .toggle:hover {
+    background: var(--color-bg);
+  }
+}
+
+/* Touch screens: a 44px target, the moon centred (like the language links). */
+@media (pointer: coarse) {
+  .toggle {
+    display: grid;
+    place-items: center;
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+  }
 }
 
 /* The moon, sized like the switcher's text (--text-sm at its line height). */

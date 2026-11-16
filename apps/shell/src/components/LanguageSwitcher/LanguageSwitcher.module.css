@@ -25,8 +25,20 @@
   transition: background-color var(--duration-fast) var(--ease-out);
 }
 
-.link:hover {
-  background: var(--color-bg);
+@media (hover: hover) {
+  .link:hover {
+    background: var(--color-bg);
+  }
+}
+
+/* Touch screens: 44px targets (the pill drops its padding to keep the header lane's height). */
+@media (pointer: coarse) {
+  .link {
+    display: grid;
+    place-items: center;
+    min-inline-size: 2.75rem;
+    min-block-size: 2.75rem;
+  }
 }
 
 /* Current language: filled (plus aria-current for assistive technology). */

@@ -10,7 +10,13 @@
   text-decoration: none;
   transition:
     background-color var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out);
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+/* Pressed: a 1px step (a transform, so the layout never moves). Not while a submit is pending. */
+.button:active:not([aria-disabled='true']) {
+  transform: translateY(1px);
 }
 
 .button[data-variant='primary'] {
@@ -18,16 +24,19 @@
   color: var(--color-on-primary);
 }
 
-.button[data-variant='primary']:hover {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-}
-
 .button[data-variant='secondary'] {
   background: transparent;
   color: var(--color-primary);
 }
 
-.button[data-variant='secondary']:hover {
-  background: var(--color-surface);
+/* Hover only where it exists: on touch screens it would stick after a tap. */
+@media (hover: hover) {
+  .button[data-variant='primary']:hover {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  .button[data-variant='secondary']:hover {
+    background: var(--color-surface);
+  }
 }

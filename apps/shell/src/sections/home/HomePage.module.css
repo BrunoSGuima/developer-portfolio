@@ -96,6 +96,13 @@
   }
 }
 
+/* Two columns (48–64rem): an odd last card spans the row instead of leaving an empty slot. */
+@media (min-width: 48rem) and (max-width: 63.99rem) {
+  .threeUp > li:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
 .more {
   margin-block-start: var(--space-3);
   font-weight: var(--weight-semibold);

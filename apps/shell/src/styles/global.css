@@ -38,6 +38,13 @@ a {
   text-underline-offset: 0.2em;
 }
 
+/* Underlined links thicken on hover (links styled without an underline are unaffected). */
+@media (hover: hover) {
+  a:hover {
+    text-decoration-thickness: 2px;
+  }
+}
+
 :focus-visible {
   outline: 3px solid var(--color-focus);
   outline-offset: 2px;
