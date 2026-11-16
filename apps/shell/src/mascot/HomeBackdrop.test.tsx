@@ -83,4 +83,11 @@ describe('HomeBackdrop', () => {
       /\.layer\s*\{[^}]*opacity:\s*0;[^}]*transition:\s*opacity 0s linear var\(--duration-base\)/,
     );
   });
+
+  it("fades each painting's foot into the page, so a short painting never ends in a hard line", () => {
+    // Desktop only (≥ 64rem): smaller screens keep their current look.
+    expect(css).toMatch(
+      /@media \(min-width: 64rem\) \{\s*\.layer::after\s*\{[^}]*bottom:\s*0;[^}]*background:\s*linear-gradient\(to bottom, transparent, var\(--color-bg\)\)/,
+    );
+  });
 });

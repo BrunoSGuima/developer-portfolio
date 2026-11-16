@@ -36,6 +36,23 @@
   transition: opacity 0s linear var(--duration-base);
 }
 
+/*
+ * The painting's own foot fades into the page. Where the backdrop is taller than the painting
+ * (about 64–72rem, more in Portuguese) it would otherwise end in a hard line above a plain band;
+ * where the painting is taller, this lies below the backdrop's clipped edge and never shows.
+ * Desktop only for now: smaller screens keep their current look (owner's decision, round 2).
+ */
+@media (min-width: 64rem) {
+  .layer::after {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: var(--space-8);
+    background: linear-gradient(to bottom, transparent, var(--color-bg));
+    content: '';
+  }
+}
+
 .layer[data-active='true'] {
   z-index: 1;
   opacity: 1;
